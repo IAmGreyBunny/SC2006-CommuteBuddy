@@ -1,2 +1,25 @@
-venv
+# Pycharm
 .idea
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+.DS_Store
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Virtualenvs
+.env
+
+# Node stuff (if frontend is inside repo)
+frontend/node_modules/
+frontend/dist/
