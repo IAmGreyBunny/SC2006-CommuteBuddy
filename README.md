@@ -18,11 +18,42 @@ Github (Code):<br>
 [Github Repo](https://github.com/softwarelab3/2006-SCS7-46)
 
 # Project Setup Guide
+## Obtaining Files
+```
+git clone https://github.com/softwarelab3/2006-SCS7-46
+```
+
 ## Virtual Environment
-Recommended to set up a virtual environment, virtual environment is not tracked in this repository
+Recommended to set up a virtual environment in order to isolate project dependencies from other projects, virtual environment is not tracked in this repository
+```
+python -m venv venv
+source venv/bin/activate   # Linux/Mac
+venv\Scripts\activate      # Windows
+```
 
 ## Python Packages
 ```
 pip install -r requirements.txt
 ```
 Note: Make sure to be in your virtual environment before installing packages if you plan on using virtual environment
+
+## Run migrations & dev server
+```
+python manage.py migrate
+python manage.py runserver
+```
+Migrations command to be done everytime there are changes in database models
+
+## Frontend
+Proper NodeJS installation is assumed
+
+```
+cd frontend
+
+# Install deps
+npm install    # or yarn / pnpm
+
+# Run dev server
+npm run dev
+```
+
