@@ -39,21 +39,39 @@ Note: Make sure to be in your virtual environment before installing packages if 
 
 ## Run migrations & dev server
 ```
-python manage.py migrate
-python manage.py runserver
+python manage.py makemigrations # Make the migration
+python manage.py migrate        # Do the migration
 ```
 Migrations command to be done everytime there are changes in database models
+
+### Run Backend Server:
+```
+python manage.py runserver
+```
 
 ## Frontend
 Proper NodeJS installation is assumed
 
 ```
 cd frontend
+```
 
-# Install deps
-npm install    # or yarn / pnpm
+### Setup Frontend Environment Variables
+Environment variables are not tracked for security reasons, the template file for the frontend environment can be found in ```"file_templates/.frontend_env"```
 
-# Run dev server
+The following line in the file should be changed to your preference:
+```
+VITE_API_URL = "http://localhost:1234" # This points to the backend server(DJango)
+```
+Make a copy of the file, rename the copy to ```".env"``` and move it to ```"frontend/.env"```
+
+### Install Dependencies
+```
+npm install    # or yarn / npm
+```
+
+### Run Frontend Server:
+```
 npm run dev
 ```
 
