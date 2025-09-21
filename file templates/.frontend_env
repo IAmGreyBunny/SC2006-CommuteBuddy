@@ -1,0 +1,4 @@
+# This file is environment variables used for frontend
+# Change the necessary information, rename the file to .env and place it in "frontend/",
+
+VITE_API_URL = "http://localhost:1234" # This points to the backend server(DJango)
