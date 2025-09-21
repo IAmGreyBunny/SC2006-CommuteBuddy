@@ -38,7 +38,7 @@ function Form({route,method})
     return <form onSubmit={handleSubmit}>
         <h1>{name}</h1>
         <input type = "text" value={username} onChange={(e)=>setUsername(e.target.value)} placeholder="username"/>
-        <input type = "text" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="username"/>
+        <input type = "text" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="password"/>
         <button type="submit"> {name} </button>
     </form>
 }
