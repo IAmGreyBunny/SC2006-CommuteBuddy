@@ -6,7 +6,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 # Create your views here.
+
 # Overwrite the default token obtain pair view with our custom one
+# This also serves as the login view since obtaining a token is what login does
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = TokenObtainPairSerializer
 
