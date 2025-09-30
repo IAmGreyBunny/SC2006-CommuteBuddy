@@ -43,15 +43,19 @@ function App() {
 =======
 import { useState } from 'react'
 import SignUp from './SignUp'
+import StartupPage from './StartupPage'
+import ChangeAccountDetails from './ChangeAccountDetails'
 import './App.css'
 
-function Login({ onSwitchToSignUp }) {
+function Login({ onSwitchToSignUp, onLoginSuccess }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Login attempted with:', username, password);
+    // After successful login, go to change account details
+    onLoginSuccess();
   };
 
   return (
@@ -94,13 +98,31 @@ function Login({ onSwitchToSignUp }) {
 }
 
 function App() {
-  const [showSignUp, setShowSignUp] = useState(false);
+  const [currentPage, setCurrentPage] = useState('startup'); // 'startup', 'login', 'signup', or 'changeAccount'
+  const [showSignUp, setShowSignUp] = useState(false); 
 
+  // Show startup page first
+  if (currentPage === 'startup') {
+    return <StartupPage onGetStarted={() => setCurrentPage('login')} />;
+  }
+
+  // Show change account details page
+  if (currentPage === 'changeAccount') {
+    return <ChangeAccountDetails onUpdate={(data) => {
+      console.log('Account updated with:', data);
+      // You can add navigation to next page here
+    }} />;
+  }
+
+  // Then show signup or login
   if (showSignUp) {
     return <SignUp />;
   }
 
-  return <Login onSwitchToSignUp={() => setShowSignUp(true)} />;
+  return <Login 
+    onSwitchToSignUp={() => setShowSignUp(true)} 
+    onLoginSuccess={() => setCurrentPage('changeAccount')}
+  />;
 }
 
 export default App;
