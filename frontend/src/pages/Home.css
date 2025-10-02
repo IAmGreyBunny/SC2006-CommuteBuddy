@@ -1,0 +1,376 @@
+.home-container {
+  max-width: 400px;
+  margin: auto;
+  background: #fff;
+  padding: 16px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  font-family: 'Segoe UI', sans-serif;
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.greeting {
+  margin: 0;
+  font-size: 18px;
+}
+
+.location-text {
+  font-size: 14px;
+  color: gray;
+  margin: 0;
+}
+
+.header-icons .icon-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.main-text h1 {
+  font-size: 28px;
+  margin: 16px 0 4px;
+}
+
+.main-text .highlight {
+  color: #007aff;
+}
+
+.main-text p {
+  color: gray;
+  margin-bottom: 16px;
+}
+
+.trip-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.trip-input input {
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.trip-button {
+  background-color: #007aff;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.trip-button:hover {
+  background-color: #005fdd;
+}
+
+.tab-navigation {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 10px 16px;
+  background: #e8e8e8;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  background: #007aff;
+  color: white;
+  font-weight: bold;
+}
+
+.tab-btn:hover {
+  background: #d0d0d0;
+}
+
+.tab-btn.active:hover {
+  background: #005fdd;
+}
+
+.location-settings,
+.transport-settings {
+  margin-bottom: 24px;
+}
+
+.location-settings h3,
+.transport-settings h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.location-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.location-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.location-item.clickable {
+  cursor: pointer;
+}
+
+.location-item.clickable:hover {
+  background: #e8e8e8;
+}
+
+.location-icon {
+  font-size: 24px;
+}
+
+.location-item p {
+  margin: 0;
+  font-weight: bold;
+}
+
+.location-item small {
+  color: #555;
+  font-size: 12px;
+}
+
+.your-location {
+  color: #007aff;
+  font-weight: 500;
+}
+
+.transport-settings {
+  margin-bottom: 24px;
+}
+
+.transport-settings h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.transport-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.transport-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.transport-item:hover {
+  background: #e8e8e8;
+}
+
+.transport-icon {
+  font-size: 24px;
+}
+
+.location-prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.location-prompt {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.prompt-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.location-prompt h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.location-prompt p {
+  margin: 0 0 24px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.prompt-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prompt-btn {
+  padding: 14px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.prompt-btn.primary {
+  background: #8B7BA8;
+  color: white;
+}
+
+.prompt-btn.primary:hover {
+  background: #7A6A97;
+}
+
+.prompt-btn.secondary {
+  background: #8B7BA8;
+  color: white;
+}
+
+.prompt-btn.secondary:hover {
+  background: #7A6A97;
+}
+
+.recent-trips h3 {
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.trip-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trip-card {
+  display: flex;
+  align-items: center;
+  background: #f2f2f2;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.trip-icon {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+.trip-details {
+  flex: 1;
+}
+
+.trip-details p {
+  margin: 0;
+  font-weight: bold;
+}
+
+.trip-details small {
+  color: gray;
+}
+
+.trip-arrow {
+  font-size: 18px;
+  color: gray;
+}
+
+.footer-nav {
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #ddd;
+  max-width: 400px;
+  margin: auto;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: gray;
+  cursor: pointer;
+}
+
+.nav-btn.active {
+  color: #007aff;
+  font-weight: bold;
+}
+

@@ -46,7 +46,7 @@
   border-color: #667eea;
 }
 
-button {
+.login-card button {
   width: 100%;
   padding: 0.75rem;
   background: #667eea;
@@ -59,7 +59,7 @@ button {
   transition: background 0.3s;
 }
 
-button:hover {
+.login-card button:hover {
   background: #5568d3;
 }
 
@@ -74,3 +74,4 @@ button:hover {
 .forgot-password:hover {
   text-decoration: underline;
 }
+

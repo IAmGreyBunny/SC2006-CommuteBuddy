@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './SignUp.css'
 
-function SignUp() {
+function SignUp({ onSignUpSuccess }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [reEmail, setReEmail] = useState('');
@@ -26,6 +26,11 @@ function SignUp() {
     
     console.log('Sign up attempted with:', { fullName, email, password });
     alert('Account created successfully!');
+    
+    // Pass user data and navigate to login page
+    if (onSignUpSuccess) {
+      onSignUpSuccess({ fullName, email });
+    }
   };
 
   return (
@@ -109,3 +114,4 @@ function SignUp() {
 }
 
 export default SignUp;
+

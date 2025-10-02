@@ -1,60 +1,16 @@
-<<<<<<< HEAD
-import react from "react";
-import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
-import ProtectedRoutes from "./components/ProtectedRoute";
-
-// Logs the User out by clearing all tokens
-function Logout()
-{
-  localStorage.clear();
-  return <Navigate to="/login" />
-}
-
-// Clear tokens after registration
-function RegisterAndLogout(){
-  localStorage.clear();
-  return <Register />
-}
-
-// This part list out all the routes 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path = "/"
-          element = {
-            <ProtectedRoutes>
-              <Home/>
-            </ProtectedRoutes>
-          }
-        />
-        <Route path="/login" element={<Login/>}/>
-        <Route path="/logout" element={<Logout/>}/>
-        <Route path="/register" element={<RegisterAndLogout/>}/>
-        <Route path="*" element={<NotFound/>}/>
-      </Routes>
-    </BrowserRouter>
-  )
-=======
-import { useState } from 'react'
-import SignUp from './SignUp'
-import StartupPage from './StartupPage'
-import ChangeAccountDetails from './ChangeAccountDetails'
-import './App.css'
+import { useState } from 'react';
+import SignUp from './SignUp';
+import StartupPage from './StartupPage';
+import Home from './pages/Home';
+import './App.css';
 
 function Login({ onSwitchToSignUp, onLoginSuccess }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Login attempted with:', username, password);
-    // After successful login, go to change account details
+    console.log('Login attempted with:', email, password);
     onLoginSuccess();
   };
 
@@ -64,12 +20,12 @@ function Login({ onSwitchToSignUp, onLoginSuccess }) {
         <h2>Welcome Back</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Username</label>
+            <label>Email</label>
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
             />
           </div>
           <div className="form-group">
@@ -94,35 +50,37 @@ function Login({ onSwitchToSignUp, onLoginSuccess }) {
       </div>
     </div>
   );
->>>>>>> 0bf2b6b (Added login and sign up pages)
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('startup'); // 'startup', 'login', 'signup', or 'changeAccount'
-  const [showSignUp, setShowSignUp] = useState(false); 
+  const [currentPage, setCurrentPage] = useState('startup');
+  const [userData, setUserData] = useState({ fullName: 'James Lee' });
 
-  // Show startup page first
+  const handleSignUpSuccess = (signupData) => {
+    setUserData(signupData);
+    setCurrentPage('login');
+  };
+
   if (currentPage === 'startup') {
     return <StartupPage onGetStarted={() => setCurrentPage('login')} />;
   }
 
-  // Show change account details page
-  if (currentPage === 'changeAccount') {
-    return <ChangeAccountDetails onUpdate={(data) => {
-      console.log('Account updated with:', data);
-      // You can add navigation to next page here
-    }} />;
+  if (currentPage === 'login') {
+    return <Login 
+      onSwitchToSignUp={() => setCurrentPage('signup')} 
+      onLoginSuccess={() => setCurrentPage('home')}
+    />;
   }
 
-  // Then show signup or login
-  if (showSignUp) {
-    return <SignUp />;
+  if (currentPage === 'signup') {
+    return <SignUp onSignUpSuccess={handleSignUpSuccess} />;
   }
 
-  return <Login 
-    onSwitchToSignUp={() => setShowSignUp(true)} 
-    onLoginSuccess={() => setCurrentPage('changeAccount')}
-  />;
+  if (currentPage === 'home') {
+    return <Home userName={userData.fullName} />;
+  }
+
+  return null;
 }
 
 export default App;
