@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import "./Settings.css";
+import ProfilePopup from "./ProfilePopup";
 
 const Settings = ( {navigateTo} ) => {
   const [tripReminders, setTripReminders] = useState(false);
   const [liveArrivalAlerts, setLiveArrivalAlerts] = useState(false);
   const [serviceDisruptions, setServiceDisruptions] = useState(false);
   const [peakHourAlerts, setPeakHourAlerts] = useState(false);
-
+  const [showProfilePopup, setShowProfilePopup] = useState(false);
+  
   const handleHomeClick = () => {  //function for nagiv to Home screen
     navigateTo('Home');
   };
@@ -19,6 +21,15 @@ const Settings = ( {navigateTo} ) => {
     navigateTo('myTrips');
   };
 
+  const handleEditProfileClick = () => {
+    setShowProfilePopup(true);
+  };
+  
+  const closeProfilePopup = () => {
+    setShowProfilePopup(false);
+  };
+  
+
   return (
     <div className="settings-container">
       <header className="settings-header">
@@ -29,7 +40,7 @@ const Settings = ( {navigateTo} ) => {
       {/* Account Settings */}
       <section className="settings-section">
         <h3>Account Settings</h3>
-        <div className="settings-item">
+        <div className="settings-item" onClick={handleEditProfileClick}>
           <span>👤 Edit Profile</span>
           <span className="arrow">›</span>
         </div>
@@ -106,6 +117,9 @@ const Settings = ( {navigateTo} ) => {
         <button className="nav-btn" onClick={handleMyTripsClick}>🧾 My Trips</button>
         <button className="nav-btn active">⚙️ Settings</button>
       </footer>
+
+      {/* Popup */}
+      {showProfilePopup && <ProfilePopup onClose={closeProfilePopup} />}
     </div>
   );
 };
