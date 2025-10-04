@@ -3,6 +3,7 @@ import SignUp from './SignUp';
 import StartupPage from './StartupPage';
 import Home from './pages/Home';
 import './App.css';
+import MyTrips from './pages/myTrips';
 
 function Login({ onSwitchToSignUp, onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -56,6 +57,10 @@ function App() {
   const [currentPage, setCurrentPage] = useState('startup');
   const [userData, setUserData] = useState({ fullName: 'James Lee' });
 
+  const navigateTo = (page) => {
+    setCurrentPage(page);
+  };
+
   const handleSignUpSuccess = (signupData) => {
     setUserData(signupData);
     setCurrentPage('login');
@@ -77,9 +82,12 @@ function App() {
   }
 
   if (currentPage === 'home') {
-    return <Home userName={userData.fullName} />;
+    return <Home userName={userData.fullName} navigateTo={navigateTo} />;
   }
 
+  if (currentPage === 'myTrips') {
+    return <MyTrips navigateTo={navigateTo} />;
+  }
   return null;
 }
 

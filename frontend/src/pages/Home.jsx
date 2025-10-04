@@ -31,9 +31,13 @@ const recentTrips = [
   },
 ];
 
-export default function Home({ userName = "James Lee" }) {
+export default function Home({ userName = "James Lee", navigateTo }) {
   const [activeTab, setActiveTab] = useState('recent'); // 'recent', 'location', or 'transport'
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+
+  const handleMyTripsClick = () => {  //function for nagiv to myTrips screen
+    navigateTo('myTrips');
+  };
 
   const handleYourLocationClick = () => {
     setShowLocationPrompt(true);
@@ -222,7 +226,7 @@ export default function Home({ userName = "James Lee" }) {
       <footer className="footer-nav">
         <button className="nav-btn active">🏠 Home</button>
         <button className="nav-btn">🗺 Live Tracker</button>
-        <button className="nav-btn">🧾 My Trips</button>
+        <button className="nav-btn" onClick={handleMyTripsClick} >🧾 My Trips</button>
         <button className="nav-btn">⚙️ Settings</button>
       </footer>
     </div>

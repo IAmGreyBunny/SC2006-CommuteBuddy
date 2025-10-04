@@ -53,7 +53,7 @@
 }
 
 .main-text .highlight {
-  color: #007aff;
+  color: #0095FF;
 }
 
 .main-text p {
@@ -76,7 +76,7 @@
 }
 
 .trip-button {
-  background-color: #007aff;
+  background-color: #0095FF;
   color: white;
   padding: 12px;
   border: none;
@@ -88,7 +88,7 @@
 }
 
 .trip-button:hover {
-  background-color: #005fdd;
+  background-color: #0095FF;
 }
 
 .tab-navigation {
@@ -110,7 +110,7 @@
 }
 
 .tab-btn.active {
-  background: #007aff;
+  background: #0095FF;
   color: white;
   font-weight: bold;
 }
@@ -120,7 +120,7 @@
 }
 
 .tab-btn.active:hover {
-  background: #005fdd;
+  background: #0095FF;
 }
 
 .location-settings,
@@ -172,7 +172,7 @@
 }
 
 .your-location {
-  color: #007aff;
+  color: #0095FF;
   font-weight: 500;
 }
 
@@ -370,7 +370,7 @@
 }
 
 .nav-btn.active {
-  color: #007aff;
+  color: #0095FF;
   font-weight: bold;
 }
 
