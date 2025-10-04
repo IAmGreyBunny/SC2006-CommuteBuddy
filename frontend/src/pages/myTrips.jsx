@@ -17,7 +17,18 @@ const recentTrips = [
 
 function MyTrips({ navigateTo }) {
   const [activeTab, setActiveTab] = useState("favourites");
+  
+  const handleHomeClick = () => {  //function for nagiv to Home screen
+    navigateTo('Home');
+  };
 
+  const handleLiveTrackerClick = () => {  //function for nagiv to Live Tracker screen
+    navigateTo('LiveTracker');
+  };
+
+  const handleSettingsClick = () => {  //function for nagiv to Settings screen
+    navigateTo('Settings');
+  };
   const trips = activeTab === "favourites" ? favouriteTrips : recentTrips;
 
   return (
@@ -55,10 +66,10 @@ function MyTrips({ navigateTo }) {
       </div>
 
       <footer className="footer-nav">
-        <button className="nav-btn" onClick={() => navigateTo("home")}>🏠 Home</button>
-        <button className="nav-btn" onClick={() => navigateTo("liveTracker")}>🗺 Live Tracker</button>
+        <button className="nav-btn" onClick={handleHomeClick}>🏠 Home</button>
+        <button className="nav-btn" onClick={handleLiveTrackerClick}>🗺 Live Tracker</button>
         <button className="nav-btn active">🧾 My Trips</button>
-        <button className="nav-btn" onClick={() => navigateTo("settings")}>⚙️ Settings</button>
+        <button className="nav-btn" onClick={handleSettingsClick}>⚙️ Settings</button>
       </footer>
     </div>
   );

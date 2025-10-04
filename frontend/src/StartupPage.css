@@ -1,6 +1,6 @@
 .startup-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #0095FF 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,7 +35,7 @@
 
 .get-started-btn {
   background: white;
-  color: #667eea;
+  color: #0095FF;
   border: none;
   padding: 1rem 3rem;
   font-size: 1.1rem;

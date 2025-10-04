@@ -4,6 +4,7 @@ import StartupPage from './StartupPage';
 import Home from './pages/Home';
 import './App.css';
 import MyTrips from './pages/myTrips';
+import Settings from './pages/Settings';
 
 function Login({ onSwitchToSignUp, onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -43,7 +44,7 @@ function Login({ onSwitchToSignUp, onLoginSuccess }) {
           <p style={{textAlign: 'center', marginTop: '1rem'}}>
             Don't have an account?{' '}
             <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToSignUp(); }} 
-               style={{color: '#667eea', fontWeight: 'bold'}}>
+               style={{color: '#0095FF', fontWeight: 'bold'}}>
               Sign Up
             </a>
           </p>
@@ -73,7 +74,7 @@ function App() {
   if (currentPage === 'login') {
     return <Login 
       onSwitchToSignUp={() => setCurrentPage('signup')} 
-      onLoginSuccess={() => setCurrentPage('home')}
+      onLoginSuccess={() => setCurrentPage('Home')}
     />;
   }
 
@@ -81,12 +82,16 @@ function App() {
     return <SignUp onSignUpSuccess={handleSignUpSuccess} />;
   }
 
-  if (currentPage === 'home') {
+  if (currentPage === 'Home') {
     return <Home userName={userData.fullName} navigateTo={navigateTo} />;
   }
 
   if (currentPage === 'myTrips') {
     return <MyTrips navigateTo={navigateTo} />;
+  }
+
+  if (currentPage === 'Settings') {
+    return <Settings navigateTo={navigateTo} />;
   }
   return null;
 }

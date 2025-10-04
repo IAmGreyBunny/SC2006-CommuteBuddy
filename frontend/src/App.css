@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #0095FF 100%);
 }
 
 .login-card {
@@ -43,13 +43,13 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #0095FF;
 }
 
 .login-card button {
   width: 100%;
   padding: 0.75rem;
-  background: #667eea;
+  background: #0095FF;
   color: white;
   border: none;
   border-radius: 5px;
@@ -60,14 +60,14 @@
 }
 
 .login-card button:hover {
-  background: #5568d3;
+  background: #0676c6;
 }
 
 .forgot-password {
   display: block;
   text-align: center;
   margin-top: 1rem;
-  color: #667eea;
+  color: #0095FF;
   text-decoration: none;
 }
 

@@ -35,8 +35,16 @@ export default function Home({ userName = "James Lee", navigateTo }) {
   const [activeTab, setActiveTab] = useState('recent'); // 'recent', 'location', or 'transport'
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
 
+  const handleLiveTrackerClick = () => {  //function for nagiv to Live Tracker screen
+    navigateTo('LiveTracker');
+  };
+
   const handleMyTripsClick = () => {  //function for nagiv to myTrips screen
     navigateTo('myTrips');
+  };
+
+  const handleSettingsClick = () => {  //function for nagiv to Settings screen
+    navigateTo('Settings');
   };
 
   const handleYourLocationClick = () => {
@@ -225,9 +233,9 @@ export default function Home({ userName = "James Lee", navigateTo }) {
 
       <footer className="footer-nav">
         <button className="nav-btn active">🏠 Home</button>
-        <button className="nav-btn">🗺 Live Tracker</button>
+        <button className="nav-btn" onClick={handleLiveTrackerClick}>🗺 Live Tracker</button>
         <button className="nav-btn" onClick={handleMyTripsClick} >🧾 My Trips</button>
-        <button className="nav-btn">⚙️ Settings</button>
+        <button className="nav-btn" onClick={handleSettingsClick} >⚙️ Settings</button>
       </footer>
     </div>
   );
