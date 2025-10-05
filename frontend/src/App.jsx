@@ -1,44 +1,100 @@
-import react from "react";
-import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
-import ProtectedRoutes from "./components/ProtectedRoute";
+import { useState } from 'react';
+import SignUp from './SignUp';
+import StartupPage from './StartupPage';
+import Home from './pages/Home';
+import './App.css';
+import MyTrips from './pages/myTrips';
+import Settings from './pages/Settings';
 
-// Logs the User out by clearing all tokens
-function Logout()
-{
-  localStorage.clear();
-  return <Navigate to="/login" />
-}
+function Login({ onSwitchToSignUp, onLoginSuccess }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-// Clear tokens after registration
-function RegisterAndLogout(){
-  localStorage.clear();
-  return <Register />
-}
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Login attempted with:', email, password);
+    onLoginSuccess();
+  };
 
-// This part list out all the routes 
-function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path = "/"
-          element = {
-            <ProtectedRoutes>
-              <Home/>
-            </ProtectedRoutes>
-          }
-        />
-        <Route path="/login" element={<Login/>}/>
-        <Route path="/logout" element={<Logout/>}/>
-        <Route path="/register" element={<RegisterAndLogout/>}/>
-        <Route path="*" element={<NotFound/>}/>
-      </Routes>
-    </BrowserRouter>
-  )
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Welcome Back</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+            />
+          </div>
+          <button type="submit">Login</button>
+          <a href="#" className="forgot-password">Forgot Password?</a>
+          <p style={{textAlign: 'center', marginTop: '1rem'}}>
+            Don't have an account?{' '}
+            <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToSignUp(); }} 
+               style={{color: '#0095FF', fontWeight: 'bold'}}>
+              Sign Up
+            </a>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
 }
 
-export default App
+function App() {
+  const [currentPage, setCurrentPage] = useState('startup');
+  const [userData, setUserData] = useState({ fullName: 'James Lee' });
+
+  const navigateTo = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleSignUpSuccess = (signupData) => {
+    setUserData(signupData);
+    setCurrentPage('login');
+  };
+
+  if (currentPage === 'startup') {
+    return <StartupPage onGetStarted={() => setCurrentPage('login')} />;
+  }
+
+  if (currentPage === 'login') {
+    return <Login 
+      onSwitchToSignUp={() => setCurrentPage('signup')} 
+      onLoginSuccess={() => setCurrentPage('Home')}
+    />;
+  }
+
+  if (currentPage === 'signup') {
+    return <SignUp onSignUpSuccess={handleSignUpSuccess} />;
+  }
+
+  if (currentPage === 'Home') {
+    return <Home userName={userData.fullName} navigateTo={navigateTo} />;
+  }
+
+  if (currentPage === 'myTrips') {
+    return <MyTrips navigateTo={navigateTo} />;
+  }
+
+  if (currentPage === 'Settings') {
+    return <Settings navigateTo={navigateTo} />;
+  }
+  return null;
+}
+
+export default App;
+
