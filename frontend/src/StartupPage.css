@@ -10,7 +10,6 @@
   overflow: hidden;
 }
 
-/* --- Multiple visible wave layers --- */
 .startup-container::before,
 .startup-container::after {
   content: "";
