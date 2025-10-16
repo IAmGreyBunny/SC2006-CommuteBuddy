@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Settings.css";
 import ProfilePopup from "./ProfilePopup";
 
@@ -8,18 +9,22 @@ const Settings = ( {navigateTo} ) => {
   const [serviceDisruptions, setServiceDisruptions] = useState(false);
   const [peakHourAlerts, setPeakHourAlerts] = useState(false);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
-  
-  const handleHomeClick = () => {  //function for nagiv to Home screen
-    navigateTo('Home');
+
+  const navigate = useNavigate(); 
+
+  // updated routing
+  const handleHomeClick = () => {
+    navigate('/home');
   };
 
-  const handleLiveTrackerClick = () => {  //function for nagiv to Live Tracker screen
-    navigateTo('LiveTracker');
+  const handleLiveTrackerClick = () => {
+    navigate('/live-tracker');
   };
 
-  const handleMyTripsClick = () => {  //function for nagiv to myTrips screen
-    navigateTo('myTrips');
+  const handleMyTripsClick = () => {
+    navigate('/my-trips');
   };
+
 
   const handleEditProfileClick = () => {
     setShowProfilePopup(true);

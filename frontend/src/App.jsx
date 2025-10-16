@@ -1,19 +1,23 @@
 import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import SignUp from './SignUp';
 import StartupPage from './StartupPage';
 import Home from './pages/Home';
-import './App.css';
 import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
+import './App.css';
 
 function Login({ onSwitchToSignUp, onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Login attempted with:', email, password);
+
     onLoginSuccess();
+    navigate('/home');
   };
 
   return (
@@ -41,10 +45,13 @@ function Login({ onSwitchToSignUp, onLoginSuccess }) {
           </div>
           <button type="submit">Login</button>
           <a href="#" className="forgot-password">Forgot Password?</a>
-          <p style={{textAlign: 'center', marginTop: '1rem'}}>
+          <p style={{ textAlign: 'center', marginTop: '1rem' }}>
             Don't have an account?{' '}
-            <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToSignUp(); }} 
-               style={{color: '#0095FF', fontWeight: 'bold'}}>
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); onSwitchToSignUp(); }}
+              style={{ color: '#0095FF', fontWeight: 'bold' }}
+            >
               Sign Up
             </a>
           </p>
@@ -54,47 +61,86 @@ function Login({ onSwitchToSignUp, onLoginSuccess }) {
   );
 }
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('startup');
-  const [userData, setUserData] = useState({ fullName: 'James Lee' });
+//protected route
 
-  const navigateTo = (page) => {
-    setCurrentPage(page);
-  };
+const ProtectedRoute = ({ children }) => {
+  const isLoggedIn = !!localStorage.getItem('user'); // simple auth check
+  return isLoggedIn ? children : <Navigate to="/login" />;
+};
+
+//not found page
+
+const NotFound = () => (
+  <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+    <h1>404 - Page Not Found</h1>
+    <p>The page you are looking for does not exist.</p>
+  </div>
+);
+
+function App() {
+  const [userData, setUserData] = useState({ fullName: 'James Lee' });
 
   const handleSignUpSuccess = (signupData) => {
     setUserData(signupData);
-    setCurrentPage('login');
+    localStorage.setItem('user', JSON.stringify(signupData)); // save login state
   };
 
-  if (currentPage === 'startup') {
-    return <StartupPage onGetStarted={() => setCurrentPage('login')} />;
-  }
+  const handleLoginSuccess = () => {
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
 
-  if (currentPage === 'login') {
-    return <Login 
-      onSwitchToSignUp={() => setCurrentPage('signup')} 
-      onLoginSuccess={() => setCurrentPage('Home')}
-    />;
-  }
+  const navigate = useNavigate(); // used for callbacks
 
-  if (currentPage === 'signup') {
-    return <SignUp onSignUpSuccess={handleSignUpSuccess} />;
-  }
+  return (
+    <Routes>
+      <Route path="/" element={<StartupPage />} />
+      <Route
+        path="/login"
+        element={
+          <Login
+            onSwitchToSignUp={() => navigate('/signup')}
+            onLoginSuccess={handleLoginSuccess}
+          />
+        }
+      />
+      <Route
+        path="/signup"
+        element={<SignUp onSignUpSuccess={handleSignUpSuccess} />}
+      />
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <Home userName={userData.fullName} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-trips"
+        element={
+          <ProtectedRoute>
+            <MyTrips />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
 
-  if (currentPage === 'Home') {
-    return <Home userName={userData.fullName} navigateTo={navigateTo} />;
-  }
-
-  if (currentPage === 'myTrips') {
-    return <MyTrips navigateTo={navigateTo} />;
-  }
-
-  if (currentPage === 'Settings') {
-    return <Settings navigateTo={navigateTo} />;
-  }
-  return null;
+      {/* Catch-all */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 }
-
-export default App;
-
+export default function WrappedApp() {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+}

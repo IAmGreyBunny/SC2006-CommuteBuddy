@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import "./Home.css";
 
 const recentTrips = [
@@ -31,20 +32,23 @@ const recentTrips = [
   },
 ];
 
-export default function Home({ userName = "James Lee", navigateTo }) {
-  const [activeTab, setActiveTab] = useState('recent'); // 'recent', 'location', or 'transport'
+export default function Home({ userName = "James Lee" }) {
+  const [activeTab, setActiveTab] = useState('recent');
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
 
-  const handleLiveTrackerClick = () => {  //function for nagiv to Live Tracker screen
-    navigateTo('LiveTracker');
+  const navigate = useNavigate(); 
+
+  // updated routing
+  const handleLiveTrackerClick = () => {
+    navigate('/live-tracker'); 
   };
 
-  const handleMyTripsClick = () => {  //function for nagiv to myTrips screen
-    navigateTo('myTrips');
+  const handleMyTripsClick = () => {
+    navigate('/my-trips'); 
   };
 
-  const handleSettingsClick = () => {  //function for nagiv to Settings screen
-    navigateTo('Settings');
+  const handleSettingsClick = () => {
+    navigate('/settings'); 
   };
 
   const handleYourLocationClick = () => {
@@ -52,25 +56,13 @@ export default function Home({ userName = "James Lee", navigateTo }) {
   };
 
   const handleLocationPermission = (permission) => {
-    if (permission === 'allow-visiting') {
-      console.log('Location permission: Allow while visiting');
-    } else if (permission === 'allow-once') {
-      console.log('Location permission: Allow this time');
-    } else if (permission === 'never') {
-      console.log('Location permission: Never allow');
-    }
+    console.log('Location permission:', permission);
     setShowLocationPrompt(false);
   };
 
-  const getInitials = (name) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase();
-  };
+  const getInitials = (name) =>
+    name.split(' ').map(word => word[0]).join('').toUpperCase();
 
-  const initials = getInitials(userName);
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=667eea&color=fff&size=48`;
 
   return (
