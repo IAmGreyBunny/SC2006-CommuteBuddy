@@ -17,6 +17,9 @@ LucidChart (Diagrams) - Use NTU account for more shapes:<br>
 Github (Code):<br> 
 [Github Repo](https://github.com/softwarelab3/2006-SCS7-46)
 
+
+
+
 # Project Setup Guide
 ## Obtaining Files
 ```
@@ -35,19 +38,40 @@ venv\Scripts\activate      # Windows
 ```
 pip install -r requirements.txt
 ```
-Note: Make sure to be in your virtual environment before installing packages if you plan on using virtual environment
+**Note: Make sure to be in your virtual environment before installing packages if you plan on using virtual environment**
 
-## Run migrations & dev server
+
+
+## Backend 
+
+### Run migrations & dev server
 ```
 python manage.py makemigrations # Make the migration
 python manage.py migrate        # Do the migration
 ```
 Migrations command to be done everytime there are changes in database models
 
-### Run Backend Server:
+### Admin Operations
+#### Creating Admin User
+```
+python manage.py createsuperuser
+```
+Create admin user (Allows access to CRUD operations on registered models through backend)<br>
+**Note: Remember to migrate database**
+
+#### Registering Models to Admin Site
+```
+# in admin.py
+admin.site.register(MODEL_NAME)
+```
+
+#### Run Backend Server:
 ```
 python manage.py runserver
 ```
+
+
+
 
 ## Frontend
 Proper NodeJS installation is assumed
