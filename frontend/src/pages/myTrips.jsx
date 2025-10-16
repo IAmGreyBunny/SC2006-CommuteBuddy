@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./myTrips.css";
 
 const favouriteTrips = [
-  { id: 1, from: "Boon lay Int", to: "Jurong East", distance: "9.2 km", duration: "35 mins", mode: "Bus" },
+  { id: 1, from: "Boon Lay Int", to: "Jurong East", distance: "9.2 km", duration: "35 mins", mode: "Bus" },
   { id: 2, from: "Bishan Park", to: "313 Somerset", distance: "11.5 km", duration: "25 mins", mode: "Car" },
   { id: 3, from: "Clarke Quay", to: "Tiong Bahru Market", distance: "5.1 km", duration: "28 mins", mode: "Bus" },
   { id: 4, from: "Block 426", to: "Oh My Mango Bingsu", distance: "8.8 km", duration: "30 mins", mode: "Car" },
@@ -15,20 +16,23 @@ const recentTrips = [
   { id: 4, from: "Block 301", to: "Lickers, blk 177", distance: "1.5 km", duration: "6 mins", mode: "Car" },
 ];
 
-function MyTrips({ navigateTo }) {
+function MyTrips() {
   const [activeTab, setActiveTab] = useState("favourites");
-  
-  const handleHomeClick = () => {  //function for nagiv to Home screen
-    navigateTo('Home');
+  const navigate = useNavigate(); 
+
+  // updated routing
+  const handleHomeClick = () => {
+    navigate('/home');
   };
 
-  const handleLiveTrackerClick = () => {  //function for nagiv to Live Tracker screen
-    navigateTo('LiveTracker');
+  const handleLiveTrackerClick = () => {
+    navigate('/live-tracker');
   };
 
-  const handleSettingsClick = () => {  //function for nagiv to Settings screen
-    navigateTo('Settings');
+  const handleSettingsClick = () => {
+    navigate('/settings');
   };
+
   const trips = activeTab === "favourites" ? favouriteTrips : recentTrips;
 
   return (
@@ -76,3 +80,4 @@ function MyTrips({ navigateTo }) {
 }
 
 export default MyTrips;
+
