@@ -40,9 +40,32 @@ pip install -r requirements.txt
 ```
 **Note: Make sure to be in your virtual environment before installing packages if you plan on using virtual environment**
 
+## Docker Setup
+The project relies on [docker](https://www.docker.com/products/docker-desktop/) image to run redis, so a working installation is assumed in the following steps.
 
 
 ## Backend 
+
+### Redis Setup
+```
+docker run -d --name redis -p 6379:6379 redis
+```
+This downloads a redis container image into docker if its not available, you only need to run this once, unless you delete the image, then run it again <br>
+The following commands assumes that the container is named redis(as in the step above):
+```
+docker ps # Checks if the docker is running
+docker stop redis # Stop redis if it's running
+docker start redis # Start redis
+```
+
+### Setup Backend Environment Variables
+Environment variables are not tracked for security reasons, the template file for the backend environment can be found in ```"file_templates/.backend_env"```
+
+The following line in the file should be changed to your preference:
+```
+REDIS_URL="redis://localhost:6379/0" # This points to the redis server(whatever you set in the previous steps)
+```
+Make a copy of the file, rename the copy to ```".env"``` and move it to ```"backend/.env"```
 
 ### Run migrations & dev server
 ```
@@ -65,9 +88,20 @@ Create admin user (Allows access to CRUD operations on registered models through
 admin.site.register(MODEL_NAME)
 ```
 
-#### Run Backend Server:
+### Run Backend Server:
 ```
 python manage.py runserver
+```
+
+### Run Celery and Beat:
+Run the following in two separate terminals <br>
+Run Worker (This starts the worker for the tasks):
+```
+celery -A backend worker -l info
+```
+Run Beat (This schedule the tasks for the worker):
+```
+celery -A backend beat -l info
 ```
 
 
