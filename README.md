@@ -47,6 +47,7 @@ The project relies on [docker](https://www.docker.com/products/docker-desktop/) 
 ## Backend 
 
 ### Redis Setup
+**Make sure docker is running**
 ```
 docker run -d --name redis -p 6379:6379 redis
 ```
@@ -61,9 +62,10 @@ docker start redis # Start redis
 ### Setup Backend Environment Variables
 Environment variables are not tracked for security reasons, the template file for the backend environment can be found in ```"file_templates/.backend_env"```
 
-The following line in the file should be changed to your preference:
+The following lines in the file should be changed to your preference:
 ```
 REDIS_URL="redis://localhost:6379/0" # This points to the redis server(whatever you set in the previous steps)
+HDB_CARPARK_AVAILABILITY_API_KEY="v2:d02822dfdefd6bb28a284e21831b6a31633cb602c58b3daa8f92edd1cef8bad3:wgpuCpP5HYmJlLy_Vys2HiEREkGbROQ4" # Change this to the api key you registered
 ```
 Make a copy of the file, rename the copy to ```".env"``` and move it to ```"backend/.env"```
 
@@ -94,8 +96,8 @@ python manage.py runserver
 ```
 
 ### Run Celery and Beat:
-Run the following in two separate terminals <br>
-Run Worker (This starts the worker for the tasks):
+Run the followings in two separate terminals(Make sure they are in ```backend``` folder) <br><br>
+Run Worker (This start the workers for the tasks):
 ```
 celery -A backend worker -l info
 ```
