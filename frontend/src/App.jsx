@@ -2,80 +2,13 @@ import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import SignUp from './SignUp';
 import StartupPage from './StartupPage';
+import NotFound from './pages/NotFound';
 import Home from './pages/Home';
 import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
-function Login({ onSwitchToSignUp, onLoginSuccess }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Login attempted with:', email, password);
-
-    onLoginSuccess();
-    navigate('/home');
-  };
-
-  return (
-    <div className="login-container">
-      <div className="login-card">
-        <h2>Welcome Back</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-            />
-          </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-            />
-          </div>
-          <button type="submit">Login</button>
-          <a href="#" className="forgot-password">Forgot Password?</a>
-          <p style={{ textAlign: 'center', marginTop: '1rem' }}>
-            Don't have an account?{' '}
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); onSwitchToSignUp(); }}
-              style={{ color: '#0095FF', fontWeight: 'bold' }}
-            >
-              Sign Up
-            </a>
-          </p>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-//protected route
-
-const ProtectedRoute = ({ children }) => {
-  const isLoggedIn = !!localStorage.getItem('user'); // simple auth check
-  return isLoggedIn ? children : <Navigate to="/login" />;
-};
-
-//not found page
-
-const NotFound = () => (
-  <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-    <h1>404 - Page Not Found</h1>
-    <p>The page you are looking for does not exist.</p>
-  </div>
-);
 
 function App() {
   const [userData, setUserData] = useState({ fullName: 'James Lee' });
@@ -89,12 +22,12 @@ function App() {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  const navigate = useNavigate(); // used for callbacks
 
   return (
+    <BrowserRouter>
     <Routes>
       <Route path="/" element={<StartupPage />} />
-      <Route
+      {/* <Route
         path="/login"
         element={
           <Login
@@ -102,11 +35,11 @@ function App() {
             onLoginSuccess={handleLoginSuccess}
           />
         }
-      />
-      <Route
+      /> */}
+      {/* <Route
         path="/signup"
         element={<SignUp onSignUpSuccess={handleSignUpSuccess} />}
-      />
+      /> */}
       <Route
         path="/home"
         element={
@@ -135,12 +68,16 @@ function App() {
       {/* Catch-all */}
       <Route path="*" element={<NotFound />} />
     </Routes>
-  );
-}
-export default function WrappedApp() {
-  return (
-    <BrowserRouter>
-      <App />
     </BrowserRouter>
   );
 }
+// export default function WrappedApp() {
+//   return (
+//     <BrowserRouter>
+//       <App />
+//     </BrowserRouter>
+//   );
+// }
+
+
+export default App;
