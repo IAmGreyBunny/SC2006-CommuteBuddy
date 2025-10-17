@@ -19,10 +19,14 @@ app.autodiscover_tasks()
 
 # This run celery task on a schedule
 app.conf.beat_schedule = {
-    "poll-every-20-seconds": {
+    "test_poll": {
         "task": "api.tasks.test_poll",
         "schedule": 20.0,  # every 20 seconds
     },
+    "hdb_carpark_availability_poll": {
+        "task": "api.tasks.hdb_carpark_availability_poll",
+        "schedule": 20.0,  # every 20 seconds
+    }
 }
 
 # Automatically choose pool type and concurrency

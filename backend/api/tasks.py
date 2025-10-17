@@ -1,17 +1,23 @@
 # File for setting up celery tasks
 # (e.g. carpark polling)
-from celery import shared_task
-import time
+import os
 
+from celery import shared_task
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Test Task
 @shared_task
 def test_poll():
-    """
-    Sample task that simulates polling an external API
-    and updating your Django models.
-    """
-    print("Starting polling task...")
-    time.sleep(2)  # Simulate network delay or processing
-    print("Polling complete!")
+    print("Beat is Running Properly")
     return "Done"
+
+@shared_task
+def hdb_carpark_availability_poll():
+    headers = {"X-Api-Key": os.getenv("HDB_CARPARK_AVAILABILITY_API_KEY")}
+    response = requests.get('https://api.data.gov.sg/v1/transport/carpark-availability',headers=headers)
+
+    print("Carpark Poll Successful")
+
