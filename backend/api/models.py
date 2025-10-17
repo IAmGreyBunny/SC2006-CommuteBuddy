@@ -55,3 +55,48 @@ class Carpark(models.Model):
 
     def __str__(self):
         return f"{self.external_id} ({self.source_id.name})"
+
+# Public Transport Models
+
+class BusStop(models.Model):
+    stop_id = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=200)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+
+    def __str__(self):
+        return f"{self.name} ({self.stop_id})"
+
+
+class BusRoute(models.Model):
+    route_id = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100)
+    start_stop = models.ForeignKey(BusStop, on_delete=models.CASCADE, related_name='route_starts')
+    end_stop = models.ForeignKey(BusStop, on_delete=models.CASCADE, related_name='route_ends')
+
+    def __str__(self):
+        return f"{self.name} ({self.route_id})"
+
+
+class BusSchedule(models.Model):
+    route = models.ForeignKey(BusRoute, on_delete=models.CASCADE)
+    stop = models.ForeignKey(BusStop, on_delete=models.CASCADE)
+    arrival_time = models.TimeField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('route', 'stop', 'arrival_time')
+
+    def __str__(self):
+        return f"{self.route} @ {self.stop} -> {self.arrival_time}"
+
+
+class RealTimeBus(models.Model):
+    route = models.ForeignKey(BusRoute, on_delete=models.CASCADE)
+    current_stop = models.ForeignKey(BusStop, on_delete=models.SET_NULL, null=True, blank=True)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Bus {self.id} on {self.route.name} at {self.current_stop}"
