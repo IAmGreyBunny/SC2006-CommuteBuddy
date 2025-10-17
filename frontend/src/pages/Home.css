@@ -1,31 +1,71 @@
-.home-container {
-  max-width: 400px;
-  margin: auto;
-  background: #fff;
-  padding: 16px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  font-family: 'Segoe UI', sans-serif;
-  position: relative;
-  min-height: 100vh;
-  padding-bottom: 80px;
+:root{
+  --primary: #0095FF;
+  --muted: #666;
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --accent: #8B7BA8;
 }
 
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: #222;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* The page wrapper controls the two-column desktop layout */
+.home-page-wrapper {
+  display: flex;
+  min-height: 100vh;
+  gap: 32px;
+  align-items: flex-start;
+  padding: 28px;
+}
+
+/* Main container (left) */
+.home-container {
+  flex: 1 1 820px;               /* expand on desktop */
+  max-width: 980px;              /* keep readable line length */
+  background: transparent;
+  padding: 0;
+  position: relative;
+}
+
+/* Keep interior card-like look from your original file */
+.home-container > .home-header,
+.main-text,
+.trip-input,
+.tab-navigation,
+.recent-trips,
+.location-settings,
+.transport-settings {
+  background: transparent;
+}
+
+/* A content card that wraps the top portion visually (optional) */
 .home-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 6px;
 }
 
+/* Profile info */
 .profile-info {
   display: flex;
   align-items: center;
+  gap: 12px;
 }
 
 .avatar {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  margin-right: 10px;
+  object-fit: cover;
+  border: 2px solid rgba(0,0,0,0.06);
 }
 
 .greeting {
@@ -34,204 +74,190 @@
 }
 
 .location-text {
-  font-size: 14px;
-  color: gray;
   margin: 0;
+  font-size: 13px;
+  color: var(--muted);
 }
 
-.header-icons .icon-button {
+/* icons */
+.header-icons .icon-button,
+.header-icons .icon-button:focus {
   background: none;
   border: none;
   font-size: 20px;
-  margin-left: 10px;
+  margin-left: 8px;
   cursor: pointer;
 }
 
+/* Main headline */
 .main-text h1 {
-  font-size: 28px;
-  margin: 16px 0 4px;
+  font-size: 40px;
+  margin: 14px 0 6px;
+  line-height: 1.05;
 }
 
 .main-text .highlight {
-  color: #0095FF;
+  color: var(--primary);
 }
 
 .main-text p {
-  color: gray;
-  margin-bottom: 16px;
+  margin: 0 0 18px;
+  color: var(--muted);
 }
 
+/* trip input -- grouped visually similar to card */
 .trip-input {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 200px;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .trip-input input {
-  padding: 10px 14px;
-  border: 1px solid #ccc;
+  padding: 12px 14px;
+  border: 1px solid #e0e6ef;
   border-radius: 8px;
   font-size: 15px;
+  background: white;
+  width: 100%;
+}
+
+.trip-input input::placeholder {
+  color: #999;
 }
 
 .trip-button {
-  background-color: #0095FF;
+  padding: 12px 16px;
+  background: var(--primary);
   color: white;
-  padding: 12px;
   border: none;
   border-radius: 8px;
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s ease;
+  box-shadow: 0 6px 14px rgba(0,149,255,0.12);
 }
 
-.trip-button:hover {
-  background-color: #0095FF;
-}
-
+/* Tabs */
 .tab-navigation {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
 }
 
 .tab-btn {
   padding: 10px 16px;
-  background: #e8e8e8;
+  background: #e9ecef;
   border: none;
   border-radius: 20px;
   font-size: 14px;
   color: #666;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
 .tab-btn.active {
-  background: #0095FF;
+  background: var(--primary);
   color: white;
-  font-weight: bold;
+  font-weight: 700;
 }
 
-.tab-btn:hover {
-  background: #d0d0d0;
-}
-
-.tab-btn.active:hover {
-  background: #0095FF;
-}
-
-.location-settings,
-.transport-settings {
-  margin-bottom: 24px;
-}
-
+/* Cards / lists */
 .location-settings h3,
-.transport-settings h3 {
-  margin-bottom: 16px;
+.transport-settings h3,
+.recent-trips h3 {
+  margin: 10px 0;
   font-size: 18px;
 }
 
-.location-list {
+/* List layout */
+.location-list,
+.transport-list,
+.trip-cards {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
-.location-item {
+/* unified item style (keeps your earlier look but scalable) */
+.location-item,
+.transport-item,
+.trip-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: #f9f9f9;
-  border-radius: 8px;
+  padding: 14px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(24,39,75,0.04);
 }
 
-.location-item.clickable {
-  cursor: pointer;
-}
+/* Trip card specifics */
+.trip-icon { font-size: 24px; }
+.trip-details { flex: 1; }
+.trip-details p { margin: 0; font-weight: 700; }
+.trip-details small { color: var(--muted); display: block; margin-top: 6px; font-size: 13px; }
+.trip-arrow { color: #aaa; font-size: 18px; }
 
-.location-item.clickable:hover {
-  background: #e8e8e8;
-}
+/* clickable items */
+.location-item.clickable { cursor: pointer; }
+.location-item.clickable:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(24,39,75,0.06); }
 
-.location-icon {
-  font-size: 24px;
-}
+/* location / transport icons */
+.location-icon, .transport-icon { font-size: 22px; }
 
-.location-item p {
-  margin: 0;
-  font-weight: bold;
-}
+/* your location emphasis */
+.your-location { color: var(--primary); font-weight: 600; }
 
-.location-item small {
-  color: #555;
-  font-size: 12px;
-}
-
-.your-location {
-  color: #0095FF;
-  font-weight: 500;
-}
-
-.transport-settings {
-  margin-bottom: 24px;
-}
-
-.transport-settings h3 {
-  margin-bottom: 16px;
-  font-size: 18px;
-}
-
-.transport-list {
-  display: flex;
+/* ---------------------------
+   Right Sidebar (desktop)
+   --------------------------- */
+.right-sidebar {
+  width: 320px;
+  min-width: 260px;
+  display: none; /* hidden on mobile, shown on desktop via media query */
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+  align-self: flex-start;
 }
 
-.transport-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: #f9f9f9;
+/* small promo card */
+.promo-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 24px rgba(24,39,75,0.05);
+}
+.promo-card h4{ margin:0 0 8px; }
+.promo-card p{ margin:0 0 12px; color:var(--muted); font-size:14px; }
+.sidebar-btn {
+  padding: 8px 12px;
+  background: var(--primary);
+  color:white;
+  border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s ease;
 }
 
-.transport-item:hover {
-  background: #e8e8e8;
-}
-
-.transport-icon {
-  font-size: 24px;
-}
-
+/* location prompt overlay (keeps your previous styling) */
 .location-prompt-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1400;
 }
 
 .location-prompt {
   background: white;
   border-radius: 16px;
-  padding: 24px;
-  max-width: 320px;
-  width: 90%;
+  padding: 22px;
+  width: 380px;
+  max-width: calc(100% - 40px);
   text-align: center;
-  position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(18, 44, 95, 0.16);
 }
 
 .close-btn {
@@ -240,137 +266,107 @@
   right: 12px;
   background: none;
   border: none;
-  font-size: 24px;
-  color: #999;
+  font-size: 20px;
   cursor: pointer;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-btn:hover {
-  color: #333;
-}
-
-.prompt-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.location-prompt h3 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.location-prompt p {
-  margin: 0 0 24px 0;
   color: #666;
-  font-size: 16px;
 }
 
-.prompt-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.prompt-icon { font-size: 42px; margin-bottom: 8px; }
 
+.prompt-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
 .prompt-btn {
-  padding: 14px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.prompt-btn.primary {
-  background: #8B7BA8;
-  color: white;
-}
-
-.prompt-btn.primary:hover {
-  background: #7A6A97;
-}
-
-.prompt-btn.secondary {
-  background: #8B7BA8;
-  color: white;
-}
-
-.prompt-btn.secondary:hover {
-  background: #7A6A97;
-}
-
-.recent-trips h3 {
-  margin-bottom: 12px;
-  font-size: 18px;
-}
-
-.trip-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.trip-card {
-  display: flex;
-  align-items: center;
-  background: #f2f2f2;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
 }
+.prompt-btn.primary { background: var(--accent); color: white; }
+.prompt-btn.secondary { background: #ddd; color: #333; }
 
-.trip-icon {
-  font-size: 24px;
-  margin-right: 12px;
-}
-
-.trip-details {
-  flex: 1;
-}
-
-.trip-details p {
-  margin: 0;
-  font-weight: bold;
-}
-
-.trip-details small {
-  color: gray;
-}
-
-.trip-arrow {
-  font-size: 18px;
-  color: gray;
-}
-
+/* footer nav: fixed on mobile, inline on desktop */
 .footer-nav {
   display: flex;
   justify-content: space-around;
-  padding: 12px 0;
+  padding: 12px 18px;
+  background: white;
+  border-top: 1px solid #eee;
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  border-top: 1px solid #ddd;
-  max-width: 400px;
-  margin: auto;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(18,44,95,0.06);
+  z-index: 1500;
 }
 
-.nav-btn {
-  background: none;
-  border: none;
-  font-size: 14px;
-  color: gray;
-  cursor: pointer;
+.nav-btn { background: none; border: none; font-size: 14px; color: gray; cursor: pointer; }
+.nav-btn.active { color: var(--primary); font-weight: 700; }
+
+/* ============================
+   Responsive behavior
+   ============================ */
+
+/* small screens (mobile-like) */
+@media (max-width: 760px) {
+  .home-page-wrapper {
+    padding: 14px;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .right-sidebar { display: none; }
+
+  .trip-input {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-nav {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
+    padding: 10px 0;
+  }
 }
 
-.nav-btn.active {
-  color: #0095FF;
-  font-weight: bold;
+/* medium and up: show the right sidebar and desktop layout */
+@media (min-width: 980px) {
+  .right-sidebar { display: flex; }
+  .footer-nav {
+    position: sticky;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    border-radius: 8px;
+    padding: 10px;
+    justify-content: flex-end;
+    gap: 18px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* make trip cards flow in rows for a desktop feel */
+  .trip-cards {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .trip-card {
+    width: calc(50% - 8px);
+  }
+
+  .location-list, .transport-list {
+    flex-direction: column;
+  }
 }
+
+/* extra large screens - spread more */
+@media (min-width: 1280px) {
+  .home-page-wrapper { padding: 40px 64px; }
+  .trip-card { width: calc(33.333% - 10.6px); }
+}
+
+
 
