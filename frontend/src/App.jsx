@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login'; // ✅ Import Login component from pages folder
 import SignUp from './SignUp';
 import StartupPage from './StartupPage';
 import NotFound from './pages/NotFound';
@@ -8,7 +9,6 @@ import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
-
 
 function App() {
   const [userData, setUserData] = useState({ fullName: 'James Lee' });
@@ -22,62 +22,50 @@ function App() {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-
   return (
     <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<StartupPage />} />
-      {/* <Route
-        path="/login"
-        element={
-          <Login
-            onSwitchToSignUp={() => navigate('/signup')}
-            onLoginSuccess={handleLoginSuccess}
-          />
-        }
-      /> */}
-      {/* <Route
-        path="/signup"
-        element={<SignUp onSignUpSuccess={handleSignUpSuccess} />}
-      /> */}
-      <Route
-        path="/home"
-        element={
-          <ProtectedRoute>
-            <Home userName={userData.fullName} />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/my-trips"
-        element={
-          <ProtectedRoute>
-            <MyTrips />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        }
-      />
+      <Routes>
+        <Route path="/" element={<StartupPage />} />
+        
+        {/* ✅ Login Route - UNCOMMENTED */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* ✅ SignUp Route - UNCOMMENTED */}
+        <Route path="/register" element={<SignUp onSignUpSuccess={handleSignUpSuccess} />} />
+        {/* Or use /signup if you prefer */}
+        {/* <Route path="/signup" element={<SignUp onSignUpSuccess={handleSignUpSuccess} />} /> */}
+        
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home userName={userData.fullName} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-trips"
+          element={
+            <ProtectedRoute>
+              <MyTrips />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Catch-all */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* Catch-all */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </BrowserRouter>
   );
 }
-// export default function WrappedApp() {
-//   return (
-//     <BrowserRouter>
-//       <App />
-//     </BrowserRouter>
-//   );
-// }
-
 
 export default App;
+
