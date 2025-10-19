@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Login() {
+function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -10,14 +10,27 @@ function Login() {
     e.preventDefault();
     console.log('Login attempted with:', email, password);
     
-    // Add your API call here for authentication
-    // For now, just navigate to home
+    const loginData = {
+      fullName: 'James Lee',
+      email: email
+    };
+    
+    // CRITICAL: Set the tokens that ProtectedRoute checks for
+    // Using the EXACT key names from constants.js
+    localStorage.setItem('access', 'dummy-token-for-now');
+    localStorage.setItem('refresh', 'dummy-refresh-token');
+    localStorage.setItem('user', JSON.stringify(loginData));
+    
+    if (onLoginSuccess) {
+      onLoginSuccess(loginData);
+    }
+    
     navigate('/home');
   };
 
   const handleSignUpClick = (e) => {
     e.preventDefault();
-    navigate('/register'); // or '/signup' depending on your route
+    navigate('/register');
   };
 
   return (
@@ -32,7 +45,6 @@ function Login() {
       overflow: 'hidden',
       padding: '2rem'
     }}>
-      {/* Top waves */}
       <svg style={{
         position: 'absolute',
         top: 0,
@@ -55,7 +67,6 @@ function Login() {
         </path>
       </svg>
 
-      {/* Bottom waves */}
       <svg style={{
         position: 'absolute',
         bottom: 0,
@@ -77,7 +88,6 @@ function Login() {
         </path>
       </svg>
 
-      {/* Login Card */}
       <div style={{
         backgroundColor: 'white',
         borderRadius: '16px',
@@ -99,7 +109,6 @@ function Login() {
         </h2>
 
         <form onSubmit={handleSubmit}>
-          {/* Email Field */}
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{
               display: 'block',
@@ -131,7 +140,6 @@ function Login() {
             />
           </div>
 
-          {/* Password Field */}
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{
               display: 'block',
@@ -163,7 +171,6 @@ function Login() {
             />
           </div>
 
-          {/* Login Button */}
           <button
             type="submit"
             style={{
@@ -191,7 +198,6 @@ function Login() {
             Login
           </button>
 
-          {/* Forgot Password */}
           <a
             href="#"
             style={{
@@ -208,7 +214,6 @@ function Login() {
             Forgot Password?
           </a>
 
-          {/* Sign Up Link */}
           <p style={{
             textAlign: 'center',
             color: '#6b7280',

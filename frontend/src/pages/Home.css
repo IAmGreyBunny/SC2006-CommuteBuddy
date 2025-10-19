@@ -1,8 +1,8 @@
 .home-container {
-  max-width: 400px;
+  max-width: 1200px;
   margin: auto;
   background: #fff;
-  padding: 16px;
+  padding: 32px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   font-family: 'Segoe UI', sans-serif;
   position: relative;
@@ -63,8 +63,8 @@
 
 .trip-input {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
@@ -73,18 +73,20 @@
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 15px;
+  flex: 1;
 }
 
 .trip-button {
   background-color: #0095FF;
   color: white;
-  padding: 12px;
+  padding: 12px 24px;
   border: none;
   border-radius: 8px;
   font-weight: bold;
   font-size: 16px;
   cursor: pointer;
   transition: background 0.3s ease;
+  white-space: nowrap;
 }
 
 .trip-button:hover {
@@ -135,8 +137,8 @@
 }
 
 .location-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 16px;
 }
 
@@ -186,8 +188,8 @@
 }
 
 .transport-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
 }
 
@@ -311,8 +313,8 @@
 }
 
 .trip-cards {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 12px;
 }
 
@@ -353,12 +355,12 @@
   padding: 12px 0;
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   background: #fff;
   border-top: 1px solid #ddd;
-  max-width: 400px;
-  margin: auto;
+  max-width: 1200px;
+  width: 100%;
 }
 
 .nav-btn {
@@ -372,5 +374,37 @@
 .nav-btn.active {
   color: #0095FF;
   font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    max-width: 400px;
+    padding: 16px;
+  }
+
+  .trip-input {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .trip-button {
+    padding: 12px;
+  }
+
+  .location-list {
+    grid-template-columns: 1fr;
+  }
+
+  .transport-list {
+    grid-template-columns: 1fr;
+  }
+
+  .trip-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-nav {
+    max-width: 400px;
+  }
 }
 

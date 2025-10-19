@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login'; // ✅ Import Login component from pages folder
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Login from './pages/Login';
 import SignUp from './SignUp';
 import StartupPage from './StartupPage';
 import NotFound from './pages/NotFound';
@@ -15,26 +15,20 @@ function App() {
 
   const handleSignUpSuccess = (signupData) => {
     setUserData(signupData);
-    localStorage.setItem('user', JSON.stringify(signupData)); // save login state
+    localStorage.setItem('user', JSON.stringify(signupData));
   };
 
-  const handleLoginSuccess = () => {
-    localStorage.setItem('user', JSON.stringify(userData));
+  const handleLoginSuccess = (loginData) => {
+    setUserData(loginData);
+    localStorage.setItem('user', JSON.stringify(loginData));
   };
 
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<StartupPage />} />
-        
-        {/* ✅ Login Route - UNCOMMENTED */}
-        <Route path="/login" element={<Login />} />
-        
-        {/* ✅ SignUp Route - UNCOMMENTED */}
+        <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
         <Route path="/register" element={<SignUp onSignUpSuccess={handleSignUpSuccess} />} />
-        {/* Or use /signup if you prefer */}
-        {/* <Route path="/signup" element={<SignUp onSignUpSuccess={handleSignUpSuccess} />} /> */}
-        
         <Route
           path="/home"
           element={
@@ -59,8 +53,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Catch-all */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
