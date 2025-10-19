@@ -4,18 +4,58 @@ import './ForgotPassword.css';
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password) => {
+    // At least 6 characters and 1 special character
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    return password.length >= 6 && specialCharRegex.test(password);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Password reset requested for:', email);
+    const newErrors = {};
+
+    // Validate email
+    if (!validateEmail(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    // Validate password
+    if (!validatePassword(newPassword)) {
+      newErrors.password = 'Password must be at least 6 characters with 1 special character';
+    }
+
+    // Check if passwords match
+    if (newPassword !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    // If there are errors, set them and don't submit
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Clear errors and proceed
+    setErrors({});
+    console.log('Password reset for:', email);
     
-    // Add your password reset API call here
-    // For now, just show success message
+    // Show success message
     setIsSubmitted(true);
     
-    // Optionally redirect back to login after a delay
+    // Redirect to login after 3 seconds
     setTimeout(() => {
       navigate('/login');
     }, 3000);
@@ -40,11 +80,63 @@ function ForgotPassword() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter Email"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors({ ...errors, email: '' });
+                  }}
+                  placeholder="Re-enter Email"
                   required
-                  className="email-input"
+                  className={`email-input ${errors.email ? 'error' : ''}`}
                 />
+                {errors.email && <span className="error-message">{errors.email}</span>}
+              </div>
+
+              <div className="form-group">
+                <div className="password-input-wrapper">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      if (errors.password) setErrors({ ...errors, password: '' });
+                    }}
+                    placeholder="Enter Password"
+                    required
+                    className={`email-input ${errors.password ? 'error' : ''}`}
+                  />
+                  <button
+                    type="button"
+                    className="eye-button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? '👁️' : '👁️‍🗨️'}
+                  </button>
+                </div>
+                {errors.password && <span className="error-message">{errors.password}</span>}
+              </div>
+
+              <div className="form-group">
+                <div className="password-input-wrapper">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: '' });
+                    }}
+                    placeholder="Re-enter Password"
+                    required
+                    className={`email-input ${errors.confirmPassword ? 'error' : ''}`}
+                  />
+                  <button
+                    type="button"
+                    className="eye-button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                  </button>
+                </div>
+                {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
               </div>
 
               <button type="submit" className="reset-button">
