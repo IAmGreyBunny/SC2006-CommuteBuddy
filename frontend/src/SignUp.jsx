@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SignUp.css';
 
+
 function SignUp({ onSignUpSuccess }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -13,11 +14,13 @@ function SignUp({ onSignUpSuccess }) {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
+
   // Email validation - must have valid format with @ and domain
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
+
 
   // Password validation - at least 6 characters and 1 special character
   const validatePassword = (password) => {
@@ -26,31 +29,35 @@ function SignUp({ onSignUpSuccess }) {
     return { isLongEnough, hasSpecialChar };
   };
 
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+   
     const newErrors = {};
+
 
     // Validate full name
     if (!fullName.trim()) {
       newErrors.fullName = 'Full name is required';
     }
 
+
     // Validate email format
     if (!validateEmail(email)) {
       newErrors.email = 'Please enter a valid email (e.g., user@gmail.com)';
     }
-    
+   
     // Check if emails match
     if (email !== reEmail) {
       newErrors.reEmail = 'Emails do not match!';
     }
 
+
     // Validate email format for re-entered email
     if (!validateEmail(reEmail)) {
       newErrors.reEmail = 'Please enter a valid email';
     }
-    
+   
     // Validate password
     const passwordCheck = validatePassword(password);
     if (!passwordCheck.isLongEnough) {
@@ -58,11 +65,12 @@ function SignUp({ onSignUpSuccess }) {
     } else if (!passwordCheck.hasSpecialChar) {
       newErrors.password = 'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)';
     }
-    
+   
     // Check if passwords match
     if (password !== rePassword) {
       newErrors.rePassword = 'Passwords do not match!';
     }
+
 
     // If there are errors, display them and stop submission
     if (Object.keys(newErrors).length > 0) {
@@ -70,27 +78,29 @@ function SignUp({ onSignUpSuccess }) {
       return;
     }
 
+
     // Clear errors if validation passes
     setErrors({});
-    
+   
     console.log('Sign up attempted with:', { fullName, email, password });
     alert('Account created successfully!');
-    
+   
     // Pass user data and navigate to login page
     if (onSignUpSuccess) {
       onSignUpSuccess({ fullName, email });
     }
-    
+   
     // Navigate to login after successful signup
     navigate('/login');
   };
+
 
   return (
     <div className="signup-container">
       <div className="signup-content">
         <h1>Create an Account</h1>
         <p className="subtitle">Join to plan, track, and ride smarter</p>
-        
+       
         <form onSubmit={handleSubmit}>
           <div className="form-field">
             <input
@@ -106,6 +116,7 @@ function SignUp({ onSignUpSuccess }) {
             {errors.fullName && <p className="error-message">{errors.fullName}</p>}
           </div>
 
+
           <div className="form-field">
             <input
               type="email"
@@ -120,6 +131,7 @@ function SignUp({ onSignUpSuccess }) {
             {errors.email && <p className="error-message">{errors.email}</p>}
           </div>
 
+
           <div className="form-field">
             <input
               type="email"
@@ -133,6 +145,7 @@ function SignUp({ onSignUpSuccess }) {
             />
             {errors.reEmail && <p className="error-message">{errors.reEmail}</p>}
           </div>
+
 
           <div className="form-field password-field">
             <input
@@ -155,6 +168,7 @@ function SignUp({ onSignUpSuccess }) {
             {errors.password && <p className="error-message">{errors.password}</p>}
           </div>
 
+
           <div className="form-field password-field">
             <input
               type={showRePassword ? "text" : "password"}
@@ -176,9 +190,11 @@ function SignUp({ onSignUpSuccess }) {
             {errors.rePassword && <p className="error-message">{errors.rePassword}</p>}
           </div>
 
+
           <button type="submit" className="signup-button">
             Sign Up
           </button>
+
 
           <p style={{ textAlign: 'center', marginTop: '1rem', color: '#6b7280' }}>
             Already have an account?{' '}
@@ -196,5 +212,10 @@ function SignUp({ onSignUpSuccess }) {
   );
 }
 
+
 export default SignUp;
+
+
+
+
 
