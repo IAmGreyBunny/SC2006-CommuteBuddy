@@ -15,8 +15,6 @@ function Login({ onLoginSuccess }) {
       email: email
     };
     
-    // CRITICAL: Set the tokens that ProtectedRoute checks for
-    // Using the EXACT key names from constants.js
     localStorage.setItem('access', 'dummy-token-for-now');
     localStorage.setItem('refresh', 'dummy-refresh-token');
     localStorage.setItem('user', JSON.stringify(loginData));
@@ -31,6 +29,11 @@ function Login({ onLoginSuccess }) {
   const handleSignUpClick = (e) => {
     e.preventDefault();
     navigate('/register');
+  };
+
+  const handleForgotPasswordClick = (e) => {
+    e.preventDefault();
+    navigate('/forgot-password');
   };
 
   return (
@@ -200,6 +203,7 @@ function Login({ onLoginSuccess }) {
 
           <a
             href="#"
+            onClick={handleForgotPasswordClick}
             style={{
               display: 'block',
               textAlign: 'center',
@@ -242,4 +246,5 @@ function Login({ onLoginSuccess }) {
 }
 
 export default Login;
+
 

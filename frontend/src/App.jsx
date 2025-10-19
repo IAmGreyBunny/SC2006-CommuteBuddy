@@ -7,6 +7,7 @@ import NotFound from './pages/NotFound';
 import Home from './pages/Home';
 import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
+import ForgotPassword from './pages/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -29,6 +30,8 @@ function App() {
         <Route path="/" element={<StartupPage />} />
         <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
         <Route path="/register" element={<SignUp onSignUpSuccess={handleSignUpSuccess} />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        
         <Route
           path="/home"
           element={
@@ -53,6 +56,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
