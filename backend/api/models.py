@@ -20,6 +20,7 @@ class User(AbstractUser):
 class CarparkSource(models.Model):
     name = models.CharField(max_length=100, unique=True)
     api_url = models.URLField()
+    info_url = models.URLField()
 
     # optional — store how external fields map to internal ones
     field_mapping = models.JSONField(blank=True, null=True, help_text="Maps external fields to internal ones")
@@ -43,9 +44,6 @@ class Carpark(models.Model):
     lat = models.FloatField()
     lon = models.FloatField()
 
-    available_lots = models.PositiveIntegerField()
-    total_lots = models.PositiveIntegerField()
-
     # The indexes help to improve read performance
     class Meta:
         unique_together = ('source_id', 'external_id')
@@ -55,3 +53,14 @@ class Carpark(models.Model):
 
     def __str__(self):
         return f"{self.external_id} ({self.source_id.name})"
+
+class CarparkAvailability(models.Model):
+    carpark_id = models.ForeignKey(
+        'Carpark',
+        on_delete=models.CASCADE,
+        related_name='availability')
+    available_lots = models.PositiveIntegerField()
+    total_lots = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"Availability for carpark {self.carpark_id}"
