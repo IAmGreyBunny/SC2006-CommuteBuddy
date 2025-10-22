@@ -29,7 +29,7 @@ class CarparkSource(models.Model):
         return self.name
 
 class Carpark(models.Model):
-    source_id = models.ForeignKey(
+    source = models.ForeignKey(
         'CarparkSource',
         on_delete=models.CASCADE,
         related_name='carparks'
