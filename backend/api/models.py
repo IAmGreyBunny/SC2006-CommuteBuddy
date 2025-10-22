@@ -52,7 +52,7 @@ class Carpark(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.external_id} ({self.source_id.name})"
+        return f"{self.external_id} ({self.source.name})"
 
 class CarparkAvailability(models.Model):
     carpark_id = models.ForeignKey(
