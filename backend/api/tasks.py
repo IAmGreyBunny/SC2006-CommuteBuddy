@@ -29,6 +29,7 @@ def hdb_carpark_availability_poll():
 
     # Collect objects that needs to be updated
 
+@shared_task
 def update_carpark_info():
     sources = CarparkSource.objects.all()
     for source in sources:
@@ -47,7 +48,7 @@ def update_carpark_info():
 
         records = []
         if response.json():
-            records = response.json()["records"]
+            records = response.json().get("result").get("records")
 
         # Loop through collected carpark info
         mapping = source.field_mapping

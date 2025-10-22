@@ -23,8 +23,8 @@ app.conf.beat_schedule = {
         "task": "api.tasks.test_poll",
         "schedule": 20.0,  # every 20 seconds
     },
-    "hdb_carpark_availability_poll": {
-        "task": "api.tasks.hdb_carpark_availability_poll",
+    "update_carpark_info": {
+        "task": "api.tasks.update_carpark_info",
         "schedule": 20.0,  # every 20 seconds
     }
 }
