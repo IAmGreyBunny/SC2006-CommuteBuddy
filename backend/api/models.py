@@ -19,8 +19,9 @@ class User(AbstractUser):
 
 class CarparkSource(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    api_url = models.URLField()
-    info_url = models.URLField()
+    availability_api_url = models.URLField()
+    info_api_url = models.URLField()
+    headers = models.JSONField(blank=True, null=True, help_text="allows user to add additional info like api keys")
 
     # optional — store how external fields map to internal ones
     field_mapping = models.JSONField(blank=True, null=True, help_text="Maps external fields to internal ones")
@@ -41,14 +42,14 @@ class Carpark(models.Model):
         db_index=True
     )
 
-    lat = models.FloatField()
-    lon = models.FloatField()
+    x_coord = models.FloatField()
+    y_coord = models.FloatField()
 
     # The indexes help to improve read performance
     class Meta:
-        unique_together = ('source_id', 'external_id')
+        unique_together = ('source', 'external_id')
         indexes = [
-            models.Index(fields=['lat', 'lon']),
+            models.Index(fields=['x_coord', 'y_coord']),
         ]
 
     def __str__(self):
