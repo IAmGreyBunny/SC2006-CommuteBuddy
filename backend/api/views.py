@@ -11,6 +11,17 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 
+
+
+# Add these imports at the top of views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework import status
+from django.utils import timezone
+from datetime import datetime
+
 # Create your views here.
 
 # Overwrite the default token obtain pair view with our custom one
@@ -92,3 +103,101 @@ class AlertViewSet(viewsets.ModelViewSet):
         alerts = TransportAlert.objects.filter(active=True)
         serializer = self.get_serializer(alerts, many=True)
         return Response(serializer.data)
+
+
+
+
+# Add these view functions at the bottom of views.py
+# --- BUS ARRIVAL API ENDPOINTS ---
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def bus_arrival(request, bus_stop_code):
+    """
+    Get real-time bus arrivals for a bus stop
+    Example: GET /api/bus-arrival/83139/
+    """
+    # Validate bus stop code
+    if not bus_stop_code or not bus_stop_code.isdigit() or len(bus_stop_code) != 5:
+        return Response(
+            {
+                'success': False,
+                'error': 'Invalid bus stop code. Must be 5 digits.',
+                'bus_stop_code': bus_stop_code
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        from .services.lta_service import LTADataService
+        service = LTADataService()
+        result = service.get_bus_arrival(bus_stop_code)
+        
+        if result['success']:
+            return Response({
+                'success': True,
+                'bus_stop_code': bus_stop_code,
+                'data': result['data'],
+                'cached': result.get('cached', False)
+            })
+        else:
+            return Response({
+                'success': False,
+                'error': result['error']
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def bus_arrival_processed(request, bus_stop_code):
+    """
+    Get processed real-time bus arrivals with user-friendly format
+    Example: GET /api/bus-arrival-processed/83139/
+    """
+    if not bus_stop_code or not bus_stop_code.isdigit() or len(bus_stop_code) != 5:
+        return Response(
+            {
+                'success': False,
+                'error': 'Invalid bus stop code. Must be 5 digits.',
+                'bus_stop_code': bus_stop_code
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        from .services.lta_service import LTADataService
+        service = LTADataService()
+        result = service.get_bus_arrival(bus_stop_code)
+        
+        if result['success']:
+            # Process the raw data into user-friendly format
+            processed_data = service.process_bus_arrival_data(result['data'])
+            
+            response_data = {
+                'success': True,
+                'bus_stop_code': bus_stop_code,
+                'timestamp': timezone.now().isoformat(),
+                'services': processed_data,
+                'metadata': {
+                    'cached': result.get('cached', False),
+                    'total_services': len(processed_data),
+                    'total_buses': sum(len(svc['buses']) for svc in processed_data)
+                }
+            }
+            return Response(response_data)
+        else:
+            return Response({
+                'success': False,
+                'error': result['error']
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
