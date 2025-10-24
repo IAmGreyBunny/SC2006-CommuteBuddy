@@ -11,6 +11,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import LiveTracker from './pages/LiveTracker';
 import MrtNames from './pages/MrtNames';
+import CrowdDensity from './pages/CrowdDensity';
 import './App.css';
 
 
@@ -78,6 +79,14 @@ function App() {
           }
         />
 
+        <Route
+          path="/CrowdDensity"
+          element={
+            <ProtectedRoute>
+              <CrowdDensity/>
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
