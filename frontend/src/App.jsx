@@ -9,6 +9,7 @@ import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
 import ForgotPassword from './pages/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
+import LiveTracker from './pages/LiveTracker';
 import './App.css';
 
 function App() {
@@ -53,6 +54,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Settings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/LiveTracker"
+          element={
+            <ProtectedRoute>
+              <LiveTracker />
             </ProtectedRoute>
           }
         />
