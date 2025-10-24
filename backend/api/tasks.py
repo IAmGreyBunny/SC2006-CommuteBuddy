@@ -18,16 +18,47 @@ def test_poll():
 
 
 @shared_task
-def hdb_carpark_availability_poll():
-    headers = {"X-Api-Key": os.getenv("HDB_CARPARK_AVAILABILITY_API_KEY")}
+def update_carpark_availability():
 
-    # Loop through the sources (Dummy data for now)
+    # Loop through the sources
+    sources = CarparkSource.objects.all()
+    for source in sources:
+        # Make API request
+        if not source.availability_api_url:
+            continue
+        try:
+            # Check for any necessary headers (api key etc.)
+            headers = source.headers or {}
 
-    # Get all associated Carpark and it's CarparkAvailability
+            response = requests.get(source.availability_api_url, headers=headers, timeout=10)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            print(f"[{source.name}] Failed to fetch info: {e}")
+            continue
 
-    # Use external_id to compare availability
+        mapping = source.field_mapping
+        records = response.json().get("items",[])[0]
+        records = records.get("carpark_data")
 
-    # Collect objects that needs to be updated
+        # Get all associated Carpark
+        carparks = {cp.external_id: cp for cp in Carpark.objects.filter(source=source)}
+
+        print()
+        for record in records:
+            # Use external_id to compare availability
+            external_id = record.get(mapping.get("external_id")) # THIS DOESNT WORK YET... CURRENTLY USING A WORKAROUND... NEED WORK ON THE MAPPING
+            available_lots = record.get("carpark_info",[])[0].get(mapping.get("available_lots"))
+            total_lots = record.get("carpark_info",[])[0].get(mapping.get("total_lots"))
+
+            carpark = carparks.get(record.get("carpark_number"))
+            if not carpark:
+                continue
+
+            CarparkAvailability.objects.update_or_create(
+                carpark=carpark,
+                defaults={"available_lots": available_lots,"total_lots":total_lots}
+            )
+            print("Carpark Updated")
 
 @shared_task
 def update_carpark_info():
