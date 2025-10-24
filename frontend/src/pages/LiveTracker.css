@@ -13,7 +13,7 @@ body {
 .live-tracker-container {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(180deg, #5daecc 0%, #4d94b8 100%);
+  background: linear-gradient(180deg, #3bb59d 0%, #3bb59d 100%);
   padding-bottom: 80px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   display: flex;
@@ -22,7 +22,7 @@ body {
 
 /* Header */
 .tracker-header {
-  padding: 20px;
+  padding: 40px 20px 20px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -102,7 +102,7 @@ body {
 
 .transport-btn.active {
   background: #fff;
-  color: #5dccb4;
+  color: #3bb59d;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
 }
@@ -175,7 +175,7 @@ body {
 }
 
 .bus-stop-card:hover .expand-btn {
-  color: #5dccb4;
+  color: #3bb59d;
 }
 
 /* Bus Arrivals */
@@ -217,14 +217,20 @@ body {
   min-width: 70px;
 }
 
+/* Consistent darker green for all arrival blocks */
 .arrival-time-block .time {
   font-size: 15px;
   font-weight: 700;
-  color: #5dccb4;
+  color: #fff;
   padding: 6px 12px;
-  background: rgba(93, 204, 180, 0.1);
+  background: #3bb59d; /* darker consistent green */
   border-radius: 8px;
   margin-bottom: 4px;
+  transition: all 0.2s ease;
+}
+
+.arrival-time-block .time:hover {
+  background: #32a68c; /* slightly darker on hover */
 }
 
 .arrival-time-block .bus-type {
@@ -257,7 +263,7 @@ body {
   background: #f8f9fa;
   padding: 16px;
   border-radius: 12px;
-  border-left: 4px solid #5dccb4;
+  border-left: 4px solid #3bb59d;
   transition: all 0.3s ease;
 }
 
@@ -296,7 +302,7 @@ body {
 .route-arrival .arrival-time {
   font-size: 16px;
   font-weight: 700;
-  color: #bd5dcc;
+  color: #3bb59d;
 }
 
 /* Footer Navigation */
@@ -337,17 +343,17 @@ body {
 }
 
 .nav-btn.active {
-  color: #5dccb4;
-  background: rgba(93, 204, 180, 0.1);
+  color: #3bb59d;
+  background: rgba(59, 181, 157, 0.1);
 }
 
 .nav-btn.active svg {
-  fill: #5dccb4;
+  fill: #3bb59d;
 }
 
 .nav-btn:hover {
-  color: #5dccb4;
-  background: rgba(93, 204, 180, 0.05);
+  color: #3bb59d;
+  background: rgba(59, 181, 157, 0.05);
 }
 
 /* Animation */
@@ -365,7 +371,7 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
   .tracker-header {
-    padding: 16px;
+    padding: 32px 16px 16px;
   }
 
   .transport-toggle {
@@ -384,3 +390,5 @@ body {
     min-width: 60px;
   }
 }
+
+

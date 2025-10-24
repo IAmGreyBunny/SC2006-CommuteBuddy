@@ -10,7 +10,9 @@ import Settings from './pages/Settings';
 import ForgotPassword from './pages/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import LiveTracker from './pages/LiveTracker';
+import MrtNames from './pages/MrtNames';
 import './App.css';
+
 
 function App() {
   const [userData, setUserData] = useState({ fullName: 'James Lee' });
@@ -67,6 +69,16 @@ function App() {
           }
         />
         
+        <Route
+          path="/MrtNames"
+          element={
+            <ProtectedRoute>
+              <MrtNames/>
+            </ProtectedRoute>
+          }
+        />
+
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
