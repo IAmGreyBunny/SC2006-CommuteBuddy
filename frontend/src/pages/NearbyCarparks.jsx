@@ -5,47 +5,91 @@ import {
   Marker,
   Autocomplete,
 } from "@react-google-maps/api";
+import { motion, useMotionValue } from "framer-motion";
 import "./NearbyCarparks.css";
 
-const containerStyle = {
-  width: "100%",
-  height: "100vh",
-};
+const containerStyle = { width: "100%", height: "100vh" };
+const AVAILABILITY_URL = "https://api.data.gov.sg/v1/transport/carpark-availability";
+const INFO_URL =
+  "https://data.gov.sg/api/action/datastore_search?resource_id=d_23f946fa557947f93a8043bbef41dd09";
 
 export default function NearbyCarparks() {
   const [currentPosition, setCurrentPosition] = useState(null);
+  const [carparks, setCarparks] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
-  const autocompleteRef = useRef(null);
+  const [availableFilter, setAvailableFilter] = useState(0);
+  const [selectedMode, setSelectedMode] = useState("car");
 
-  // Load Google Maps API with Places library
+  const autocompleteRef = useRef(null);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ["places"], //we are gna use our own key right so << to replace >>
+    libraries: ["places"],
   });
 
-  // Get user location when page loads
+  // Get user location
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      (pos) => {
         setCurrentPosition({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
         });
       },
       () => alert("Location access denied.")
     );
   }, []);
 
-  // Handle place selection from autocomplete
+  // Fetch carpark data
+  useEffect(() => {
+    async function fetchData() {
+      const [availabilityRes, infoRes] = await Promise.all([
+        fetch(AVAILABILITY_URL, {
+          headers: {
+            "X-Api-Key":
+              "v2:d02822dfdefd6bb28a284e21831b6a31633cb602c58b3daa8f92edd1cef8bad3:wgpuCpP5HYmJlLy_Vys2HiEREkGbROQ4",
+          },
+        }),
+        fetch(INFO_URL),
+      ]);
+
+      const availabilityData = await availabilityRes.json();
+      const infoData = await infoRes.json();
+
+      const infoMap = {};
+      infoData.result.records.forEach((rec) => {
+        infoMap[rec.car_park_no] = rec;
+      });
+
+      const merged = availabilityData.items[0].carpark_data
+        .map((item) => {
+          const info = infoMap[item.carpark_number];
+          if (!info) return null;
+          const lots = item.carpark_info[0];
+          return {
+            id: item.carpark_number,
+            available: parseInt(lots.lots_available),
+            total: parseInt(lots.total_lots),
+            x: parseFloat(info.x_coord),
+            y: parseFloat(info.y_coord),
+          };
+        })
+        .filter(Boolean);
+
+      setCarparks(merged);
+    }
+
+    fetchData();
+  }, []);
+
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current.getPlace();
     if (place && place.geometry) {
-      const newLocation = {
+      const newLoc = {
         lat: place.geometry.location.lat(),
         lng: place.geometry.location.lng(),
       };
-      setSelectedPlace(newLocation);
-      setCurrentPosition(newLocation);
+      setSelectedPlace(newLoc);
+      setCurrentPosition(newLoc);
     }
   };
 
@@ -53,39 +97,112 @@ export default function NearbyCarparks() {
     return <div className="loading">Loading map...</div>;
   }
 
+  //<<markers>> not rly sure if this logic will work till hv data to test
+  const getMarkerColor = (ratio) =>
+    ratio < 0.2 ? "red" : ratio < 0.5 ? "yellow" : "green";
+
   return (
     <div className="map-container">
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={currentPosition}
-        zoom={14}
-      >
+      <GoogleMap mapContainerStyle={containerStyle} center={currentPosition} zoom={14}>
+        {carparks.map((c) => {
+          const ratio = c.available / c.total;
+          const color = getMarkerColor(ratio);
+          return (
+            <Marker
+              key={c.id}
+              position={{
+                lat: c.y / 100000,
+                lng: c.x / 100000,
+              }}
+              icon={{
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: color,
+                fillOpacity: 0.8,
+                strokeColor: "white",
+                strokeWeight: 1,
+                scale: 10,
+              }}
+            />
+          );
+        })}
         <Marker position={currentPosition} />
       </GoogleMap>
 
       <div className="location-card">
         <span className="location-icon">📍</span>
-        <Autocomplete onLoad={(ref) => (autocompleteRef.current = ref)} onPlaceChanged={handlePlaceChanged}>
-          <input
-            type="text"
-            placeholder="Enter a location"
-            className="location-input"
-          />
+        <Autocomplete
+          onLoad={(ref) => (autocompleteRef.current = ref)}
+          onPlaceChanged={handlePlaceChanged}
+        >
+          <input type="text" placeholder="Enter a location" className="location-input" />
         </Autocomplete>
       </div>
 
-      {/* Bottom navigation */}
-      <div className="bottom-nav">
-        <div className="nav-item active">
-          🚗 <span>Car</span>
-        </div>
-        <div className="nav-item">
-          🚌 <span>Bus</span>
-        </div>
-        <div className="nav-item">
-          🚆 <span>Train</span>
-        </div>
-      </div>
+      <BottomSheet
+        availableFilter={availableFilter}
+        setAvailableFilter={setAvailableFilter}
+        selectedMode={selectedMode}
+        setSelectedMode={setSelectedMode}
+      />
     </div>
+  );
+}
+
+function BottomSheet({ availableFilter, setAvailableFilter, selectedMode, setSelectedMode }) {
+  const y = useMotionValue(0);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <motion.div
+      className="bottom-sheet"
+      drag="y"
+      dragConstraints={{ top: 0, bottom: 0 }}
+      style={{ y }}
+      onDragEnd={(e, info) => {
+        if (info.offset.y < -100) setIsExpanded(true);
+        else setIsExpanded(false);
+      }}
+      animate={{ y: isExpanded ? 0 : 0 }}
+      transition={{ type: "spring", stiffness: 0, damping: 30 }}
+    >
+      <div className="sheet-handle" />
+
+      <div className="transport-nav">
+        {["car", "bus", "train"].map((mode) => (
+          <div
+            key={mode}
+            className={`nav-item ${selectedMode === mode ? "active" : ""}`}
+            onClick={() => setSelectedMode(mode)}
+          >
+            {mode === "car" && "🚗"}
+            {mode === "bus" && "🚌"}
+            {mode === "train" && "🚆"}
+            <span>{mode.charAt(0).toUpperCase() + mode.slice(1)}</span>
+          </div>
+        ))}
+      </div>
+
+      {isExpanded && (
+        <div className="filter-section">
+          <h3>Filter</h3>
+          <label>Available Lots: {availableFilter}+</label>
+          <input
+            type="range"
+            min="0"
+            max="200"
+            value={availableFilter}
+            onChange={(e) => setAvailableFilter(e.target.value)}
+          />
+          <label>Gantry Height: 1.8m+</label>
+          <input type="range" min="1" max="3" step="0.1" defaultValue="1.8" />
+          <label>Car Park Type:</label>
+          <div className="checkbox-group">
+            <label><input type="checkbox" /> Multi-Storey</label>
+            <label><input type="checkbox" defaultChecked /> Surface</label>
+            <label><input type="checkbox" /> Basement</label>
+          </div>
+        </div>
+      )}
+    </motion.div>
   );
 }
