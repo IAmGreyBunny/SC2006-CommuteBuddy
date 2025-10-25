@@ -56,7 +56,7 @@ class Carpark(models.Model):
         return f"{self.external_id} ({self.source.name})"
 
 class CarparkAvailability(models.Model):
-    carpark_id = models.ForeignKey(
+    carpark = models.ForeignKey(
         'Carpark',
         on_delete=models.CASCADE,
         related_name='availability')
