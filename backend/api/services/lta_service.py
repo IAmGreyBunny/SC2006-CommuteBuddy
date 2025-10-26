@@ -285,15 +285,42 @@ class LTADataService:
         
         return {'success': True, 'data': all_data}
     
+    # def get_train_service_alerts(self):
+    #     """Get MRT service disruptions"""
+    #     url = f"{self.base_url}/TrainServiceAlerts"
+        
+    #     try:
+    #         response = requests.get(url, headers=self.headers, timeout=10)
+            
+    #         if response.status_code == 200:
+    #             return {'success': True, 'data': response.json()}
+    #         else:
+    #             return {
+    #                 'success': False, 
+    #                 'error': f'HTTP Error {response.status_code}',
+    #                 'status_code': response.status_code
+    #             }
+                
+    #     except Exception as e:
+    #         return {'success': False, 'error': str(e)}
+
     def get_train_service_alerts(self):
-        """Get MRT service disruptions"""
+        """Get MRT service alerts/disruptions"""
+        cache_key = "train_service_alerts"
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return {'success': True, 'data': cached_data, 'cached': True}
+        
         url = f"{self.base_url}/TrainServiceAlerts"
         
         try:
             response = requests.get(url, headers=self.headers, timeout=10)
             
             if response.status_code == 200:
-                return {'success': True, 'data': response.json()}
+                data = response.json()
+                cache.set(cache_key, data, timeout=300)  # Cache for 5 minutes
+                return {'success': True, 'data': data, 'cached': False}
             else:
                 return {
                     'success': False, 
@@ -303,3 +330,88 @@ class LTADataService:
                 
         except Exception as e:
             return {'success': False, 'error': str(e)}
+    
+    def get_mrt_crowd_real_time(self, train_line):
+        """Get real-time MRT crowd density"""
+        cache_key = f"mrt_crowd_{train_line}"
+        cached_data = cache.get(cache_key)
+    
+        if cached_data:
+            return {'success': True, 'data': cached_data, 'cached': True}
+    
+        url = f"{self.base_url}/PCDRealTime"
+        params = {'TrainLine': train_line}
+    
+        try:
+            response = requests.get(url, headers=self.headers, params=params, timeout=10)
+        
+            if response.status_code == 200:
+                data = response.json()
+                cache.set(cache_key, data, timeout=600)  # Cache for 10 minutes
+                return {'success': True, 'data': data, 'cached': False}
+            else:
+                return {
+                    'success': False, 
+                    'error': f'HTTP Error {response.status_code}',
+                    'status_code': response.status_code
+                }
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+
+
+    def get_mrt_crowd_forecast(self, train_line):
+        """Get MRT crowd density forecast"""
+        cache_key = f"mrt_crowd_forecast_{train_line}"
+        cached_data = cache.get(cache_key)
+    
+        if cached_data:
+            return {'success': True, 'data': cached_data, 'cached': True}
+    
+        url = f"{self.base_url}/PCDForecast"
+        params = {'TrainLine': train_line}
+    
+        try:
+            response = requests.get(url, headers=self.headers, params=params, timeout=10)
+        
+            if response.status_code == 200:
+                data = response.json()
+                cache.set(cache_key, data, timeout=3600)  # Cache for 1 hour
+                return {'success': True, 'data': data, 'cached': False}
+            else:
+                return {
+                    'success': False, 
+                    'error': f'HTTP Error {response.status_code}',
+                    'status_code': response.status_code
+                }
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+# def get_train_service_alerts(self):
+#     """Get MRT service alerts/disruptions"""
+#     cache_key = "train_service_alerts"
+#     cached_data = cache.get(cache_key)
+    
+#     if cached_data:
+#         return {'success': True, 'data': cached_data, 'cached': True}
+    
+#     url = f"{self.base_url}/TrainServiceAlerts"
+    
+#     try:
+#         response = requests.get(url, headers=self.headers, timeout=10)
+        
+#         if response.status_code == 200:
+#             data = response.json()
+#             cache.set(cache_key, data, timeout=300)  # Cache for 5 minutes
+#             return {'success': True, 'data': data, 'cached': False}
+#         else:
+#             return {
+#                 'success': False, 
+#                 'error': f'HTTP Error {response.status_code}',
+#                 'status_code': response.status_code
+#             }
+            
+#     except Exception as e:
+#         return {'success': False, 'error': str(e)}

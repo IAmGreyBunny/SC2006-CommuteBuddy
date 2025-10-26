@@ -1,14 +1,9 @@
 # File for setting up celery tasks
-# (e.g. carpark polling)
-from .models import CarparkSource, Carpark, CarparkAvailability
-import os
-
 from celery import shared_task
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-
 
 # Test Task
 @shared_task
@@ -16,21 +11,11 @@ def test_poll():
     print("Beat is Running Properly")
     return "Done"
 
-
-@shared_task
-def hdb_carpark_availability_poll():
-    headers = {"X-Api-Key": os.getenv("HDB_CARPARK_AVAILABILITY_API_KEY")}
-
-    # Loop through the sources (Dummy data for now)
-
-    # Get all associated Carpark and it's CarparkAvailability
-
-    # Use external_id to compare availability
-
-    # Collect objects that needs to be updated
-
 @shared_task
 def update_carpark_info():
+    # Import inside function to avoid circular imports
+    from .models import CarparkSource, Carpark
+    
     sources = CarparkSource.objects.all()
     for source in sources:
         # Make API request
@@ -40,7 +25,7 @@ def update_carpark_info():
             # Check for any necessary headers (api key etc.)
             headers = source.headers or {}
 
-            response = requests.get(source.info_api_url, headers=headers,timeout=10)
+            response = requests.get(source.info_api_url, headers=headers, timeout=10)
             response.raise_for_status()
         except requests.RequestException as e:
             print(f"[{source.name}] Failed to fetch info: {e}")
@@ -68,4 +53,77 @@ def update_carpark_info():
                 }
             )
 
+# NEW PUBLIC TRANSPORT TASKS
+@shared_task
+def poll_bus_arrivals():
+    """Poll LTA API for bus arrivals and update RealTimeBus entities"""
+    from .services.lta_service import LTADataService
+    from .models import BusStop, RealTimeBus, BusRoute
+    from django.utils import timezone
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    service = LTADataService()
+    
+    # Get some popular bus stops to poll
+    popular_stops = ['83139', '83141', '01012', '01013', '02061']
+    
+    updated_count = 0
+    
+    for stop_code in popular_stops:
+        result = service.get_bus_arrival(stop_code)
+        
+        if result['success']:
+            # Process and update RealTimeBus entities
+            for service_data in result['data'].get('Services', []):
+                try:
+                    # Get or create bus route
+                    route, created = BusRoute.objects.get_or_create(
+                        route_id=service_data['ServiceNo'],
+                        defaults={'name': f"Bus {service_data['ServiceNo']}"}
+                    )
+                    
+                    # Update real-time bus positions
+                    next_bus = service_data.get('NextBus', {})
+                    if next_bus and next_bus.get('Latitude') and next_bus.get('Longitude'):
+                        RealTimeBus.objects.update_or_create(
+                            route=route,
+                            defaults={
+                                'latitude': float(next_bus.get('Latitude', 0)),
+                                'longitude': float(next_bus.get('Longitude', 0)),
+                                'last_updated': timezone.now()
+                            }
+                        )
+                        updated_count += 1
+                        
+                except Exception as e:
+                    logger.error(f"Error processing bus {service_data['ServiceNo']}: {str(e)}")
+                    continue
+    
+    logger.info(f"Updated {updated_count} real-time bus positions")
+    return f"Updated {updated_count} bus positions"
 
+@shared_task
+def populate_bus_stops():
+    """Populate bus stops from LTA API"""
+    from .services.lta_service import LTADataService
+    from .models import BusStop
+    
+    service = LTADataService()
+    result = service.get_all_bus_stops()
+    
+    if result['success']:
+        count = 0
+        for stop_data in result['data']:
+            BusStop.objects.update_or_create(
+                bus_stop_code=stop_data['BusStopCode'],
+                defaults={
+                    'road_name': stop_data.get('RoadName', ''),
+                    'description': stop_data.get('Description', ''),
+                    'latitude': float(stop_data.get('Latitude', 0)),
+                    'longitude': float(stop_data.get('Longitude', 0)),
+                }
+            )
+            count += 1
+        return f"Populated {count} bus stops"
+    return "Failed to populate bus stops"

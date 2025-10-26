@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
 from api.views import CreateUserView, MyTokenObtainPairView, bus_arrival, bus_arrival_processed   # Add bus_arrival here
+from api.views import nearby_bus_stops, nearby_mrt_stations, mrt_crowd_real_time, mrt_crowd_forecast
+from api.views import mrt_service_alerts, user_favourites, add_favourite, remove_favourite
+from api.views import search_bus_stops, search_mrt_stations, search_bus_services
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import routers
 from api.views import BusStopViewSet, BusRouteViewSet, BusScheduleViewSet, RealTimeBusViewSet, MRTLineViewSet, MRTStationViewSet, MRTScheduleViewSet, FavouriteRouteViewSet, UserPreferenceViewSet, AlertViewSet
@@ -28,6 +31,24 @@ urlpatterns = [
     path("api/bus-arrival/<str:bus_stop_code>/", bus_arrival, name='bus_arrival'),
     path("api/bus-arrival-processed/<str:bus_stop_code>/", bus_arrival_processed, name='bus_arrival_processed'),
     
+    # Add these to urlpatterns:
+    path("api/nearby-bus-stops/", nearby_bus_stops, name='nearby_bus_stops'),
+    path("api/nearby-mrt-stations/", nearby_mrt_stations, name='nearby_mrt_stations'),
+    path("api/mrt-crowd/<str:train_line>/", mrt_crowd_real_time, name='mrt_crowd_real_time'),
+    path("api/mrt-crowd-forecast/<str:train_line>/", mrt_crowd_forecast, name='mrt_crowd_forecast'),
+
+    # Add these to your existing urlpatterns
+    path("api/mrt-service-alerts/", mrt_service_alerts, name='mrt_service_alerts'),
+    path("api/user/favourites/", user_favourites, name='user_favourites'),
+    path("api/user/favourites/add/", add_favourite, name='add_favourite'),
+    path("api/user/favourites/remove/<int:favourite_id>/", remove_favourite, name='remove_favourite'),
+
+    # ADD THESE SEARCH ENDPOINTS:
+    path("api/search/bus-stops/", search_bus_stops, name='search_bus_stops'),
+    path("api/search/mrt-stations/", search_mrt_stations, name='search_mrt_stations'),
+    path("api/search/bus-services/", search_bus_services, name='search_bus_services'),
+
+
     # Keep the router include at the end
     path("api/", include(router.urls)),
 ]

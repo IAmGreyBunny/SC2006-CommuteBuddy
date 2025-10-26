@@ -2,7 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
-from celery.schedules import schedule, crontab
+from celery.schedules import crontab
 import platform
 
 # Set default Django settings
@@ -21,11 +21,19 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     "test_poll": {
         "task": "api.tasks.test_poll",
-        "schedule": 20.0,  # every 20 seconds
+        "schedule": 30.0,  # every 30 seconds
+    },
+    "poll_bus_arrivals": {
+        "task": "api.tasks.poll_bus_arrivals",
+        "schedule": 30.0,  # every 30 seconds
+    },
+    "populate_bus_stops_daily": {
+        "task": "api.tasks.populate_bus_stops",
+        "schedule": crontab(hour=2, minute=0),  # Daily at 2 AM
     },
     "update_carpark_info": {
         "task": "api.tasks.update_carpark_info",
-        "schedule": 20.0,  # every 20 seconds
+        "schedule": 60.0,  # every 60 seconds
     }
 }
 
