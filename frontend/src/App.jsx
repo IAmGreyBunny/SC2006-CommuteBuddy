@@ -5,7 +5,9 @@ import StartupPage from './StartupPage';
 import Home from './pages/Home';
 import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
+import NearbyCarparks from './pages/NearbyCarparks';
 import './App.css';
+
 
 function Login({ onSwitchToSignUp, onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -128,6 +130,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/NearbyCarparks"
+        element={
+          <ProtectedRoute>
+            <NearbyCarparks />
           </ProtectedRoute>
         }
       />

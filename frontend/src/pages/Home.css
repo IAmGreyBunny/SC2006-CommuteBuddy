@@ -1,12 +1,12 @@
 .home-container {
-  max-width: 400px;
+  width: 100vw;           
+  height: 100vh;  
   margin: auto;
   background: #fff;
   padding: 16px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   font-family: 'Segoe UI', sans-serif;
   position: relative;
-  min-height: 100vh;
   padding-bottom: 80px;
 }
 
