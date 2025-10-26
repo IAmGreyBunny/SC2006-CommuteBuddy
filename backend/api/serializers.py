@@ -1,5 +1,5 @@
 from .models import User
-from .models import CarparkSource, Carpark
+from .models import CarparkSource, Carpark, CarparkAvailability
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -17,14 +17,31 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
-class CarparkSourceSerializer(serializers.ModelSerializer):
+class CarparkAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
-        model = CarparkSource
-        fields = ["id","name","api_url","field_mapping"]
-        extra_kwargs = {"id": {"read_only": True}}
+        model = CarparkAvailability
+        fields = ['id', 'available_lots', 'total_lots']
+
 
 class CarparkSerializer(serializers.ModelSerializer):
+    availability = CarparkAvailabilitySerializer(many=True, read_only=True)
+
     class Meta:
         model = Carpark
-        fields = ["id","source_id","external_id","lat","lon","available_lots","total_lots"]
-        extra_kwargs = {"id": {"read_only": True}}
+        fields = ['id', 'external_id', 'x_coord', 'y_coord', 'availability']
+
+
+class CarparkSourceSerializer(serializers.ModelSerializer):
+    carparks = CarparkSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CarparkSource
+        fields = [
+            'id',
+            'name',
+            'availability_api_url',
+            'info_api_url',
+            'headers',
+            'field_mapping',
+            'carparks',
+        ]
