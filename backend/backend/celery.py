@@ -31,6 +31,10 @@ app.conf.beat_schedule = {
         "task": "api.tasks.populate_bus_stops",
         "schedule": crontab(hour=2, minute=0),  # Daily at 2 AM
     },
+    "update_carpark_availability": {
+        "task": "api.tasks.update_carpark_availability",
+        "schedule": 20.0,  # every 20 seconds
+    },
     "update_carpark_info": {
         "task": "api.tasks.update_carpark_info",
         "schedule": 60.0,  # every 60 seconds

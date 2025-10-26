@@ -39,10 +39,6 @@ export default function Home({ userName = "James Lee" }) {
   const navigate = useNavigate(); 
 
   // updated routing
-  const handleLiveTrackerClick = () => {
-    navigate('/live-tracker'); 
-  };
-
   const handleMyTripsClick = () => {
     navigate('/my-trips'); 
   };
@@ -225,7 +221,6 @@ export default function Home({ userName = "James Lee" }) {
 
       <footer className="footer-nav">
         <button className="nav-btn active">🏠 Home</button>
-        <button className="nav-btn" onClick={handleLiveTrackerClick}>🗺 Live Tracker</button>
         <button className="nav-btn" onClick={handleMyTripsClick} >🧾 My Trips</button>
         <button className="nav-btn" onClick={handleSettingsClick} >⚙️ Settings</button>
       </footer>

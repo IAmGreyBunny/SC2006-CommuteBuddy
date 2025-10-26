@@ -17,10 +17,6 @@ const Settings = ( {navigateTo} ) => {
     navigate('/home');
   };
 
-  const handleLiveTrackerClick = () => {
-    navigate('/live-tracker');
-  };
-
   const handleMyTripsClick = () => {
     navigate('/my-trips');
   };
@@ -118,7 +114,6 @@ const Settings = ( {navigateTo} ) => {
       </section>
       <footer className="footer-nav">
         <button className="nav-btn" onClick={handleHomeClick}>🏠 Home</button>
-        <button className="nav-btn" onClick={handleLiveTrackerClick}>🗺 Live Tracker</button>
         <button className="nav-btn" onClick={handleMyTripsClick}>🧾 My Trips</button>
         <button className="nav-btn active">⚙️ Settings</button>
       </footer>

@@ -1,11 +1,17 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-class User(AbstractUser):
-    email = models.EmailField(unique=True)
-    username = models.CharField(max_length=150, unique=True)
+# Create your models here.
 
-    REQUIRED_FIELDS = ["username"]
+# Custom User Class that overwrites the default django User model
+class User(AbstractUser):
+
+    # Overwriting default fields to fit requirements
+    email = models.EmailField(unique=True)                      # Must be unique if used for login
+    username = models.CharField(max_length=150, unique=True)    # Explicitly require username to be unique
+
+    # Setting up the user model
+    REQUIRED_FIELDS = ["username"]                              # Explicitly require username field during creation of user
     USERNAME_FIELD = "email"
 
     def __str__(self):
@@ -51,26 +57,26 @@ class RealTimeBus(models.Model):
 class MRTLine(models.Model):
     LINE_CHOICES = [
         ('NSL', 'North South Line'),
-        ('EWL', 'East West Line'), 
+        ('EWL', 'East West Line'),
         ('NEL', 'North East Line'),
         ('CCL', 'Circle Line'),
         ('DTL', 'Downtown Line'),
         ('TEL', 'Thomson East Coast Line'),
     ]
-    
+
     line_code = models.CharField(max_length=20, choices=LINE_CHOICES, unique=True)
     name = models.CharField(max_length=100)
     start_station = models.ForeignKey(
-        'MRTStation', 
-        on_delete=models.CASCADE, 
+        'MRTStation',
+        on_delete=models.CASCADE,
         related_name='line_start',
         null=True,  # Make it optional for now
         blank=True
     )
     end_station = models.ForeignKey(
-        'MRTStation', 
-        on_delete=models.CASCADE, 
-        related_name='line_end', 
+        'MRTStation',
+        on_delete=models.CASCADE,
+        related_name='line_end',
         null=True,  # Make it optional for now
         blank=True
     )
@@ -134,7 +140,7 @@ class TransportAlert(models.Model):
 
     SEVERITY_CHOICES = [
         ("LOW", "Low"),
-        ("MEDIUM", "Medium"), 
+        ("MEDIUM", "Medium"),
         ("HIGH", "High"),
     ]
 
@@ -147,7 +153,7 @@ class TransportAlert(models.Model):
 
     def __str__(self):
         return f"{self.alert_type}: {self.message[:30]}"
-    
+
 
 # Add this to your existing models.py, before the BusStop model
 
@@ -156,6 +162,8 @@ class CarparkSource(models.Model):
     availability_api_url = models.URLField()
     info_api_url = models.URLField()
     headers = models.JSONField(blank=True, null=True, help_text="allows user to add additional info like api keys")
+
+    # optional — store how external fields map to internal ones
     field_mapping = models.JSONField(blank=True, null=True, help_text="Maps external fields to internal ones")
 
     def __str__(self):
@@ -167,10 +175,17 @@ class Carpark(models.Model):
         on_delete=models.CASCADE,
         related_name='carparks'
     )
-    external_id = models.CharField(max_length=100, db_index=True)
+
+    # This helps us identify the carparks from the external api
+    external_id = models.CharField(
+        max_length=100,
+        db_index=True
+    )
+
     x_coord = models.FloatField()
     y_coord = models.FloatField()
 
+    # The indexes help to improve read performance
     class Meta:
         unique_together = ('source', 'external_id')
         indexes = [
@@ -181,10 +196,12 @@ class Carpark(models.Model):
         return f"{self.external_id} ({self.source.name})"
 
 class CarparkAvailability(models.Model):
-    carpark = models.ForeignKey(Carpark, on_delete=models.CASCADE)
-    available_lots = models.IntegerField()
-    total_lots = models.IntegerField()
-    updated_at = models.DateTimeField(auto_now=True)
+    carpark = models.ForeignKey(
+        'Carpark',
+        on_delete=models.CASCADE,
+        related_name='availability')
+    available_lots = models.PositiveIntegerField()
+    total_lots = models.PositiveIntegerField()
 
     def __str__(self):
-        return f"{self.carpark.external_id} - {self.available_lots}/{self.total_lots}"
+        return f"Availability for carpark {self.carpark_id}"

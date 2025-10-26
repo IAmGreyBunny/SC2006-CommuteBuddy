@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.db import models
 from .models import User
+from .models import CarparkSource,Carpark,CarparkAvailability
+from .serializers import CarparkSourceSerializer
 from .models import BusStop, BusRoute, BusSchedule, RealTimeBus
 from .models import MRTLine, MRTSchedule, MRTStation, FavouriteRoute, UserPreference, TransportAlert
 from rest_framework import generics
@@ -55,7 +57,7 @@ class RealTimeBusViewSet(viewsets.ModelViewSet):
     serializer_class = RealTimeBusSerializer
     permission_classes = [AllowAny]  # Changed from IsAuthenticated
 
-# MRT 
+# MRT
 class MRTLineViewSet(viewsets.ModelViewSet):
     queryset = MRTLine.objects.all()
     serializer_class = MRTLineSerializer
@@ -128,12 +130,12 @@ def bus_arrival(request, bus_stop_code):
             },
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
     try:
         from .services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_bus_arrival(bus_stop_code)
-        
+
         if result['success']:
             return Response({
                 'success': True,
@@ -146,7 +148,7 @@ def bus_arrival(request, bus_stop_code):
                 'success': False,
                 'error': result['error']
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
     except Exception as e:
         return Response({
             'success': False,
@@ -169,16 +171,16 @@ def bus_arrival_processed(request, bus_stop_code):
             },
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
     try:
         from .services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_bus_arrival(bus_stop_code)
-        
+
         if result['success']:
             # Process the raw data into user-friendly format
             processed_data = service.process_bus_arrival_data(result['data'])
-            
+
             response_data = {
                 'success': True,
                 'bus_stop_code': bus_stop_code,
@@ -196,7 +198,7 @@ def bus_arrival_processed(request, bus_stop_code):
                 'success': False,
                 'error': result['error']
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
     except Exception as e:
         return Response({
             'success': False,
@@ -213,41 +215,41 @@ def nearby_bus_stops(request):
     lat = request.GET.get('lat')
     lng = request.GET.get('lng')
     radius = int(request.GET.get('radius', 500))
-    
+
     if not lat or not lng:
         return Response({
             'success': False,
             'error': 'Latitude and longitude parameters are required'
         }, status=status.HTTP_400_BAD_REQUEST)
-    
+
     try:
         lat = float(lat)
         lng = float(lng)
         radius = min(radius, 2000)  # Max radius 2km
-        
+
         from django.db.models import F, ExpressionWrapper, FloatField
         from django.db.models.functions import ACos, Cos, Radians, Sin
-        
+
         # Haversine formula to calculate distance
         distance_expr = ExpressionWrapper(
             6371 * ACos(
-                Cos(Radians(lat)) * 
-                Cos(Radians(F('latitude'))) * 
-                Cos(Radians(F('longitude')) - Radians(lng)) + 
-                Sin(Radians(lat)) * 
+                Cos(Radians(lat)) *
+                Cos(Radians(F('latitude'))) *
+                Cos(Radians(F('longitude')) - Radians(lng)) +
+                Sin(Radians(lat)) *
                 Sin(Radians(F('latitude')))
             ),
             output_field=FloatField()
         )
-        
+
         nearby_stops = BusStop.objects.annotate(
             distance_km=distance_expr
         ).filter(
             distance_km__lte=radius/1000  # Convert meters to kilometers
         ).order_by('distance_km')[:20]
-        
+
         serializer = BusStopSerializer(nearby_stops, many=True)
-        
+
         return Response({
             'success': True,
             'location': {'lat': lat, 'lng': lng},
@@ -255,7 +257,7 @@ def nearby_bus_stops(request):
             'stops': serializer.data,
             'count': len(nearby_stops)
         })
-        
+
     except ValueError:
         return Response({
             'success': False,
@@ -277,41 +279,41 @@ def nearby_mrt_stations(request):
     lat = request.GET.get('lat')
     lng = request.GET.get('lng')
     radius = int(request.GET.get('radius', 500))
-    
+
     if not lat or not lng:
         return Response({
             'success': False,
             'error': 'Latitude and longitude parameters are required'
         }, status=status.HTTP_400_BAD_REQUEST)
-    
+
     try:
         lat = float(lat)
         lng = float(lng)
         radius = min(radius, 2000)  # Max radius 2km
-        
+
         from django.db.models import F, ExpressionWrapper, FloatField
         from django.db.models.functions import ACos, Cos, Radians, Sin
-        
+
         # Haversine formula to calculate distance
         distance_expr = ExpressionWrapper(
             6371 * ACos(
-                Cos(Radians(lat)) * 
-                Cos(Radians(F('latitude'))) * 
-                Cos(Radians(F('longitude')) - Radians(lng)) + 
-                Sin(Radians(lat)) * 
+                Cos(Radians(lat)) *
+                Cos(Radians(F('latitude'))) *
+                Cos(Radians(F('longitude')) - Radians(lng)) +
+                Sin(Radians(lat)) *
                 Sin(Radians(F('latitude')))
             ),
             output_field=FloatField()
         )
-        
+
         nearby_stations = MRTStation.objects.annotate(
             distance_km=distance_expr
         ).filter(
             distance_km__lte=radius/1000  # Convert meters to kilometers
         ).order_by('distance_km')[:20]
-        
+
         serializer = MRTStationSerializer(nearby_stations, many=True)
-        
+
         return Response({
             'success': True,
             'location': {'lat': lat, 'lng': lng},
@@ -319,7 +321,7 @@ def nearby_mrt_stations(request):
             'stations': serializer.data,
             'count': len(nearby_stations)
         })
-        
+
     except ValueError:
         return Response({
             'success': False,
@@ -330,7 +332,7 @@ def nearby_mrt_stations(request):
             'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -340,7 +342,7 @@ def mrt_crowd_real_time(request, train_line):
         from .services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_mrt_crowd_real_time(train_line)
-        
+
         if result['success']:
             return Response({
                 'success': True,
@@ -354,7 +356,7 @@ def mrt_crowd_real_time(request, train_line):
                 'success': False,
                 'error': result['error']
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
     except Exception as e:
         return Response({
             'success': False,
@@ -369,7 +371,7 @@ def mrt_crowd_forecast(request, train_line):
         from .services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_mrt_crowd_forecast(train_line)
-        
+
         if result['success']:
             return Response({
                 'success': True,
@@ -383,7 +385,7 @@ def mrt_crowd_forecast(request, train_line):
                 'success': False,
                 'error': result['error']
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
     except Exception as e:
         return Response({
             'success': False,
@@ -398,7 +400,7 @@ def mrt_service_alerts(request):
         from .services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_train_service_alerts()
-        
+
         if result['success']:
             return Response({
                 'success': True,
@@ -411,7 +413,7 @@ def mrt_service_alerts(request):
                 'success': False,
                 'error': result['error']
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
     except Exception as e:
         return Response({
             'success': False,
@@ -424,23 +426,23 @@ def user_favourites(request):
     """Get user's favourite bus stops and MRT stations"""
     try:
         bus_favourites = FavouriteRoute.objects.filter(
-            user=request.user, 
+            user=request.user,
             route_type='bus'
         )
         mrt_favourites = FavouriteRoute.objects.filter(
-            user=request.user, 
+            user=request.user,
             route_type='mrt'
         )
-        
+
         bus_serializer = FavouriteRouteSerializer(bus_favourites, many=True)
         mrt_serializer = FavouriteRouteSerializer(mrt_favourites, many=True)
-        
+
         return Response({
             'success': True,
             'bus_favourites': bus_serializer.data,
             'mrt_favourites': mrt_serializer.data
         })
-        
+
     except Exception as e:
         return Response({
             'success': False,
@@ -455,28 +457,28 @@ def add_favourite(request):
         route_type = request.data.get('route_type')
         route_id = request.data.get('route_id')
         nickname = request.data.get('nickname', '')
-        
+
         if not route_type or not route_id:
             return Response({
                 'success': False,
                 'error': 'route_type and route_id are required'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         favourite, created = FavouriteRoute.objects.get_or_create(
             user=request.user,
             route_type=route_type,
             route_id=route_id,
             defaults={'nickname': nickname}
         )
-        
+
         serializer = FavouriteRouteSerializer(favourite)
-        
+
         return Response({
             'success': True,
             'created': created,
             'favourite': serializer.data
         })
-        
+
     except Exception as e:
         return Response({
             'success': False,
@@ -490,12 +492,12 @@ def remove_favourite(request, favourite_id):
     try:
         favourite = FavouriteRoute.objects.get(id=favourite_id, user=request.user)
         favourite.delete()
-        
+
         return Response({
             'success': True,
             'message': 'Favourite removed successfully'
         })
-        
+
     except FavouriteRoute.DoesNotExist:
         return Response({
             'success': False,
@@ -515,13 +517,13 @@ def search_bus_stops(request):
     Search bus stops by description, road name, or bus stop code
     """
     query = request.GET.get('q', '').strip().lower()
-    
+
     if not query or len(query) < 2:
         return Response({
             'success': False,
             'error': 'Search query must be at least 2 characters'
         }, status=status.HTTP_400_BAD_REQUEST)
-    
+
     try:
         # Search in description, road name, and bus stop code
         bus_stops = BusStop.objects.filter(
@@ -529,16 +531,16 @@ def search_bus_stops(request):
             models.Q(road_name__icontains=query) |
             models.Q(bus_stop_code__icontains=query)
         ).order_by('description')[:20]  # Limit to 20 results
-        
+
         serializer = BusStopSerializer(bus_stops, many=True)
-        
+
         return Response({
             'success': True,
             'query': query,
             'results': serializer.data,
             'count': len(bus_stops)
         })
-        
+
     except Exception as e:
         return Response({
             'success': False,
@@ -552,29 +554,29 @@ def search_mrt_stations(request):
     Search MRT stations by name or station code
     """
     query = request.GET.get('q', '').strip().lower()
-    
+
     if not query or len(query) < 2:
         return Response({
             'success': False,
             'error': 'Search query must be at least 2 characters'
         }, status=status.HTTP_400_BAD_REQUEST)
-    
+
     try:
         # Search in station name and code
         stations = MRTStation.objects.filter(
             models.Q(name__icontains=query) |
             models.Q(station_code__icontains=query)
         ).order_by('name')[:20]  # Limit to 20 results
-        
+
         serializer = MRTStationSerializer(stations, many=True)
-        
+
         return Response({
             'success': True,
             'query': query,
             'results': serializer.data,
             'count': len(stations)
         })
-        
+
     except Exception as e:
         return Response({
             'success': False,
@@ -588,24 +590,24 @@ def search_bus_services(request):
     Search bus services by service number
     """
     service_no = request.GET.get('service_no', '').strip().upper()
-    
+
     if not service_no:
         return Response({
             'success': False,
             'error': 'Bus service number is required'
         }, status=status.HTTP_400_BAD_REQUEST)
-    
+
     try:
         # For now, we'll return bus stops that have this service
         from .services.lta_service import LTADataService
         service = LTADataService()
-        
+
         # Get some popular bus stops that might have this service
         popular_stops = BusStop.objects.filter(
-            models.Q(description__icontains='INT') | 
+            models.Q(description__icontains='INT') |
             models.Q(description__icontains='STN')
         )[:10]
-        
+
         results = []
         for stop in popular_stops:
             result = service.get_bus_arrival(stop.bus_stop_code, service_no)
@@ -615,16 +617,24 @@ def search_bus_services(request):
                     'bus_stop': BusStopSerializer(stop).data,
                     'arrivals': service.process_bus_arrival_data(result['data'])
                 })
-        
+
         return Response({
             'success': True,
             'service_no': service_no,
             'results': results,
             'count': len(results)
         })
-        
+
     except Exception as e:
         return Response({
             'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CarparkSourceListView(generics.ListAPIView):
+    serializer_class = CarparkSourceSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        # Efficiently fetch related carparks and availabilities
+        return CarparkSource.objects.prefetch_related('carparks__availability').all()

@@ -1,12 +1,17 @@
+
 from django.contrib import admin
-from django.urls import path, include
-from api.views import CreateUserView, MyTokenObtainPairView, bus_arrival, bus_arrival_processed   # Add bus_arrival here
-from api.views import nearby_bus_stops, nearby_mrt_stations, mrt_crowd_real_time, mrt_crowd_forecast
-from api.views import mrt_service_alerts, user_favourites, add_favourite, remove_favourite
-from api.views import search_bus_stops, search_mrt_stations, search_bus_services
-from rest_framework_simplejwt.views import TokenRefreshView
+from django.urls import path,include
+from api.views import CreateUserView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework import routers
-from api.views import BusStopViewSet, BusRouteViewSet, BusScheduleViewSet, RealTimeBusViewSet, MRTLineViewSet, MRTStationViewSet, MRTScheduleViewSet, FavouriteRouteViewSet, UserPreferenceViewSet, AlertViewSet
+from api.views import FavouriteRouteViewSet, UserPreferenceViewSet, AlertViewSet
+from api.views import CarparkSourceListView
+from api.views import bus_arrival, bus_arrival_processed, nearby_bus_stops  # Add bus_arrival here
+from api.views import nearby_mrt_stations, mrt_crowd_real_time, mrt_crowd_forecast, mrt_service_alerts
+from api.views import user_favourites, add_favourite, remove_favourite
+from api.views import search_bus_stops, search_mrt_stations, search_bus_services
+from api.views import BusStopViewSet, BusRouteViewSet, BusScheduleViewSet, RealTimeBusViewSet
+from api.views import MRTLineViewSet, MRTStationViewSet, MRTScheduleViewSet
 
 router = routers.DefaultRouter()
 router.register(r'bus-stops', BusStopViewSet, basename='bus-stop')
@@ -23,14 +28,18 @@ router.register(r'alerts', AlertViewSet, basename='alert')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/user/register/", CreateUserView.as_view(), name="register"),
+    path("api/token/", TokenObtainPairView.as_view(), name="get_token"),
+    path("api/token/refresh/", TokenObtainPairView.as_view(), name="refresh"),
+    path("api-auth/",include("rest_framework.urls")),
+    path("api/carpark/get_carpark_list/",CarparkSourceListView.as_view(),name="get_carpark_list"),
     path("api/token/", MyTokenObtainPairView.as_view(), name="get_token"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
     path("api-auth/", include("rest_framework.urls")),
-    
+
     # ADD THE BUS ARRIVAL ENDPOINT HERE (BEFORE THE ROUTER)
     path("api/bus-arrival/<str:bus_stop_code>/", bus_arrival, name='bus_arrival'),
     path("api/bus-arrival-processed/<str:bus_stop_code>/", bus_arrival_processed, name='bus_arrival_processed'),
-    
+
     # Add these to urlpatterns:
     path("api/nearby-bus-stops/", nearby_bus_stops, name='nearby_bus_stops'),
     path("api/nearby-mrt-stations/", nearby_mrt_stations, name='nearby_mrt_stations'),

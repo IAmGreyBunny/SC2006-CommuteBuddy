@@ -1,10 +1,11 @@
 from django.contrib import admin
 from .models import (
     User, CarparkSource, Carpark, CarparkAvailability,
-    BusStop, BusRoute, BusSchedule, RealTimeBus, 
-    MRTStation, MRTLine, MRTSchedule, FavouriteRoute, 
+    BusStop, BusRoute, BusSchedule, RealTimeBus,
+    MRTStation, MRTLine, MRTSchedule, FavouriteRoute,
     UserPreference, TransportAlert
 )
+from .models import CarparkSource, Carpark, CarparkAvailability
 
 # Register your models here.
 admin.site.register(CarparkSource)
