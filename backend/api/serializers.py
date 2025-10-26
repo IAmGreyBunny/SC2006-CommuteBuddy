@@ -63,16 +63,41 @@ class MRTScheduleSerializer(serializers.ModelSerializer):
         model = MRTSchedule
         fields = ["line", "station", "arrival_time", "updated_at"]
 
+
 class FavouriteRouteSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)
 
+    class Meta:
+        model = FavouriteRoute
+        fields = ["id", "user", "route_type", "route_id", "nickname", "created_at"]
+
 class UserPreferenceSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = UserPreference
+        fields = ["id", "user", "preferred_transport", "avoid_crowded_routes", "receive_alerts"]
+
 
 class AlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransportAlert
         fields = ["id", "alert_type", "message", "severity", "active", "created_at", "expires_at"]
+
+
+class CarparkAvailabilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarparkAvailability
+        fields = ['id', 'available_lots', 'total_lots']
+
+
+class CarparkSerializer(serializers.ModelSerializer):
+    availability = CarparkAvailabilitySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Carpark
+        fields = ['id', 'external_id', 'x_coord', 'y_coord', 'availability']
+
 
 class CarparkSourceSerializer(serializers.ModelSerializer):
     carparks = CarparkSerializer(many=True, read_only=True)
@@ -88,20 +113,3 @@ class CarparkSourceSerializer(serializers.ModelSerializer):
             'field_mapping',
             'carparks',
         ]
-
-class CarparkSerializer(serializers.ModelSerializer):
-    availability = CarparkAvailabilitySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = UserPreference
-        fields = ["id", "user", "preferred_transport", "avoid_crowded_routes", "receive_alerts"]
-
-
-class CarparkAvailabilitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FavouriteRoute
-        fields = ["id", "user", "route_type", "route_id", "nickname", "created_at"]
-        model = CarparkAvailability
-        fields = ['id', 'available_lots', 'total_lots']
-        model = Carpark
-        fields = ['id', 'external_id', 'x_coord', 'y_coord', 'availability']
