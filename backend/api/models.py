@@ -1,21 +1,41 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 # Create your models here.
 
 # Custom User Class that overwrites the default django User model
 class User(AbstractUser):
-
     # Overwriting default fields to fit requirements
-    email = models.EmailField(unique=True)                      # Must be unique if used for login
-    username = models.CharField(max_length=150, unique=True)    # Explicitly require username to be unique
+    email = models.EmailField(unique=True)  # Must be unique if used for login
+    username = models.CharField(max_length=150, unique=True)  # Explicitly require username to be unique
 
     # Setting up the user model
-    REQUIRED_FIELDS = ["username"]                              # Explicitly require username field during creation of user
+    REQUIRED_FIELDS = ["username"]  # Explicitly require username field during creation of user
     USERNAME_FIELD = "email"
 
     def __str__(self):
         return self.email
+
+
+def default_info_mapping():
+    return {
+        "records_path": "result.records",  # path to the list of records
+        "external_id": "car_park_no",
+        "x_coord": "x_coord",
+        "y_coord": "y_coord",
+        "name": "address"
+    }
+
+
+def default_availability_mapping():
+    return {
+        "records_path": "items.carpark_data",   # path to the list of carparks
+        "external_id": "carpark_number",         # unique carpark ID
+        "total_lots": "carpark_info[0].total_lots",      # first entry in carpark_info
+        "available_lots": "carpark_info[0].lots_available",  # first entry
+    }
+
 
 class CarparkSource(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -24,10 +44,12 @@ class CarparkSource(models.Model):
     headers = models.JSONField(blank=True, null=True, help_text="allows user to add additional info like api keys")
 
     # optional — store how external fields map to internal ones
-    field_mapping = models.JSONField(blank=True, null=True, help_text="Maps external fields to internal ones")
+    info_path_mapping = models.JSONField(blank=True, default=default_info_mapping)
+    availability_path_mapping = models.JSONField(blank=True, default=default_availability_mapping)
 
     def __str__(self):
         return self.name
+
 
 class Carpark(models.Model):
     source = models.ForeignKey(
@@ -42,6 +64,10 @@ class Carpark(models.Model):
         db_index=True
     )
 
+    name = models.CharField(
+        max_length=512,
+        db_index=True
+    )
     x_coord = models.FloatField()
     y_coord = models.FloatField()
 
@@ -53,7 +79,8 @@ class Carpark(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.external_id} ({self.source.name})"
+        return f"({self.source.name}) | {self.external_id} | {self.name}"
+
 
 class CarparkAvailability(models.Model):
     carpark = models.ForeignKey(
@@ -64,4 +91,4 @@ class CarparkAvailability(models.Model):
     total_lots = models.PositiveIntegerField()
 
     def __str__(self):
-        return f"Availability for carpark {self.carpark_id}"
+        return f"Availability for carpark {self.carpark}"
