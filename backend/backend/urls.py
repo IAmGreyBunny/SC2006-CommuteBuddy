@@ -32,9 +32,6 @@ urlpatterns = [
     path("api/token/refresh/", TokenObtainPairView.as_view(), name="refresh"),
     path("api-auth/",include("rest_framework.urls")),
     path("api/carpark/get_carpark_list/",CarparkSourceListView.as_view(),name="get_carpark_list"),
-    path("api/token/", MyTokenObtainPairView.as_view(), name="get_token"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
-    path("api-auth/", include("rest_framework.urls")),
 
     # ADD THE BUS ARRIVAL ENDPOINT HERE (BEFORE THE ROUTER)
     path("api/bus-arrival/<str:bus_stop_code>/", bus_arrival, name='bus_arrival'),
