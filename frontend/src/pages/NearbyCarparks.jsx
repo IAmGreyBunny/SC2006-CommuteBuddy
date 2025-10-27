@@ -24,6 +24,7 @@ export default function NearbyCarparks() {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: ["places"],
+    version: "weekly",
   });
 
   // Get user location
@@ -60,20 +61,17 @@ export default function NearbyCarparks() {
         infoMap[rec.car_park_no] = rec;
       });
 
-      const merged = availabilityData.items[0].carpark_data
-        .map((item) => {
-          const info = infoMap[item.carpark_number];
-          if (!info) return null;
-          const lots = item.carpark_info[0];
-          return {
-            id: item.carpark_number,
-            available: parseInt(lots.lots_available),
-            total: parseInt(lots.total_lots),
-            x: parseFloat(info.x_coord),
-            y: parseFloat(info.y_coord),
-          };
-        })
-        .filter(Boolean);
+      const merged = availabilityData.items[0].carpark_data.map((item, idx) => {
+        const lots = item.carpark_info[0];
+        return {
+          id: item.carpark_number || `cp-${idx}`,
+          available: parseInt(lots.lots_available),
+          total: parseInt(lots.total_lots),
+          // temporary random test coordinates
+          lat: 1.35 + Math.random() * 0.01,
+          lng: 103.82 + Math.random() * 0.01,
+        };
+      });      
 
       setCarparks(merged);
     }
@@ -97,13 +95,20 @@ export default function NearbyCarparks() {
     return <div className="loading">Loading map...</div>;
   }
 
-  //<<markers>> not rly sure if this logic will work till hv data to test
+  //<<markers>> works!!
+// Red → if < 20% lots available
+// Yellow → if 20–50% available
+// Green → if > 50% available
   const getMarkerColor = (ratio) =>
     ratio < 0.2 ? "red" : ratio < 0.5 ? "yellow" : "green";
 
   return (
     <div className="map-container">
-      <GoogleMap mapContainerStyle={containerStyle} center={currentPosition} zoom={14}>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={currentPosition}
+        zoom={14}
+      >
         {carparks.map((c) => {
           const ratio = c.available / c.total;
           const color = getMarkerColor(ratio);
@@ -111,8 +116,8 @@ export default function NearbyCarparks() {
             <Marker
               key={c.id}
               position={{
-                lat: c.y / 100000,
-                lng: c.x / 100000,
+                lat: c.lat,   // used stored lat/lng instead of random values here
+                lng: c.lng,
               }}
               icon={{
                 path: google.maps.SymbolPath.CIRCLE,
@@ -127,6 +132,7 @@ export default function NearbyCarparks() {
         })}
         <Marker position={currentPosition} />
       </GoogleMap>
+  
 
       <div className="location-card">
         <span className="location-icon">📍</span>
