@@ -30,7 +30,7 @@ def default_info_mapping():
 
 def default_availability_mapping():
     return {
-        "records_path": "items.carpark_data",   # path to the list of carparks
+        "records_path": "items[0].carpark_data",   # path to the list of carparks
         "external_id": "carpark_number",         # unique carpark ID
         "total_lots": "carpark_info[0].total_lots",      # first entry in carpark_info
         "available_lots": "carpark_info[0].lots_available",  # first entry

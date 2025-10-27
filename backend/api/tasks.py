@@ -18,39 +18,31 @@ def test_poll():
     return "Done"
 
 # Helper function for parsing api paths
+# This still needs some work, currently it check if its a list or a dictionary,
+# If list, it will access the element if index is specified, otherwise a list will be returned as data to be iterated
+# If dictionary, it will access using the next item as key
 def get_by_path(data, path):
     parts = path.split(".")
-
     for part in parts:
-        # If current data is a dict, just get the key
+        match = re.match(r"([^\[\]]+)(?:\[(\d+)\])?", part)
+        if not match:
+            return None
+        key, idx = match.groups()
         if isinstance(data, dict):
-            data = data.get(part)
-        # If current data is a list
-        elif isinstance(data, list):
-            if not data:
-                print("Unable to parse: Empty list")
-                return None
-            # parse index if provided
-            match = re.match(r"(?:[^\[\]]+)?\[(\d+)\]", part)
-            if match:
-                index = int(match.group(1))
+            data = data.get(key)
+        else:
+            return None
+        if idx is not None:
+            if isinstance(data, list):
+                index = int(idx)
                 if 0 <= index < len(data):
                     data = data[index]
                 else:
-                    print(f"Index {index} out of range")
                     return None
             else:
-                # no index, default to first element
-                data = data[0]
-        else:
-            # If scalar or unexpected type, cannot traverse further
-            print(f"Unable to parse: Incorrect Value {data}")
-            return None
-
+                return None
         if data is None:
-            print("Unable to parse: Empty Object")
             return None
-
     return data
 
 @shared_task
