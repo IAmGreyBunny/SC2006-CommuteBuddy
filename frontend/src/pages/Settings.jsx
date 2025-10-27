@@ -52,7 +52,7 @@ const Settings = ( {navigateTo} ) => {
       </section>
 
       {/* Notifications */}
-      <section className="settings-section">
+      {/* <section className="settings-section">
         <h3>Notifications</h3>
         <div className="settings-item">
           <span>🔔 Trip Reminders</span>
@@ -98,7 +98,7 @@ const Settings = ( {navigateTo} ) => {
             <span className="slider round"></span>
           </label>
         </div>
-      </section>
+      </section> */}
 
       {/* Account Actions */}
       <section className="settings-section">
