@@ -79,6 +79,7 @@ export default function NearbyCarparks() {
     fetchData();
   }, []);
 
+
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current.getPlace();
     if (place && place.geometry) {
@@ -87,7 +88,7 @@ export default function NearbyCarparks() {
         lng: place.geometry.location.lng(),
       };
       setSelectedPlace(newLoc);
-      setCurrentPosition(newLoc);
+      setCurrentPosition(newLoc); //moves map to new location
     }
   };
 
@@ -136,6 +137,8 @@ export default function NearbyCarparks() {
 
       <div className="location-card">
         <span className="location-icon">📍</span>
+
+        {/* autocomplete function */}
         <Autocomplete
           onLoad={(ref) => (autocompleteRef.current = ref)}
           onPlaceChanged={handlePlaceChanged}
