@@ -5,6 +5,10 @@ export default function LiveTracker() {
   const [activeTransport, setActiveTransport] = useState("bus");
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedStops, setExpandedStops] = useState({});
+  const [panelHeight, setPanelHeight] = useState(30);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [startHeight, setStartHeight] = useState(30);
 
   // Updated bus stops with all bus numbers in increasing order
   const busStops = [
@@ -60,8 +64,50 @@ export default function LiveTracker() {
     setExpandedStops(prev => ({ ...prev, [code]: !prev[code] }));
   };
 
+  const handleTouchStart = (e) => {
+    setIsDragging(true);
+    setStartY(e.touches[0].clientY);
+    setStartHeight(panelHeight);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    const currentY = e.touches[0].clientY;
+    const deltaY = startY - currentY;
+    const windowHeight = window.innerHeight;
+    const newHeight = Math.min(Math.max(((startHeight + (deltaY / windowHeight * 100)), 20), 90));
+    setPanelHeight(newHeight);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartY(e.clientY);
+    setStartHeight(panelHeight);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    const currentY = e.clientY;
+    const deltaY = startY - currentY;
+    const windowHeight = window.innerHeight;
+    const newHeight = Math.min(Math.max(((startHeight + (deltaY / windowHeight * 100)), 20), 90));
+    setPanelHeight(newHeight);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   return (
-    <div className="live-tracker-container">
+    <div 
+      className="live-tracker-container"
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+    >
       {/* Header */}
       <header className="tracker-header">
         <input
@@ -77,19 +123,34 @@ export default function LiveTracker() {
         </div>
       </header>
 
-      {/* Transport Toggle (Public Bus) */}
-      <div className="transport-toggle">
-        <button
-          className={`transport-btn ${activeTransport === "bus" ? "active" : ""}`}
-          onClick={() => setActiveTransport("bus")}
-        >
-          🚌
-          <span>Public Bus</span>
-        </button>
-      </div>
-
       {/* Main Content */}
-      <main className="tracker-content">
+      <main className="tracker-content" style={{ height: `${panelHeight}vh` }}>
+        <div 
+          className="drag-handle"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+        >
+          <div className="drag-indicator"></div>
+        </div>
+        
+        {/* Transport Mode Selector */}
+        <div className="transport-mode-selector">
+          <button className="mode-btn active">
+            🚌
+            <span>Bus</span>
+          </button>
+          <button className="mode-btn">
+            🚗
+            <span>Car</span>
+          </button>
+          <button className="mode-btn">
+            🚆
+            <span>Train</span>
+          </button>
+        </div>
+
         <div className="bus-stops-list">
           {filteredStops.length === 0 ? (
             <p>No matching bus stops found.</p>
@@ -135,22 +196,6 @@ export default function LiveTracker() {
           )}
         </div>
       </main>
-
-      {/* Footer Navigation */}
-      <footer className="footer-nav">
-        <button className="nav-btn active">
-          🏠
-          <span>Home</span>
-        </button>
-        <button className="nav-btn">
-          📍
-          <span>Nearby</span>
-        </button>
-        <button className="nav-btn">
-          ⏰
-          <span>History</span>
-        </button>
-      </footer>
     </div>
   );
 }
