@@ -25,10 +25,19 @@ class CarparkAvailabilitySerializer(serializers.ModelSerializer):
 
 class CarparkSerializer(serializers.ModelSerializer):
     availability = CarparkAvailabilitySerializer(many=True, read_only=True)
+    lat = serializers.SerializerMethodField()
+    lng = serializers.SerializerMethodField()
 
     class Meta:
         model = Carpark
-        fields = ['id', 'external_id', 'x_coord', 'y_coord', 'availability']
+        fields = ['id', 'external_id', 'x_coord', 'y_coord', 'lat', 'lng', 'availability']
+
+    # Dummy for now
+    def get_lat(self,obj):
+        return 0.5
+
+    def get_lng(self,obj):
+        return 0.5
 
 
 class CarparkSourceSerializer(serializers.ModelSerializer):
