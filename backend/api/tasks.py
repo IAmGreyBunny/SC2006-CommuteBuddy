@@ -88,31 +88,47 @@ def update_carpark_availability():
 @shared_task
 def update_carpark_info():
     sources = CarparkSource.objects.all()
+
     for source in sources:
-        # Make API request
         if not source.info_api_url:
             continue
-        try:
-            # Check for any necessary headers (api key etc.)
-            headers = source.headers or {}
 
-            response = requests.get(source.info_api_url, headers=headers,timeout=10)
-            response.raise_for_status()
+        try:
+            headers = source.headers or {}
+            mapping = source.info_path_mapping
+            all_records = []
+            limit = 100  # depends on the API — adjust as needed
+            offset = 0
+
+            while True:
+                # Construct paginated URL (common pattern)
+                params = {"limit": limit, "offset": offset}
+                response = requests.get(source.info_api_url, headers=headers, params=params, timeout=10)
+                response.raise_for_status()
+
+                data = response.json()
+                records = get_by_path(data, mapping.get("records_path"))
+                if not records:
+                    break  # no more pages
+                all_records.extend(records)
+
+                # Stop if fewer than `limit` were returned (last page)
+                if len(records) < limit:
+                    break
+
+                offset += limit  # move to next page
+
         except requests.RequestException as e:
             print(f"[{source.name}] Failed to fetch info: {e}")
             continue
 
-        mapping = source.info_path_mapping
-        records = get_by_path(response.json(),mapping.get("records_path"))
+        # Loop through all collected carpark info
+        for record in all_records:
+            external_id = get_by_path(record, mapping.get("external_id"))
+            x_coord = get_by_path(record, mapping.get("x_coord"))
+            y_coord = get_by_path(record, mapping.get("y_coord"))
+            name = get_by_path(record, mapping.get("name"))
 
-        # Loop through collected carpark info
-        for record in records:
-            external_id = get_by_path(record,mapping.get("external_id"))
-            x_coord = get_by_path(record,mapping.get("x_coord"))
-            y_coord = get_by_path(record,mapping.get("y_coord"))
-            name = get_by_path(record,mapping.get("name"))
-
-            # Update database
             Carpark.objects.update_or_create(
                 source=source,
                 external_id=external_id,
