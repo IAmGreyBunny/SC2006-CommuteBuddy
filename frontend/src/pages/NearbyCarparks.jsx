@@ -17,6 +17,7 @@ const containerStyle = { width: "100%", height: "100vh" };
 
 export default function NearbyCarparks() {
   const [currentPosition, setCurrentPosition] = useState(null);
+  
   const [carparks, setCarparks] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [availableFilter, setAvailableFilter] = useState(0);
@@ -62,15 +63,28 @@ export default function NearbyCarparks() {
       try {
         const res = await fetch(CARPARK_URL);
         const data = await res.json();
+
+        console.log("Raw API response:", data); // Debug log
   
-        setCarparks(data);
+        const flattened = data.carparks.map((c) => ({
+          id: c.id,
+          name: c.name,
+          lat: parseFloat(c.lat), // Ensure they're numbers
+          lng: parseFloat(c.lng),
+          available: c.availability[0]?.available_lots || 0,
+          total: c.availability[0]?.total_lots || 1, // avoid division by 0
+        }));
+  
+        console.log("Processed carparks:", flattened); // Debug log
+        setCarparks(flattened);
       } catch (error) {
-        console.error("Error fetching carpark data:", error);
+        console.error("Error fetching carpark data:", error);  
       }
     }
   
     fetchData();
-  }, []);  
+  }, []);
+   
 
 
       // const availabilityData = await availabilityRes.json();
