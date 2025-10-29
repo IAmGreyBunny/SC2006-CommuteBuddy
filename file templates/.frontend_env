@@ -1,6 +1,6 @@
 # This file is environment variables used for frontend
 # Change the necessary information, rename the file to .env and place it in "frontend/",
 
-VITE_API_URL = "http://localhost:1234" # This points to the backend server(DJango)
+VITE_API_URL="http://127.0.0.1:8000" # This points to the backend server(DJango)
 VITE_GOOGLE_MAPS_API_KEY=" "
 

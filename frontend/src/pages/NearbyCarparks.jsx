@@ -9,9 +9,11 @@ import { motion, useMotionValue } from "framer-motion";
 import "./NearbyCarparks.css";
 
 const containerStyle = { width: "100%", height: "100vh" };
-const AVAILABILITY_URL = "https://api.data.gov.sg/v1/transport/carpark-availability";
-const INFO_URL =
-  "https://data.gov.sg/api/action/datastore_search?resource_id=d_23f946fa557947f93a8043bbef41dd09";
+// const AVAILABILITY_URL = "https://api.data.gov.sg/v1/transport/carpark-availability";
+// const INFO_URL =
+//   "https://data.gov.sg/api/action/datastore_search?resource_id=d_23f946fa557947f93a8043bbef41dd09";
+  const CARPARK_URL = "http://localhost:8000/api/carpark/get_carpark_list/";
+
 
 export default function NearbyCarparks() {
   const [currentPosition, setCurrentPosition] = useState(null);
@@ -40,8 +42,8 @@ export default function NearbyCarparks() {
     );
   }, []);
 
-  // Fetch carpark data
-  useEffect(() => {
+  // Fetch carpark data from API directly
+  /*useEffect(() => {
     async function fetchData() {
       const [availabilityRes, infoRes] = await Promise.all([
         fetch(AVAILABILITY_URL, {
@@ -52,11 +54,29 @@ export default function NearbyCarparks() {
         }),
         fetch(INFO_URL),
       ]);
+  */
 
-      const availabilityData = await availabilityRes.json();
-      const infoData = await infoRes.json();
+  // Fetch carpark data from framework
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch(CARPARK_URL);
+        const data = await res.json();
+  
+        setCarparks(data);
+      } catch (error) {
+        console.error("Error fetching carpark data:", error);
+      }
+    }
+  
+    fetchData();
+  }, []);  
 
-      const infoMap = {};
+
+      // const availabilityData = await availabilityRes.json();
+      // const infoData = await infoRes.json();
+
+    /*const infoMap = {};
       infoData.result.records.forEach((rec) => {
         infoMap[rec.car_park_no] = rec;
       });
@@ -73,11 +93,11 @@ export default function NearbyCarparks() {
         };
       });      
 
-      setCarparks(merged);
+      setCarparks(merged); 
     }
 
     fetchData();
-  }, []);
+  }, []); */
 
 
   const handlePlaceChanged = () => {
