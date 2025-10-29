@@ -4,6 +4,7 @@ import {
   useJsApiLoader,
   Marker,
   Autocomplete,
+  Circle,
 } from "@react-google-maps/api";
 import { motion, useMotionValue } from "framer-motion";
 import "./NearbyCarparks.css";
@@ -11,14 +12,31 @@ import "./NearbyCarparks.css";
 const containerStyle = { width: "100%", height: "100vh" };
 const CARPARK_URL = "http://localhost:8000/api/carpark/get_carpark_list/";
 
+// Calculate distance between two coordinates (Haversine formula)
+// The math to calculate nearby carparks, (searched location’s lat/lng) & (each carpark’s lat/lng)
+
+function getDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371; // km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
 export default function NearbyCarparks() {
   const [currentPosition, setCurrentPosition] = useState(null);
   const [carparks, setCarparks] = useState([]);
-  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [visibleCarparks, setVisibleCarparks] = useState([]);
   const [availableFilter, setAvailableFilter] = useState(0);
   const [totalFilter, setTotalFilter] = useState(0);
   const [confirmedAvailable, setConfirmedAvailable] = useState(0);
   const [confirmedTotal, setConfirmedTotal] = useState(0);
+  const [searchRadius, setSearchRadius] = useState(2); 
+  const [confirmedRadius, setConfirmedRadius] = useState(2);
   const [selectedMode, setSelectedMode] = useState("car");
 
   const autocompleteRef = useRef(null);
@@ -30,28 +48,12 @@ export default function NearbyCarparks() {
     version: "weekly",
   });
 
-  // Get user location
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCurrentPosition({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        });
-      },
-      () => alert("Location access denied.")
-    );
-  }, []);
-
-  // Fetch carpark data
+  //Fetch all carpark data initially
   useEffect(() => {
     async function fetchData() {
       try {
         const res = await fetch(CARPARK_URL);
         const data = await res.json();
-
-        console.log("Raw API response:", data);
-
         if (data.length > 0) {
           const flattened = data[0].carparks.map((c) => ({
             id: c.id,
@@ -61,8 +63,6 @@ export default function NearbyCarparks() {
             available: c.availability[0]?.available_lots || 0,
             total: c.availability[0]?.total_lots || 1,
           }));
-
-          console.log("Processed carparks:", flattened);
           setCarparks(flattened);
         }
       } catch (error) {
@@ -73,6 +73,7 @@ export default function NearbyCarparks() {
     fetchData();
   }, []);
 
+  //Handle search selection
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current.getPlace();
     if (place && place.geometry) {
@@ -80,20 +81,42 @@ export default function NearbyCarparks() {
         lat: place.geometry.location.lat(),
         lng: place.geometry.location.lng(),
       };
-      setSelectedPlace(newLoc);
       setCurrentPosition(newLoc);
+
+      const nearby = carparks.filter((c) => {
+        const dist = getDistance(newLoc.lat, newLoc.lng, c.lat, c.lng);
+        return dist <= confirmedRadius;
+      });
+      setVisibleCarparks(nearby);
+
+      if (mapRef.current) {
+        mapRef.current.panTo(newLoc);
+        mapRef.current.setZoom(15);
+      }
     }
   };
 
-  if (!isLoaded || !currentPosition) {
-    return <div className="loading">Loading map...</div>;
-  }
+  //When user confirms filters, reapply filtering for visible carparks
+  useEffect(() => {
+    if (!currentPosition) return;
+    const nearby = carparks.filter((c) => {
+      const dist = getDistance(
+        currentPosition.lat,
+        currentPosition.lng,
+        c.lat,
+        c.lng
+      );
+      return dist <= confirmedRadius;
+    });
+    setVisibleCarparks(nearby);
+  }, [confirmedRadius, carparks, currentPosition]);
+
+  if (!isLoaded) return <div className="loading">Loading map...</div>;
 
   const getMarkerColor = (ratio) =>
-    ratio < 0.2 ? "#ab3030" : ratio < 0.5 ? "#e3ba27" : "#2f7040";
+    ratio < 0.2 ? "#B22222" : ratio < 0.5 ? "#FF8C00" : "#006400";
 
-  // Apply confirmed filters
-  const filteredCarparks = carparks.filter(
+  const filteredCarparks = visibleCarparks.filter(
     (c) => c.available >= confirmedAvailable && c.total >= confirmedTotal
   );
 
@@ -101,20 +124,11 @@ export default function NearbyCarparks() {
     <div className="map-container">
       <GoogleMap
         mapContainerStyle={containerStyle}
-        center={currentPosition}
-        zoom={14}
-        onLoad={(map) => {
-          mapRef.current = map;
-          const bounds = new window.google.maps.LatLngBounds();
-          filteredCarparks.forEach((c) => {
-            if (!isNaN(c.lat) && !isNaN(c.lng)) {
-              bounds.extend({ lat: c.lat, lng: c.lng });
-            }
-          });
-          bounds.extend(currentPosition);
-          map.fitBounds(bounds);
-        }}
+        center={currentPosition || { lat: 1.3521, lng: 103.8198 }}
+        zoom={currentPosition ? 14 : 11}
+        onLoad={(map) => (mapRef.current = map)}
       >
+        {/* markers */}
         {filteredCarparks.map((c) => {
           const ratio = c.available / c.total;
           const color = getMarkerColor(ratio);
@@ -139,7 +153,23 @@ export default function NearbyCarparks() {
             />
           );
         })}
-        <Marker position={currentPosition} />
+
+        {/*User marker */}
+        {currentPosition && (
+          <>
+            <Marker position={currentPosition} />
+            <Circle
+              center={currentPosition}
+              radius={confirmedRadius * 1000}
+              options={{
+                fillColor: "#0095FF33",
+                strokeColor: "#0095FF",
+                strokeOpacity: 0.8,
+                fillOpacity: 0.15,
+              }}
+            />
+          </>
+        )}
       </GoogleMap>
 
       <div className="location-card">
@@ -165,6 +195,10 @@ export default function NearbyCarparks() {
         setConfirmedAvailable={setConfirmedAvailable}
         confirmedTotal={confirmedTotal}
         setConfirmedTotal={setConfirmedTotal}
+        searchRadius={searchRadius}
+        setSearchRadius={setSearchRadius}
+        confirmedRadius={confirmedRadius}
+        setConfirmedRadius={setConfirmedRadius}
         selectedMode={selectedMode}
         setSelectedMode={setSelectedMode}
       />
@@ -181,6 +215,10 @@ function BottomSheet({
   setConfirmedAvailable,
   confirmedTotal,
   setConfirmedTotal,
+  searchRadius,
+  setSearchRadius,
+  confirmedRadius,
+  setConfirmedRadius,
   selectedMode,
   setSelectedMode,
 }) {
@@ -190,6 +228,7 @@ function BottomSheet({
   const handleConfirm = () => {
     setConfirmedAvailable(availableFilter);
     setConfirmedTotal(totalFilter);
+    setConfirmedRadius(searchRadius);
     setIsExpanded(false);
   };
 
@@ -226,6 +265,7 @@ function BottomSheet({
       {isExpanded && (
         <div className="filter-section">
           <h3>Filter</h3>
+
           <label>Available Lots: {availableFilter}+</label>
           <input
             type="range"
@@ -242,6 +282,17 @@ function BottomSheet({
             max="300"
             value={totalFilter}
             onChange={(e) => setTotalFilter(Number(e.target.value))}
+          />
+
+          {/* Added search radius */}
+          <label>Search Radius: {searchRadius} km</label> 
+          <input
+            type="range"
+            min="1"
+            max="5"
+            step="0.5"
+            value={searchRadius}
+            onChange={(e) => setSearchRadius(Number(e.target.value))}
           />
 
           <button className="confirm-btn" onClick={handleConfirm}>
