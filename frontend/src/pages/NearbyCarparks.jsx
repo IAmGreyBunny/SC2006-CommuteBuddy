@@ -9,21 +9,21 @@ import { motion, useMotionValue } from "framer-motion";
 import "./NearbyCarparks.css";
 
 const containerStyle = { width: "100%", height: "100vh" };
-// const AVAILABILITY_URL = "https://api.data.gov.sg/v1/transport/carpark-availability";
-// const INFO_URL =
-//   "https://data.gov.sg/api/action/datastore_search?resource_id=d_23f946fa557947f93a8043bbef41dd09";
-  const CARPARK_URL = "http://localhost:8000/api/carpark/get_carpark_list/";
-
+const CARPARK_URL = "http://localhost:8000/api/carpark/get_carpark_list/";
 
 export default function NearbyCarparks() {
   const [currentPosition, setCurrentPosition] = useState(null);
-  
   const [carparks, setCarparks] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [availableFilter, setAvailableFilter] = useState(0);
+  const [totalFilter, setTotalFilter] = useState(0);
+  const [confirmedAvailable, setConfirmedAvailable] = useState(0);
+  const [confirmedTotal, setConfirmedTotal] = useState(0);
   const [selectedMode, setSelectedMode] = useState("car");
 
   const autocompleteRef = useRef(null);
+  const mapRef = useRef(null);
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: ["places"],
@@ -43,76 +43,35 @@ export default function NearbyCarparks() {
     );
   }, []);
 
-  // Fetch carpark data from API directly
-  /*useEffect(() => {
-    async function fetchData() {
-      const [availabilityRes, infoRes] = await Promise.all([
-        fetch(AVAILABILITY_URL, {
-          headers: {
-            "X-Api-Key":
-              "v2:d02822dfdefd6bb28a284e21831b6a31633cb602c58b3daa8f92edd1cef8bad3:wgpuCpP5HYmJlLy_Vys2HiEREkGbROQ4",
-          },
-        }),
-        fetch(INFO_URL),
-      ]);
-  */
-
-  // Fetch carpark data from framework
+  // Fetch carpark data
   useEffect(() => {
     async function fetchData() {
       try {
         const res = await fetch(CARPARK_URL);
         const data = await res.json();
 
-        console.log("Raw API response:", data); // Debug log
-  
-        const flattened = data.carparks.map((c) => ({
-          id: c.id,
-          name: c.name,
-          lat: parseFloat(c.lat), // Ensure they're numbers
-          lng: parseFloat(c.lng),
-          available: c.availability[0]?.available_lots || 0,
-          total: c.availability[0]?.total_lots || 1, // avoid division by 0
-        }));
-  
-        console.log("Processed carparks:", flattened); // Debug log
-        setCarparks(flattened);
+        console.log("Raw API response:", data);
+
+        if (data.length > 0) {
+          const flattened = data[0].carparks.map((c) => ({
+            id: c.id,
+            name: c.name,
+            lat: parseFloat(c.lat),
+            lng: parseFloat(c.lng),
+            available: c.availability[0]?.available_lots || 0,
+            total: c.availability[0]?.total_lots || 1,
+          }));
+
+          console.log("Processed carparks:", flattened);
+          setCarparks(flattened);
+        }
       } catch (error) {
-        console.error("Error fetching carpark data:", error);  
+        console.error("Error fetching carpark data:", error);
       }
     }
-  
+
     fetchData();
   }, []);
-   
-
-
-      // const availabilityData = await availabilityRes.json();
-      // const infoData = await infoRes.json();
-
-    /*const infoMap = {};
-      infoData.result.records.forEach((rec) => {
-        infoMap[rec.car_park_no] = rec;
-      });
-
-      const merged = availabilityData.items[0].carpark_data.map((item, idx) => {
-        const lots = item.carpark_info[0];
-        return {
-          id: item.carpark_number || `cp-${idx}`,
-          available: parseInt(lots.lots_available),
-          total: parseInt(lots.total_lots),
-          // temporary random test coordinates
-          lat: 1.35 + Math.random() * 0.01,
-          lng: 103.82 + Math.random() * 0.01,
-        };
-      });      
-
-      setCarparks(merged); 
-    }
-
-    fetchData();
-  }, []); */
-
 
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current.getPlace();
@@ -122,7 +81,7 @@ export default function NearbyCarparks() {
         lng: place.geometry.location.lng(),
       };
       setSelectedPlace(newLoc);
-      setCurrentPosition(newLoc); //moves map to new location
+      setCurrentPosition(newLoc);
     }
   };
 
@@ -130,12 +89,13 @@ export default function NearbyCarparks() {
     return <div className="loading">Loading map...</div>;
   }
 
-  //<<markers>> works!!
-// Red → if < 20% lots available
-// Yellow → if 20–50% available
-// Green → if > 50% available
   const getMarkerColor = (ratio) =>
     ratio < 0.2 ? "red" : ratio < 0.5 ? "yellow" : "green";
+
+  // Apply confirmed filters
+  const filteredCarparks = carparks.filter(
+    (c) => c.available >= confirmedAvailable && c.total >= confirmedTotal
+  );
 
   return (
     <div className="map-container">
@@ -143,47 +103,68 @@ export default function NearbyCarparks() {
         mapContainerStyle={containerStyle}
         center={currentPosition}
         zoom={14}
+        onLoad={(map) => {
+          mapRef.current = map;
+          const bounds = new window.google.maps.LatLngBounds();
+          filteredCarparks.forEach((c) => {
+            if (!isNaN(c.lat) && !isNaN(c.lng)) {
+              bounds.extend({ lat: c.lat, lng: c.lng });
+            }
+          });
+          bounds.extend(currentPosition);
+          map.fitBounds(bounds);
+        }}
       >
-        {carparks.map((c) => {
+        {filteredCarparks.map((c) => {
           const ratio = c.available / c.total;
           const color = getMarkerColor(ratio);
           return (
             <Marker
               key={c.id}
-              position={{
-                lat: c.lat,   // used stored lat/lng instead of random values here
-                lng: c.lng,
+              position={{ lat: c.lat, lng: c.lng }}
+              label={{
+                text: `${c.available}`,
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "14px",
               }}
               icon={{
                 path: google.maps.SymbolPath.CIRCLE,
                 fillColor: color,
-                fillOpacity: 0.8,
+                fillOpacity: 0.9,
                 strokeColor: "white",
-                strokeWeight: 1,
-                scale: 10,
+                strokeWeight: 2,
+                scale: 20,
               }}
             />
           );
         })}
         <Marker position={currentPosition} />
       </GoogleMap>
-  
 
       <div className="location-card">
         <span className="location-icon">📍</span>
-
-        {/* autocomplete function */}
         <Autocomplete
           onLoad={(ref) => (autocompleteRef.current = ref)}
           onPlaceChanged={handlePlaceChanged}
         >
-          <input type="text" placeholder="Enter a location" className="location-input" />
+          <input
+            type="text"
+            placeholder="Enter a location"
+            className="location-input"
+          />
         </Autocomplete>
       </div>
 
       <BottomSheet
         availableFilter={availableFilter}
         setAvailableFilter={setAvailableFilter}
+        totalFilter={totalFilter}
+        setTotalFilter={setTotalFilter}
+        confirmedAvailable={confirmedAvailable}
+        setConfirmedAvailable={setConfirmedAvailable}
+        confirmedTotal={confirmedTotal}
+        setConfirmedTotal={setConfirmedTotal}
         selectedMode={selectedMode}
         setSelectedMode={setSelectedMode}
       />
@@ -191,9 +172,26 @@ export default function NearbyCarparks() {
   );
 }
 
-function BottomSheet({ availableFilter, setAvailableFilter, selectedMode, setSelectedMode }) {
+function BottomSheet({
+  availableFilter,
+  setAvailableFilter,
+  totalFilter,
+  setTotalFilter,
+  confirmedAvailable,
+  setConfirmedAvailable,
+  confirmedTotal,
+  setConfirmedTotal,
+  selectedMode,
+  setSelectedMode,
+}) {
   const y = useMotionValue(0);
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleConfirm = () => {
+    setConfirmedAvailable(availableFilter);
+    setConfirmedTotal(totalFilter);
+    setIsExpanded(false);
+  };
 
   return (
     <motion.div
@@ -234,16 +232,21 @@ function BottomSheet({ availableFilter, setAvailableFilter, selectedMode, setSel
             min="0"
             max="200"
             value={availableFilter}
-            onChange={(e) => setAvailableFilter(e.target.value)}
+            onChange={(e) => setAvailableFilter(Number(e.target.value))}
           />
-          <label>Gantry Height: 1.8m+</label>
-          <input type="range" min="1" max="3" step="0.1" defaultValue="1.8" />
-          <label>Car Park Type:</label>
-          <div className="checkbox-group">
-            <label><input type="checkbox" /> Multi-Storey</label>
-            <label><input type="checkbox" defaultChecked /> Surface</label>
-            <label><input type="checkbox" /> Basement</label>
-          </div>
+
+          <label>Total Lots: {totalFilter}+</label>
+          <input
+            type="range"
+            min="0"
+            max="300"
+            value={totalFilter}
+            onChange={(e) => setTotalFilter(Number(e.target.value))}
+          />
+
+          <button className="confirm-btn" onClick={handleConfirm}>
+            Confirm
+          </button>
         </div>
       )}
     </motion.div>
