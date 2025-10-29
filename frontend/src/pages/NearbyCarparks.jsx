@@ -90,7 +90,7 @@ export default function NearbyCarparks() {
   }
 
   const getMarkerColor = (ratio) =>
-    ratio < 0.2 ? "red" : ratio < 0.5 ? "yellow" : "green";
+    ratio < 0.2 ? "#ab3030" : ratio < 0.5 ? "#e3ba27" : "#2f7040";
 
   // Apply confirmed filters
   const filteredCarparks = carparks.filter(
