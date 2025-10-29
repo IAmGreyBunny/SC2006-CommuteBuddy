@@ -103,6 +103,32 @@
   margin-bottom: 8px;
 }
 
+.confirm-btn {
+  padding: 12px 24px;
+  background-color: #0095FF;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px; /* Slightly curved edges */
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 149, 255, 0.3);
+  transition: all 0.2s ease;
+  align-self: center;
+}
+
+.confirm-btn:hover {
+  background-color: #007ACC; /* Darker shade on hover */
+  box-shadow: 0 5px 10px rgba(0, 149, 255, 0.4);
+}
+
+.confirm-btn:active {
+  background-color: #006BB3;
+  box-shadow: 0 3px 6px rgba(0, 149, 255, 0.3);
+  transform: translateY(1px);
+}
+
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
