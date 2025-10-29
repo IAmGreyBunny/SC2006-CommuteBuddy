@@ -2,7 +2,7 @@ from .models import User
 from .models import CarparkSource, Carpark, CarparkAvailability
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .utils.CoodinateConverter import convert_xy_to_latlng
+from .utils.CoordinateConverter import convert_xy_to_latlng
 
 # Overwrites the default simple jwt serializer
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
