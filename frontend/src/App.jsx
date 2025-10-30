@@ -136,9 +136,7 @@ function App() {
       <Route
         path="/NearbyCarparks"
         element={
-          <ProtectedRoute>
             <NearbyCarparks />
-          </ProtectedRoute>
         }
       />
 
