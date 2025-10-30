@@ -27,11 +27,29 @@ class BusStop(models.Model):
     def __str__(self):
         return f"{self.description} ({self.bus_stop_code})"
 
+# class BusRoute(models.Model):
+#     service_no = models.CharField(max_length=10, unique=True)  # Changed from route_id
+#     operator = models.CharField(max_length=10)
+#     direction = models.IntegerField(default=1)
+#     category = models.CharField(max_length=10, default="TRUNK")
+
+#     def __str__(self):
+#         return f"Bus {self.service_no}"
+
+
+# api/models.py - Add route_id field to BusRoute
 class BusRoute(models.Model):
-    service_no = models.CharField(max_length=10, unique=True)  # Changed from route_id
+    route_id = models.CharField(max_length=10, unique=True, blank=True, null=True)  # Add this line
+    service_no = models.CharField(max_length=10, unique=True)
     operator = models.CharField(max_length=10)
     direction = models.IntegerField(default=1)
     category = models.CharField(max_length=10, default="TRUNK")
+
+    def save(self, *args, **kwargs):
+        # Auto-populate route_id from service_no if not provided
+        if not self.route_id:
+            self.route_id = self.service_no
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Bus {self.service_no}"
