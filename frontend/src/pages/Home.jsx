@@ -228,3 +228,4 @@ export default function Home({ userName = "James Lee" }) {
   );
 }
 
+export default Home;
