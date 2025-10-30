@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
 import NearbyCarparks from './pages/NearbyCarparks';
+import CarparkSourceForm from './pages/CarparkSourceForm';
 import './App.css';
 
 
@@ -138,6 +139,14 @@ function App() {
         element={
           <ProtectedRoute>
             <NearbyCarparks />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/CarparkSourceForm"
+        element={
+          <ProtectedRoute>
+            <CarparkSourceForm />
           </ProtectedRoute>
         }
       />
