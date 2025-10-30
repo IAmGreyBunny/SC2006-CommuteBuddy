@@ -300,7 +300,7 @@ export default function LiveTracker() {
 
         {/* Transport Tabs */}
         <div className="transport-tabs">
-          <NavLink to={"/crowdensity"} className="transport-tab">
+          <NavLink to={"/NearbyCarparks"} className="transport-tab">
             <span className="tab-icon"><FaCar /></span>
             <span className="tab-label">Car</span>
           </NavLink>
