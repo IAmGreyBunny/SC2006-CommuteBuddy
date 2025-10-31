@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
 # Custom User Class that overwrites the default django User model
 class User(AbstractUser):
 
@@ -15,3 +14,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+# Additional Models
+from .additional_models import *
