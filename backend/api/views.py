@@ -1,13 +1,11 @@
 from django.db.models import Prefetch
-from django.shortcuts import render
-from prompt_toolkit.win32_types import COORD
 
 from .models import User
-from .models import CarparkSource,Carpark,CarparkAvailability
+from .models import CarparkSource,Carpark
 from .serializers import CarparkSourceSerializer
 from rest_framework import generics
 from .serializers import UserSerializer, TokenObtainPairSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .utils import CoordinateConverter
 

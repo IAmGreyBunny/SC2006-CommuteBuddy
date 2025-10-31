@@ -1,7 +1,6 @@
 # File for setting up celery tasks
 # (e.g. carpark polling)
 from .models import CarparkSource, Carpark, CarparkAvailability
-import os
 import re
 
 from celery import shared_task
