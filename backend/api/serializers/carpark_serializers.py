@@ -17,7 +17,6 @@ class CarparkSerializer(serializers.ModelSerializer):
         model = Carpark
         fields = ['id','name', 'external_id', 'x_coord', 'y_coord', 'lat', 'lng', 'availability']
 
-    # Dummy for now
     def get_lat(self,obj):
         lat,_ = convert_xy_to_latlng(obj.x_coord,obj.y_coord)
         return lat

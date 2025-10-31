@@ -1,4 +1,6 @@
 from django.db.models import Prefetch
+from django.db.models import F, ExpressionWrapper, FloatField
+from django.db.models.functions import Power
 
 from ..utils import CoordinateConverter
 from rest_framework.permissions import AllowAny
@@ -51,6 +53,42 @@ class CarparksInBoundsView(generics.ListAPIView):
         # Prefetch into CarparkSource
         sources = CarparkSource.objects.prefetch_related(
             Prefetch("carparks", queryset=filtered_carparks)
+        )
+
+        return sources
+
+class CarparkWithinRadiusView(generics.ListAPIView):
+    serializer_class = CarparkSourceSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        try:
+            center_lat = float(self.request.GET.get("center_lat"))
+            center_lng = float(self.request.GET.get("center_lng"))
+            radius = float(self.request.GET.get("radius"))
+        except (TypeError, ValueError):
+            return CarparkSource.objects.none()
+
+        center_x, center_y = CoordinateConverter.convert_latlng_to_xy(center_lat, center_lng)
+
+        min_x = center_x - radius
+        max_x = center_x + radius
+        min_y = center_y - radius
+        max_y = center_y + radius
+
+        qs = Carpark.objects.filter(
+            x_coord__gte=min_x, x_coord__lte=max_x,
+            y_coord__gte=min_y, y_coord__lte=max_y
+        ).annotate(
+            distance_squared=ExpressionWrapper(
+                Power(F('x_coord') - center_x, 2) + Power(F('y_coord') - center_y, 2),
+                output_field=FloatField()
+            )
+        ).filter(distance_squared__lte=radius * radius)
+
+        # Prefetch only carparks within radius
+        sources = CarparkSource.objects.prefetch_related(
+            Prefetch("carparks", queryset=qs)
         )
 
         return sources
