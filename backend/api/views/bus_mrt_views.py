@@ -1,16 +1,10 @@
-from django.shortcuts import render
 from django.db import models
-from .models import User
-from .models import CarparkSource,Carpark,CarparkAvailability
-from .serializers import CarparkSourceSerializer
-from .models import BusStop, BusRoute, BusSchedule, RealTimeBus
-from .models import MRTLine, MRTSchedule, MRTStation, FavouriteRoute, UserPreference, TransportAlert
-from rest_framework import generics
-from .serializers import UserSerializer, TokenObtainPairSerializer
-from .serializers import BusStopSerializer, BusRouteSerializer, BusScheduleSerializer, RealTimeBusSerializer
-from .serializers import MRTLineSerializer, MRTScheduleSerializer, MRTStationSerializer, FavouriteRouteSerializer, UserPreferenceSerializer, AlertSerializer
+
+from ..models import BusStop, BusRoute, BusSchedule, RealTimeBus
+from ..models import MRTLine, MRTSchedule, MRTStation, FavouriteRoute, UserPreference, TransportAlert
+from ..serializers import BusStopSerializer, BusRouteSerializer, BusScheduleSerializer, RealTimeBusSerializer
+from ..serializers import MRTLineSerializer, MRTScheduleSerializer, MRTStationSerializer, FavouriteRouteSerializer, UserPreferenceSerializer, AlertSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 
@@ -27,15 +21,7 @@ from datetime import datetime
 
 # Create your views here.
 
-# Overwrite the default token obtain pair view with our custom one
-# This also serves as the login view since obtaining a token is what login does
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = TokenObtainPairSerializer
 
-class CreateUserView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
 
 class BusStopViewSet(viewsets.ModelViewSet):
     queryset = BusStop.objects.all()
@@ -132,7 +118,7 @@ def bus_arrival(request, bus_stop_code):
         )
 
     try:
-        from .services.lta_service import LTADataService
+        from ..services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_bus_arrival(bus_stop_code)
 
@@ -173,7 +159,7 @@ def bus_arrival_processed(request, bus_stop_code):
         )
 
     try:
-        from .services.lta_service import LTADataService
+        from ..services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_bus_arrival(bus_stop_code)
 
@@ -339,7 +325,7 @@ def nearby_mrt_stations(request):
 def mrt_crowd_real_time(request, train_line):
     """Get real-time MRT crowd density"""
     try:
-        from .services.lta_service import LTADataService
+        from ..services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_mrt_crowd_real_time(train_line)
 
@@ -368,7 +354,7 @@ def mrt_crowd_real_time(request, train_line):
 def mrt_crowd_forecast(request, train_line):
     """Get MRT crowd density forecast"""
     try:
-        from .services.lta_service import LTADataService
+        from ..services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_mrt_crowd_forecast(train_line)
 
@@ -397,7 +383,7 @@ def mrt_crowd_forecast(request, train_line):
 def mrt_service_alerts(request):
     """Get MRT service alerts and disruptions"""
     try:
-        from .services.lta_service import LTADataService
+        from ..services.lta_service import LTADataService
         service = LTADataService()
         result = service.get_train_service_alerts()
 
@@ -599,7 +585,7 @@ def search_bus_services(request):
 
     try:
         # For now, we'll return bus stops that have this service
-        from .services.lta_service import LTADataService
+        from ..services.lta_service import LTADataService
         service = LTADataService()
 
         # Get some popular bus stops that might have this service
@@ -630,11 +616,3 @@ def search_bus_services(request):
             'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class CarparkSourceListView(generics.ListAPIView):
-    serializer_class = CarparkSourceSerializer
-    permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        # Efficiently fetch related carparks and availabilities
-        return CarparkSource.objects.prefetch_related('carparks__availability').all()
