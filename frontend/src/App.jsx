@@ -6,6 +6,8 @@ import Home from './pages/Home';
 import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
 import NearbyCarparks from './pages/NearbyCarparks';
+import CrowdDensity from './pages/CrowdDensity';
+import LiveTracker from './pages/LiveTracker';
 import './App.css';
 
 
@@ -125,6 +127,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      
       <Route
         path="/settings"
         element={
@@ -141,6 +144,25 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/LiveTracker"
+        element={
+          <ProtectedRoute>
+            <LiveTracker />
+          </ProtectedRoute>
+      }
+      />
+
+      <Route
+        path="/CrowdDensity"
+        element={
+          <ProtectedRoute>
+            <CrowdDensity />
+          </ProtectedRoute>
+      }
+      />
+
 
       {/* Catch-all */}
       <Route path="*" element={<NotFound />} />

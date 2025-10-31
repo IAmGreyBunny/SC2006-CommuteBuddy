@@ -1,7 +1,124 @@
-import Form from "../components/Form";
+// import { useState } from "react";
+// import { useNavigate } from "react-router-dom";
 
-function Login(){
-    return <Form route="api/token/" method="login"/>
+// function Login() {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const navigate = useNavigate();
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     // TEMP LOGIN SUCCESS → Go Home
+//     navigate("/home");
+//   };
+
+//   return (
+//     <div style={styles.container}>
+//       <h2>Login</h2>
+//       <form onSubmit={handleSubmit}>
+//         <input
+//           style={styles.input}
+//           type="email"
+//           placeholder="Enter Email"
+//           value={email}
+//           onChange={(e) => setEmail(e.target.value)}
+//         />
+//         <input
+//           style={styles.input}
+//           type="password"
+//           placeholder="Enter Password"
+//           value={password}
+//           onChange={(e) => setPassword(e.target.value)}
+//         />
+//         <button style={styles.button} type="submit">Login</button>
+//       </form>
+
+//       <p>
+//         Forgot your password?{" "}
+//         <span style={styles.link} onClick={() => navigate("/forgot-password")}>
+//           Reset here
+//         </span>
+//       </p>
+
+//       <p>
+//         Don't have an account?{" "}
+//         <span style={styles.link} onClick={() => navigate("/register")}>
+//           Register
+//         </span>
+//       </p>
+//     </div>
+//   );
+// }
+
+// const styles = {
+//   container: { maxWidth: "400px", margin: "auto", textAlign: "center", padding: "20px" },
+//   input: { width: "100%", padding: "10px", margin: "8px 0", borderRadius: "5px" },
+//   button: { width: "100%", padding: "10px", background: "#0095FF", color: "white", border: "none", borderRadius: "5px" },
+//   link: { color: "#0095FF", cursor: "pointer" }
+// };
+
+// export default Login;
+
+
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./Login.css";
+
+function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // TEMP LOGIN SUCCESS → Go Home
+    navigate("/home");
+  };
+
+  return (
+    <div className="login-container">
+      <h2>Login</h2>
+
+      <form onSubmit={handleSubmit}>
+        <input
+          className="login-input"
+          type="email"
+          placeholder="Enter Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          className="login-input"
+          type="password"
+          placeholder="Enter Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <button className="login-button" type="submit">
+          Login
+        </button>
+      </form>
+
+      <p>
+        Forgot your password?{" "}
+        <span
+          className="login-link"
+          onClick={() => navigate("/forgot-password")}
+        >
+          Reset here
+        </span>
+      </p>
+
+      <p>
+        Don't have an account?{" "}
+        <span className="login-link" onClick={() => navigate("/register")}>
+          Register
+        </span>
+      </p>
+    </div>
+  );
 }
 
-export default Login
+export default Login;

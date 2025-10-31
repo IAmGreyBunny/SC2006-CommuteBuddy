@@ -1,85 +1,67 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
   Marker,
   Autocomplete,
+  Circle,
 } from "@react-google-maps/api";
 import { motion, useMotionValue } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import "./NearbyCarparks.css";
 
 const containerStyle = { width: "100%", height: "100vh" };
-const AVAILABILITY_URL = "https://api.data.gov.sg/v1/transport/carpark-availability";
-const INFO_URL =
-  "https://data.gov.sg/api/action/datastore_search?resource_id=d_23f946fa557947f93a8043bbef41dd09";
+const BASE_URL = "http://localhost:8000/api/carpark/get_carpark_in_bound/";
 
 export default function NearbyCarparks() {
+  const navigate = useNavigate();
   const [currentPosition, setCurrentPosition] = useState(null);
   const [carparks, setCarparks] = useState([]);
-  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [visibleCarparks, setVisibleCarparks] = useState([]);
   const [availableFilter, setAvailableFilter] = useState(0);
+  const [totalFilter, setTotalFilter] = useState(0);
+  const [confirmedAvailable, setConfirmedAvailable] = useState(0);
+  const [confirmedTotal, setConfirmedTotal] = useState(0);
+  const [searchRadius, setSearchRadius] = useState(2);
+  const [confirmedRadius, setConfirmedRadius] = useState(2);
   const [selectedMode, setSelectedMode] = useState("car");
 
   const autocompleteRef = useRef(null);
+  const mapRef = useRef(null);
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: ["places"],
+    version: "weekly",
   });
 
-  // Get user location
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCurrentPosition({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        });
-      },
-      () => alert("Location access denied.")
-    );
-  }, []);
+  async function fetchCarparksInBounds(bounds) {
+    const { ne_lat, ne_lng, sw_lat, sw_lng } = bounds;
+    try {
+      const res = await fetch(
+        `${BASE_URL}?ne_lat=${ne_lat}&ne_lng=${ne_lng}&sw_lat=${sw_lat}&sw_lng=${sw_lng}`
+      );
+      const data = await res.json();
 
-  // Fetch carpark data
-  useEffect(() => {
-    async function fetchData() {
-      const [availabilityRes, infoRes] = await Promise.all([
-        fetch(AVAILABILITY_URL, {
-          headers: {
-            "X-Api-Key":
-              "v2:d02822dfdefd6bb28a284e21831b6a31633cb602c58b3daa8f92edd1cef8bad3:wgpuCpP5HYmJlLy_Vys2HiEREkGbROQ4",
-          },
-        }),
-        fetch(INFO_URL),
-      ]);
-
-      const availabilityData = await availabilityRes.json();
-      const infoData = await infoRes.json();
-
-      const infoMap = {};
-      infoData.result.records.forEach((rec) => {
-        infoMap[rec.car_park_no] = rec;
-      });
-
-      const merged = availabilityData.items[0].carpark_data
-        .map((item) => {
-          const info = infoMap[item.carpark_number];
-          if (!info) return null;
-          const lots = item.carpark_info[0];
-          return {
-            id: item.carpark_number,
-            available: parseInt(lots.lots_available),
-            total: parseInt(lots.total_lots),
-            x: parseFloat(info.x_coord),
-            y: parseFloat(info.y_coord),
-          };
-        })
-        .filter(Boolean);
-
-      setCarparks(merged);
+      if (data.length > 0) {
+        const flattened = data[0].carparks.map((c) => ({
+          id: c.id,
+          name: c.name,
+          lat: parseFloat(c.lat),
+          lng: parseFloat(c.lng),
+          available: c.availability?.[0]?.available_lots || 0,
+          total: c.availability?.[0]?.total_lots || 1,
+        }));
+        setCarparks(flattened);
+        setVisibleCarparks(flattened);
+      } else {
+        setCarparks([]);
+        setVisibleCarparks([]);
+      }
+    } catch (error) {
+      console.error("Error fetching carparks:", error);
     }
-
-    fetchData();
-  }, []);
+  }
 
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current.getPlace();
@@ -88,44 +70,116 @@ export default function NearbyCarparks() {
         lat: place.geometry.location.lat(),
         lng: place.geometry.location.lng(),
       };
-      setSelectedPlace(newLoc);
       setCurrentPosition(newLoc);
+
+      if (mapRef.current) {
+        mapRef.current.panTo(newLoc);
+        mapRef.current.setZoom(15);
+
+        const bounds = mapRef.current.getBounds();
+        if (bounds) {
+          const ne = bounds.getNorthEast();
+          const sw = bounds.getSouthWest();
+          fetchCarparksInBounds({
+            ne_lat: ne.lat(),
+            ne_lng: ne.lng(),
+            sw_lat: sw.lat(),
+            sw_lng: sw.lng(),
+          });
+        }
+      }
     }
   };
 
-  if (!isLoaded || !currentPosition) {
-    return <div className="loading">Loading map...</div>;
+  const onMapLoad = (map) => {
+    mapRef.current = map;
+  };
+
+  const getMarkerColor = (ratio) =>
+    ratio < 0.2 ? "#B22222" : ratio < 0.5 ? "#FF8C00" : "#006400";
+
+  function getDistanceKm(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   }
 
-  //<<markers>> not rly sure if this logic will work till hv data to test
-  const getMarkerColor = (ratio) =>
-    ratio < 0.2 ? "red" : ratio < 0.5 ? "yellow" : "green";
+  const filteredCarparks = visibleCarparks.filter((c) => {
+    if (!currentPosition) return false;
+    const distance = getDistanceKm(
+      currentPosition.lat,
+      currentPosition.lng,
+      c.lat,
+      c.lng
+    );
+    return (
+      distance <= confirmedRadius &&
+      c.available >= confirmedAvailable &&
+      c.total >= confirmedTotal
+    );
+  });
+
+  if (!isLoaded) return <div className="loading">Loading map...</div>;
 
   return (
     <div className="map-container">
-      <GoogleMap mapContainerStyle={containerStyle} center={currentPosition} zoom={14}>
-        {carparks.map((c) => {
+      <button className="back-home-btn" onClick={() => navigate("/home")}>
+        ← Back to Home
+      </button>
+
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={currentPosition || { lat: 1.3521, lng: 103.8198 }}
+        zoom={currentPosition ? 14 : 12}
+        onLoad={onMapLoad}
+      >
+        {filteredCarparks.map((c) => {
           const ratio = c.available / c.total;
           const color = getMarkerColor(ratio);
           return (
             <Marker
               key={c.id}
-              position={{
-                lat: c.y / 100000,
-                lng: c.x / 100000,
+              position={{ lat: c.lat, lng: c.lng }}
+              label={{
+                text: `${c.available}`,
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "14px",
               }}
               icon={{
                 path: google.maps.SymbolPath.CIRCLE,
                 fillColor: color,
-                fillOpacity: 0.8,
+                fillOpacity: 0.9,
                 strokeColor: "white",
-                strokeWeight: 1,
-                scale: 10,
+                strokeWeight: 2,
+                scale: 20,
               }}
             />
           );
         })}
-        <Marker position={currentPosition} />
+
+        {currentPosition && (
+          <>
+            <Marker position={currentPosition} />
+            <Circle
+              center={currentPosition}
+              radius={confirmedRadius * 1000}
+              options={{
+                fillColor: "#0095FF33",
+                strokeColor: "#0095FF",
+                strokeOpacity: 0.8,
+                fillOpacity: 0.15,
+              }}
+            />
+          </>
+        )}
       </GoogleMap>
 
       <div className="location-card">
@@ -134,13 +188,27 @@ export default function NearbyCarparks() {
           onLoad={(ref) => (autocompleteRef.current = ref)}
           onPlaceChanged={handlePlaceChanged}
         >
-          <input type="text" placeholder="Enter a location" className="location-input" />
+          <input
+            type="text"
+            placeholder="Enter a location"
+            className="location-input"
+          />
         </Autocomplete>
       </div>
 
       <BottomSheet
         availableFilter={availableFilter}
         setAvailableFilter={setAvailableFilter}
+        totalFilter={totalFilter}
+        setTotalFilter={setTotalFilter}
+        confirmedAvailable={confirmedAvailable}
+        setConfirmedAvailable={setConfirmedAvailable}
+        confirmedTotal={confirmedTotal}
+        setConfirmedTotal={setConfirmedTotal}
+        searchRadius={searchRadius}
+        setSearchRadius={setSearchRadius}
+        confirmedRadius={confirmedRadius}
+        setConfirmedRadius={setConfirmedRadius}
         selectedMode={selectedMode}
         setSelectedMode={setSelectedMode}
       />
@@ -148,9 +216,31 @@ export default function NearbyCarparks() {
   );
 }
 
-function BottomSheet({ availableFilter, setAvailableFilter, selectedMode, setSelectedMode }) {
+function BottomSheet({
+  availableFilter,
+  setAvailableFilter,
+  totalFilter,
+  setTotalFilter,
+  confirmedAvailable,
+  setConfirmedAvailable,
+  confirmedTotal,
+  setConfirmedTotal,
+  searchRadius,
+  setSearchRadius,
+  confirmedRadius,
+  setConfirmedRadius,
+  selectedMode,
+  setSelectedMode,
+}) {
   const y = useMotionValue(0);
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleConfirm = () => {
+    setConfirmedAvailable(availableFilter);
+    setConfirmedTotal(totalFilter);
+    setConfirmedRadius(searchRadius);
+    setIsExpanded(false);
+  };
 
   return (
     <motion.div
@@ -162,7 +252,6 @@ function BottomSheet({ availableFilter, setAvailableFilter, selectedMode, setSel
         if (info.offset.y < -100) setIsExpanded(true);
         else setIsExpanded(false);
       }}
-      animate={{ y: isExpanded ? 0 : 0 }}
       transition={{ type: "spring", stiffness: 0, damping: 30 }}
     >
       <div className="sheet-handle" />
@@ -184,25 +273,359 @@ function BottomSheet({ availableFilter, setAvailableFilter, selectedMode, setSel
 
       {isExpanded && (
         <div className="filter-section">
-          <h3>Filter</h3>
+          <h3>Filter Options</h3>
+
           <label>Available Lots: {availableFilter}+</label>
           <input
             type="range"
             min="0"
             max="200"
             value={availableFilter}
-            onChange={(e) => setAvailableFilter(e.target.value)}
+            onChange={(e) => setAvailableFilter(Number(e.target.value))}
           />
-          <label>Gantry Height: 1.8m+</label>
-          <input type="range" min="1" max="3" step="0.1" defaultValue="1.8" />
-          <label>Car Park Type:</label>
-          <div className="checkbox-group">
-            <label><input type="checkbox" /> Multi-Storey</label>
-            <label><input type="checkbox" defaultChecked /> Surface</label>
-            <label><input type="checkbox" /> Basement</label>
-          </div>
+
+          <label>Total Lots: {totalFilter}+</label>
+          <input
+            type="range"
+            min="0"
+            max="300"
+            value={totalFilter}
+            onChange={(e) => setTotalFilter(Number(e.target.value))}
+          />
+
+          <label>Search Radius: {searchRadius} km</label>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            step="0.5"
+            value={searchRadius}
+            onChange={(e) => setSearchRadius(Number(e.target.value))}
+          />
+
+          <button className="confirm-btn" onClick={handleConfirm}>
+            Confirm
+          </button>
         </div>
       )}
     </motion.div>
   );
 }
+
+
+ 
+// viewport implem
+// import React, { useEffect, useState, useRef } from "react";
+// import {
+//   GoogleMap,
+//   useJsApiLoader,
+//   Marker,
+//   Autocomplete,
+//   Circle,
+// } from "@react-google-maps/api";
+// import { motion, useMotionValue } from "framer-motion";
+// import { debounce } from "lodash";
+// import "./NearbyCarparks.css";
+
+// const containerStyle = { width: "100%", height: "100vh" };
+// const BASE_URL = "http://localhost:8000/api/carpark/get_carpark_in_bound/";
+
+// export default function NearbyCarparks() {
+//   const [currentPosition, setCurrentPosition] = useState(null);
+//   const [carparks, setCarparks] = useState([]);
+//   const [visibleCarparks, setVisibleCarparks] = useState([]);
+//   const [availableFilter, setAvailableFilter] = useState(0);
+//   const [totalFilter, setTotalFilter] = useState(0);
+//   const [confirmedAvailable, setConfirmedAvailable] = useState(0);
+//   const [confirmedTotal, setConfirmedTotal] = useState(0);
+//   const [searchRadius, setSearchRadius] = useState(2);
+//   const [confirmedRadius, setConfirmedRadius] = useState(2);
+//   const [selectedMode, setSelectedMode] = useState("car");
+
+//   const autocompleteRef = useRef(null);
+//   const mapRef = useRef(null);
+
+//   const { isLoaded } = useJsApiLoader({
+//     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+//     libraries: ["places"],
+//     version: "weekly",
+//   });
+
+//   // Fetch carparks within map bounds
+//   async function fetchCarparksInBounds(bounds) {
+//     const { ne_lat, ne_lng, sw_lat, sw_lng } = bounds;
+//     try {
+//       const url = `${BASE_URL}?ne_lat=${ne_lat}&ne_lng=${ne_lng}&sw_lat=${sw_lat}&sw_lng=${sw_lng}`;
+//       const res = await fetch(url);
+//       const data = await res.json();
+
+//       if (data.length > 0) {
+//         const flattened = data[0].carparks.map((c) => ({
+//           id: c.id,
+//           name: c.name,
+//           lat: parseFloat(c.lat),
+//           lng: parseFloat(c.lng),
+//           available: c.availability?.[0]?.available_lots || 0,
+//           total: c.availability?.[0]?.total_lots || 1,
+//         }));
+//         setCarparks(flattened);
+//         setVisibleCarparks(flattened);
+//       } else {
+//         setCarparks([]);
+//         setVisibleCarparks([]);
+//       }
+//     } catch (error) {
+//       console.error("Error fetching carparks in bounds:", error);
+//     }
+//   }
+
+//   // Debounced fetch to prevent too many API calls on map drag/zoom
+//   const fetchCarparksDebounced = useRef(
+//     debounce((bounds) => fetchCarparksInBounds(bounds), 500)
+//   ).current;
+
+//   // When user searches for a place
+//   const handlePlaceChanged = () => {
+//     const place = autocompleteRef.current.getPlace();
+//     if (place && place.geometry) {
+//       const newLoc = {
+//         lat: place.geometry.location.lat(),
+//         lng: place.geometry.location.lng(),
+//       };
+//       setCurrentPosition(newLoc);
+
+//       if (mapRef.current) {
+//         mapRef.current.panTo(newLoc);
+//         mapRef.current.setZoom(15);
+
+//         // Fetch carparks after search
+//         const mapBounds = mapRef.current.getBounds();
+//         if (mapBounds) {
+//           const ne = mapBounds.getNorthEast();
+//           const sw = mapBounds.getSouthWest();
+//           fetchCarparksInBounds({
+//             ne_lat: ne.lat(),
+//             ne_lng: ne.lng(),
+//             sw_lat: sw.lat(),
+//             sw_lng: sw.lng(),
+//           });
+//         }
+//       }
+//     }
+//   };
+
+//   const onMapLoad = (map) => {
+//     mapRef.current = map;
+//   };
+
+//   // Marker color based on availability ratio
+//   const getMarkerColor = (ratio) =>
+//     ratio < 0.2 ? "#B22222" : ratio < 0.5 ? "#FF8C00" : "#006400";
+
+//   const filteredCarparks = visibleCarparks.filter(
+//     (c) => c.available >= confirmedAvailable && c.total >= confirmedTotal
+//   );
+
+//   if (!isLoaded) return <div className="loading">Loading map...</div>;
+
+//   return (
+//     <div className="map-container">
+//       <GoogleMap
+//         mapContainerStyle={containerStyle}
+//         center={currentPosition || { lat: 1.3521, lng: 103.8198 }}
+//         zoom={currentPosition ? 14 : 12}
+//         onLoad={onMapLoad}
+//         onIdle={() => {
+//           if (mapRef.current) {
+//             const bounds = mapRef.current.getBounds();
+//             if (bounds) {
+//               const ne = bounds.getNorthEast();
+//               const sw = bounds.getSouthWest();
+//               fetchCarparksDebounced({
+//                 ne_lat: ne.lat(),
+//                 ne_lng: ne.lng(),
+//                 sw_lat: sw.lat(),
+//                 sw_lng: sw.lng(),
+//               });
+//             }
+//           }
+//         }}
+//       >
+//         {/* Carpark Markers */}
+//         {filteredCarparks.map((c) => {
+//           const ratio = c.available / c.total;
+//           const color = getMarkerColor(ratio);
+//           return (
+//             <Marker
+//               key={c.id}
+//               position={{ lat: c.lat, lng: c.lng }}
+//               label={{
+//                 text: `${c.available}`,
+//                 color: "white",
+//                 fontWeight: "bold",
+//                 fontSize: "14px",
+//               }}
+//               icon={{
+//                 path: google.maps.SymbolPath.CIRCLE,
+//                 fillColor: color,
+//                 fillOpacity: 0.9,
+//                 strokeColor: "white",
+//                 strokeWeight: 2,
+//                 scale: 20,
+//               }}
+//             />
+//           );
+//         })}
+
+//         {/* User Marker + radius */}
+//         {currentPosition && (
+//           <>
+//             <Marker position={currentPosition} />
+//             <Circle
+//               center={currentPosition}
+//               radius={confirmedRadius * 1000}
+//               options={{
+//                 fillColor: "#0095FF33",
+//                 strokeColor: "#0095FF",
+//                 strokeOpacity: 0.8,
+//                 fillOpacity: 0.15,
+//               }}
+//             />
+//           </>
+//         )}
+//       </GoogleMap>
+
+//       {/* Search bar */}
+//       <div className="location-card">
+//         <span className="location-icon">📍</span>
+//         <Autocomplete
+//           onLoad={(ref) => (autocompleteRef.current = ref)}
+//           onPlaceChanged={handlePlaceChanged}
+//         >
+//           <input
+//             type="text"
+//             placeholder="Enter a location"
+//             className="location-input"
+//           />
+//         </Autocomplete>
+//       </div>
+
+//       {/* Bottom filter sheet */}
+//       <BottomSheet
+//         availableFilter={availableFilter}
+//         setAvailableFilter={setAvailableFilter}
+//         totalFilter={totalFilter}
+//         setTotalFilter={setTotalFilter}
+//         confirmedAvailable={confirmedAvailable}
+//         setConfirmedAvailable={setConfirmedAvailable}
+//         confirmedTotal={confirmedTotal}
+//         setConfirmedTotal={setConfirmedTotal}
+//         searchRadius={searchRadius}
+//         setSearchRadius={setSearchRadius}
+//         confirmedRadius={confirmedRadius}
+//         setConfirmedRadius={setConfirmedRadius}
+//         selectedMode={selectedMode}
+//         setSelectedMode={setSelectedMode}
+//       />
+//     </div>
+//   );
+// }
+
+// // Filters BottomSheet
+// function BottomSheet({
+//   availableFilter,
+//   setAvailableFilter,
+//   totalFilter,
+//   setTotalFilter,
+//   confirmedAvailable,
+//   setConfirmedAvailable,
+//   confirmedTotal,
+//   setConfirmedTotal,
+//   searchRadius,
+//   setSearchRadius,
+//   confirmedRadius,
+//   setConfirmedRadius,
+//   selectedMode,
+//   setSelectedMode,
+// }) {
+//   const y = useMotionValue(0);
+//   const [isExpanded, setIsExpanded] = useState(false);
+
+//   const handleConfirm = () => {
+//     setConfirmedAvailable(availableFilter);
+//     setConfirmedTotal(totalFilter);
+//     setConfirmedRadius(searchRadius);
+//     setIsExpanded(false);
+//   };
+
+//   return (
+//     <motion.div
+//       className="bottom-sheet"
+//       drag="y"
+//       dragConstraints={{ top: 0, bottom: 0 }}
+//       style={{ y }}
+//       onDragEnd={(e, info) => {
+//         if (info.offset.y < -100) setIsExpanded(true);
+//         else setIsExpanded(false);
+//       }}
+//       animate={{ y: isExpanded ? 0 : 0 }}
+//       transition={{ type: "spring", stiffness: 0, damping: 30 }}
+//     >
+//       <div className="sheet-handle" />
+
+//       <div className="transport-nav">
+//         {["car", "bus", "train"].map((mode) => (
+//           <div
+//             key={mode}
+//             className={`nav-item ${selectedMode === mode ? "active" : ""}`}
+//             onClick={() => setSelectedMode(mode)}
+//           >
+//             {mode === "car" && "🚗"}
+//             {mode === "bus" && "🚌"}
+//             {mode === "train" && "🚆"}
+//             <span>{mode.charAt(0).toUpperCase() + mode.slice(1)}</span>
+//           </div>
+//         ))}
+//       </div>
+
+//       {isExpanded && (
+//         <div className="filter-section">
+//           <h3>Filter</h3>
+
+//           <label>Available Lots: {availableFilter}+</label>
+//           <input
+//             type="range"
+//             min="0"
+//             max="200"
+//             value={availableFilter}
+//             onChange={(e) => setAvailableFilter(Number(e.target.value))}
+//           />
+
+//           <label>Total Lots: {totalFilter}+</label>
+//           <input
+//             type="range"
+//             min="0"
+//             max="300"
+//             value={totalFilter}
+//             onChange={(e) => setTotalFilter(Number(e.target.value))}
+//           />
+
+//           <label>Search Radius: {searchRadius} km</label>
+//           <input
+//             type="range"
+//             min="1"
+//             max="5"
+//             step="0.5"
+//             value={searchRadius}
+//             onChange={(e) => setSearchRadius(Number(e.target.value))}
+//           />
+
+//           <button className="confirm-btn" onClick={handleConfirm}>
+//             Confirm
+//           </button>
+//         </div>
+//       )}
+//     </motion.div>
+//   );
+// }
+
