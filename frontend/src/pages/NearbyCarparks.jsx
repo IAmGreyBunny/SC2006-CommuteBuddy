@@ -117,7 +117,6 @@ export default function NearbyCarparks() {
     );
   });
 
-  // ✅ Re-fetch carparks if a new source was added
   useEffect(() => {
     if (currentPosition && location.state?.newSourceAdded) {
       fetchCarparksNearby(currentPosition);
