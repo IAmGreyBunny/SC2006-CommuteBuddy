@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from ..models import CarparkSource, Carpark, CarparkAvailability
-from ..utils.CoodinateConverter import convert_xy_to_latlng
+from ..utils.CoordinateConverter import convert_xy_to_latlng
 
 class CarparkAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
