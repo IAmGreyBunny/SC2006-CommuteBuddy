@@ -1,5 +1,5 @@
 from django.db import models
-from .user_models import User
+from ..models import User
 
 class BusStop(models.Model):
     bus_stop_code = models.CharField(max_length=50, unique=True)  # Changed from stop_id
