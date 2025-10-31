@@ -38,5 +38,17 @@ class CarparkSourceSerializer(serializers.ModelSerializer):
             'availability_api_url',
             'info_api_url',
             'headers',
+            'availability_path_mapping',
+            'info_path_mapping',
             'carparks',
         ]
+        extra_kwargs = {
+            "carparks": {"read_only": True},
+            "availability_path_mapping":{"write_only":True}        ,
+            "info_path_mapping": {"write_only": True},
+            "headers": {"write_only": True}
+        }
+
+    def create(self, validated_data):
+        carparkSource = CarparkSource.objects.create(**validated_data)
+        return carparkSource

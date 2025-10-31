@@ -15,6 +15,14 @@ class CarparkSourceListView(generics.ListAPIView):
         # Efficiently fetch related carparks and availabilities
         return CarparkSource.objects.prefetch_related('carparks__availability').all()
 
+class CarparkSourceCreateView(generics.CreateAPIView):
+    serializer_class = CarparkSourceSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        # Efficiently fetch related carparks and availabilities
+        return CarparkSource.objects.prefetch_related('carparks__availability').all()
+
 class CarparksInBoundsView(generics.ListAPIView):
     serializer_class = CarparkSourceSerializer
     permission_classes = [AllowAny]
