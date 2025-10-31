@@ -32,7 +32,6 @@ class CarparkSource(models.Model):
     def __str__(self):
         return self.name
 
-
 class Carpark(models.Model):
     source = models.ForeignKey(
         'CarparkSource',
