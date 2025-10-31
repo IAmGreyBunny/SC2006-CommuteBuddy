@@ -10,7 +10,6 @@ import { NavLink } from "react-router-dom";
 export default function LiveTracker() {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedStops, setExpandedStops] = useState({});
-  const [favorites, setFavorites] = useState(new Set());
   const [drawerHeight, setDrawerHeight] = useState(30); // percentage
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -395,4 +394,3 @@ export default function LiveTracker() {
     </div>
   );
 }
-
