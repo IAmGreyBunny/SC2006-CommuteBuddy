@@ -1,96 +1,177 @@
-.crowd-container {
-  width: 100%;
-  height: 100vh;
-  position: relative;
+/* ---------- Global Reset ---------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+  background: transparent;
+}
+
+/* ---------- Fullscreen animated aqua-blue wave background ---------- */
+.fullscreen-wave-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   overflow: hidden;
+
+  background: linear-gradient(180deg, #4fd1c5, #1da1f2);
+  background-size: cover;
 }
 
-.crowd-map {
-  width: 100%;
-  height: 100%;
-}
-
-/* Drawer */
-.crowd-drawer {
+/* Subtle animated wave layers */
+.fullscreen-wave-bg::before,
+.fullscreen-wave-bg::after {
+  content: "";
   position: absolute;
-  bottom: 0;
+  inset: 0;
+  background-repeat: repeat-x;
+  opacity: 0.35;
+  animation: wave-move 10s linear infinite;
+}
+
+.fullscreen-wave-bg::before {
+  background-image: radial-gradient(circle at 50% 120%, rgba(255,255,255,0.25) 0%, transparent 70%);
+  background-size: 200% 100%;
+  animation-duration: 14s;
+}
+
+.fullscreen-wave-bg::after {
+  background-image: radial-gradient(circle at 50% 150%, rgba(255,255,255,0.15) 0%, transparent 70%);
+  background-size: 250% 120%;
+  animation-duration: 18s;
+}
+
+@keyframes wave-move {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 100px 30px;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* ---------- General Layout ---------- */
+.live-tracker-container {
   width: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px 20px 0 0;
-  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
-  transition: height 0.25s ease;
-  overflow: hidden;
-  z-index: 1000;
-}
-
-.drawer-handle {
-  width: 50px;
-  height: 5px;
-  background-color: #cbd5e1;
-  border-radius: 5px;
-  margin: 10px auto;
-}
-
-.crowd-drawer-content {
-  text-align: center;
+  min-height: 100vh;
   padding: 1.5rem;
   position: relative;
+  z-index: 1;
 }
 
-/* Transport icons (default view) */
-.transport-icons {
+/* ---------- Card Styling ---------- */
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15),
+              0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* ---------- Station Header ---------- */
+.station-header {
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---------- Disable any blinking ---------- */
+.animate-pulse {
+  animation: none !important;
+}
+
+/* ---------- Legend Section ---------- */
+.legend {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Each legend box (High / Medium / Low) */
+.legend-box {
+  background-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  border-radius: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.4);
   display: flex;
-  justify-content: center;
-  gap: 3rem;
-  margin-top: 1rem;
-}
-
-.transport-icon {
-  font-size: 2.5rem;
-  color: #475569;
-  transition: transform 0.2s;
-}
-
-.transport-icon:active {
-  transform: scale(0.9);
-}
-
-/* Station info view */
-.crowd-drawer-content h2 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 0.4rem;
-}
-
-.crowd-drawer-content p {
-  font-size: 1rem;
-  color: #475569;
-  margin-bottom: 0.8rem;
-}
-
-.crowd-badge {
-  display: inline-block;
-  padding: 0.4rem 1rem;
+  align-items: center;
+  gap: 0.5rem;
   color: white;
   font-weight: 600;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  text-transform: uppercase;
+  justify-content: center;
+  text-transform: capitalize;
 }
 
-.close-btn {
-  position: absolute;
-  top: 12px;
-  right: 20px;
-  background: none;
-  border: none;
-  font-size: 1.4rem;
-  color: #475569;
+/* ---------- Legend Dots ---------- */
+.legend-dot {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+}
+
+/* ---------- Density Colors ---------- */
+.density-low {
+  background: linear-gradient(to bottom, #16a34a, #15803d);
+  box-shadow: 0 8px 14px rgba(22, 163, 74, 0.4);
+}
+
+.density-medium {
+  background: linear-gradient(to bottom, #eab308, #ca8a04);
+  box-shadow: 0 8px 14px rgba(234, 179, 8, 0.4);
+}
+
+.density-high {
+  background: linear-gradient(to bottom, #dc2626, #b91c1c);
+  box-shadow: 0 8px 14px rgba(220, 38, 38, 0.4);
+}
+
+/* ---------- Train Section Hover ---------- */
+.train-section {
+  transition: transform 0.2s ease;
   cursor: pointer;
 }
 
+.train-section:hover {
+  transform: scale(1.05);
+}
 
+/* ---------- Footer ---------- */
+.footer-darkened {
+  background-color: rgba(17, 24, 39, 0.9);
+  color: #e6eef8;
+  backdrop-filter: blur(6px);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ---------- Typography ---------- */
+h1, h2, h3, p, span {
+  font-family: 'Inter', sans-serif;
+}
+
+/* ---------- Prevent interaction on waves ---------- */
+.fullscreen-wave-bg,
+.fullscreen-wave-bg * {
+  pointer-events: none;
+  user-select: none;
+}
 
 

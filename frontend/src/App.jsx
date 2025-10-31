@@ -8,6 +8,7 @@ import Settings from './pages/Settings';
 import NearbyCarparks from './pages/NearbyCarparks';
 import CrowdDensity from './pages/CrowdDensity';
 import LiveTracker from './pages/LiveTracker';
+import CarparkSourceForm from './pages/CarparkSourceForm';
 import './App.css';
 
 
@@ -139,8 +140,14 @@ function App() {
       <Route
         path="/NearbyCarparks"
         element={
-          <ProtectedRoute>
             <NearbyCarparks />
+        }
+      />
+      <Route
+        path="/CarparkSourceForm"
+        element={
+          <ProtectedRoute>
+            <CarparkSourceForm />
           </ProtectedRoute>
         }
       />
