@@ -2,6 +2,7 @@
 # (e.g. carpark polling)
 from .models import CarparkSource, Carpark, CarparkAvailability
 import os
+import re
 
 from celery import shared_task
 import requests
@@ -24,6 +25,33 @@ def test_poll():
     print("Beat is Running Properly")
     return "Done"
 
+# Helper function for parsing api paths
+# This still needs some work, currently it check if its a list or a dictionary,
+# If list, it will access the element if index is specified, otherwise a list will be returned as data to be iterated
+# If dictionary, it will access using the next item as key
+def get_by_path(data, path):
+    parts = path.split(".")
+    for part in parts:
+        match = re.match(r"([^\[\]]+)(?:\[(\d+)\])?", part)
+        if not match:
+            return None
+        key, idx = match.groups()
+        if isinstance(data, dict):
+            data = data.get(key)
+        else:
+            return None
+        if idx is not None:
+            if isinstance(data, list):
+                index = int(idx)
+                if 0 <= index < len(data):
+                    data = data[index]
+                else:
+                    return None
+            else:
+                return None
+        if data is None:
+            return None
+    return data
 
 @shared_task
 def update_carpark_availability():
@@ -44,21 +72,19 @@ def update_carpark_availability():
             print(f"[{source.name}] Failed to fetch info: {e}")
             continue
 
-        mapping = source.field_mapping
-        records = response.json().get("items",[])[0]
-        records = records.get("carpark_data")
+        mapping = source.availability_path_mapping
+        records = get_by_path(response.json(),mapping.get("records_path"))
 
         # Get all associated Carpark
         carparks = {cp.external_id: cp for cp in Carpark.objects.filter(source=source)}
 
-        print()
         for record in records:
             # Use external_id to compare availability
-            external_id = record.get(mapping.get("external_id")) # THIS DOESNT WORK YET... CURRENTLY USING A WORKAROUND... NEED WORK ON THE MAPPING
-            available_lots = record.get("carpark_info",[])[0].get(mapping.get("available_lots"))
-            total_lots = record.get("carpark_info",[])[0].get(mapping.get("total_lots"))
+            external_id = get_by_path(record,mapping.get("external_id"))
+            available_lots = get_by_path(record,mapping.get("available_lots"))
+            total_lots = get_by_path(record,mapping.get("total_lots"))
 
-            carpark = carparks.get(record.get("carpark_number"))
+            carpark = carparks.get(external_id)
             if not carpark:
                 continue
 
@@ -66,7 +92,6 @@ def update_carpark_availability():
                 carpark=carpark,
                 defaults={"available_lots": available_lots,"total_lots":total_lots}
             )
-            print("Carpark Updated")
 
 @shared_task
 def update_carpark_info():
@@ -85,23 +110,22 @@ def update_carpark_info():
             print(f"[{source.name}] Failed to fetch info: {e}")
             continue
 
-        records = []
-        if response.json():
-            records = response.json().get("result").get("records")
+        mapping = source.info_path_mapping
+        records = get_by_path(response.json(),mapping.get("records_path"))
 
         # Loop through collected carpark info
-        mapping = source.field_mapping
-
         for record in records:
-            external_id = record.get(mapping.get("external_id"))
-            x_coord = record.get(mapping.get("x_coord"))
-            y_coord = record.get(mapping.get("y_coord"))
+            external_id = get_by_path(record,mapping.get("external_id"))
+            x_coord = get_by_path(record,mapping.get("x_coord"))
+            y_coord = get_by_path(record,mapping.get("y_coord"))
+            name = get_by_path(record,mapping.get("name"))
 
             # Update database
             Carpark.objects.update_or_create(
                 source=source,
                 external_id=external_id,
                 defaults={
+                    "name": name,
                     "x_coord": x_coord,
                     "y_coord": y_coord,
                 }

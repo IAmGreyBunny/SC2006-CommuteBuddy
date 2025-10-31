@@ -3,6 +3,7 @@ from .models import BusStop, BusRoute, BusSchedule, RealTimeBus, MRTLine, MRTSta
 from .models import CarparkSource, Carpark, CarparkAvailability
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .utils.CoodinateConverter import convert_xy_to_latlng
 
 # Overwrites the default simple jwt serializer
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -93,10 +94,21 @@ class CarparkAvailabilitySerializer(serializers.ModelSerializer):
 
 class CarparkSerializer(serializers.ModelSerializer):
     availability = CarparkAvailabilitySerializer(many=True, read_only=True)
+    lat = serializers.SerializerMethodField()
+    lng = serializers.SerializerMethodField()
 
     class Meta:
         model = Carpark
-        fields = ['id', 'external_id', 'x_coord', 'y_coord', 'availability']
+        fields = ['id','name', 'external_id', 'x_coord', 'y_coord', 'lat', 'lng', 'availability']
+
+    # Dummy for now
+    def get_lat(self,obj):
+        lat,_ = convert_xy_to_latlng(obj.x_coord,obj.y_coord)
+        return lat
+
+    def get_lng(self,obj):
+        _,lng = convert_xy_to_latlng(obj.x_coord, obj.y_coord)
+        return lng
 
 
 class CarparkSourceSerializer(serializers.ModelSerializer):
@@ -110,6 +122,5 @@ class CarparkSourceSerializer(serializers.ModelSerializer):
             'availability_api_url',
             'info_api_url',
             'headers',
-            'field_mapping',
             'carparks',
         ]
