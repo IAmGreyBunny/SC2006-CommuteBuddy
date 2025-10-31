@@ -1,0 +1,368 @@
+
+.container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Override Google Maps InfoWindow styles */
+.gm-style .gm-style-iw-c {
+  padding: 0 !important;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+.gm-style-iw-chr {
+  display: none !important;
+}
+
+.map-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.drawer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  transition: height 0.3s ease;
+  touch-action: none;
+}
+
+.drag-handle {
+  padding: 12px 0;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-bar {
+  width: 40px;
+  height: 5px;
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+.drawer-header {
+  padding: 0 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  background: #f9fafb;
+}
+
+.header-icons {
+  display: flex;
+  gap: 8px;
+}
+
+.header-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #f9fafb;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.transport-tabs {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 20px 16px;
+  gap: 12px;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.transport-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 8px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.transport-tab::after {
+  content: '';
+  position: absolute;
+  bottom: -16px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.transport-tab-active::after {
+  background: #3bb59d;
+}
+
+.tab-icon {
+  font-size: 28px;
+  filter: grayscale(100%);
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.transport-tab-active .tab-icon {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+.tab-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #999;
+  transition: color 0.2s ease;
+}
+
+.transport-tab-active .tab-label {
+  color: #3bb59d;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px 20px;
+  scroll-behavior: smooth;
+}
+
+.search-info {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.stops-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state-text {
+  font-size: 16px;
+  color: #666;
+}
+
+.stop-card {
+  background: #f8f9fa;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.stop-card-selected {
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(59, 181, 157, 0.2);
+  border: 2px solid #3bb59d;
+}
+
+.stop-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.stop-left {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.favorite-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.stop-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.stop-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.stop-code {
+  font-size: 11px;
+  color: #666;
+  background: #e8eaed;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.stop-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.stop-distance {
+  color: #666;
+}
+
+.stop-bus-count {
+  color: #3bb59d;
+  font-weight: 600;
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.bus-arrivals {
+  padding: 0 16px 16px;
+  border-top: 1px solid #e8eaed;
+}
+
+.bus-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f1f3;
+  gap: 16px;
+}
+
+.bus-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.bus-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.bus-destination {
+  font-size: 12px;
+  color: #666;
+}
+
+.arrival-times {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.arrival-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.arrival-time {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  min-width: 55px;
+  text-align: center;
+}
+
+.bus-type-label {
+  font-size: 10px;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 24px;
+  background: #fff;
+  border-top: 1px solid #e8eaed;
+  z-index: 100;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 20px;
+  border-radius: 12px;
+}
+
+.nav-btn-active {
+  color: #3bb59d;
+  background: rgba(59, 181, 157, 0.1);
+}
+
