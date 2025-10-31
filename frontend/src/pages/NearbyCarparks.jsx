@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
@@ -8,13 +8,16 @@ import {
 } from "@react-google-maps/api";
 import { motion, useMotionValue } from "framer-motion";
 import "./NearbyCarparks.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const containerStyle = { width: "100%", height: "100vh" };
-const BASE_URL = "http://localhost:8000/api/carpark/get_carpark_in_bound/";
+const BASE_URL =
+  "http://localhost:8000/api/carpark/get_carpark_within_radius/";
 
 export default function NearbyCarparks() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [currentPosition, setCurrentPosition] = useState(null);
   const [carparks, setCarparks] = useState([]);
   const [visibleCarparks, setVisibleCarparks] = useState([]);
@@ -35,23 +38,25 @@ export default function NearbyCarparks() {
     version: "weekly",
   });
 
-  // Fetch carparks inside bounds
-  async function fetchCarparksInBounds(bounds) {
-    const { ne_lat, ne_lng, sw_lat, sw_lng } = bounds;
+  const fetchCarparksNearby = async (center) => {
+    const { lat, lng } = center;
+    const RADIUS = confirmedRadius * 1000;
     try {
-      const url = `${BASE_URL}?ne_lat=${ne_lat}&ne_lng=${ne_lng}&sw_lat=${sw_lat}&sw_lng=${sw_lng}`;
+      const url = `${BASE_URL}?center_lat=${lat}&center_lng=${lng}&radius=${RADIUS}`;
       const res = await fetch(url);
       const data = await res.json();
 
       if (data.length > 0) {
-        const flattened = data[0].carparks.map((c) => ({
-          id: c.id,
-          name: c.name,
-          lat: parseFloat(c.lat),
-          lng: parseFloat(c.lng),
-          available: c.availability?.[0]?.available_lots || 0,
-          total: c.availability?.[0]?.total_lots || 1,
-        }));
+        const flattened = data.flatMap((source) =>
+          source.carparks.map((c) => ({
+            id: c.id,
+            name: c.name,
+            lat: parseFloat(c.lat),
+            lng: parseFloat(c.lng),
+            available: c.availability?.[0]?.available_lots || 0,
+            total: c.availability?.[0]?.total_lots || 1,
+          }))
+        );
         setCarparks(flattened);
         setVisibleCarparks(flattened);
       } else {
@@ -61,7 +66,7 @@ export default function NearbyCarparks() {
     } catch (error) {
       console.error("Error fetching carparks:", error);
     }
-  }
+  };
 
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current.getPlace();
@@ -71,23 +76,10 @@ export default function NearbyCarparks() {
         lng: place.geometry.location.lng(),
       };
       setCurrentPosition(newLoc);
+      mapRef.current?.panTo(newLoc);
+      mapRef.current?.setZoom(15);
 
-      if (mapRef.current) {
-        mapRef.current.panTo(newLoc);
-        mapRef.current.setZoom(15);
-
-        const bounds = mapRef.current.getBounds();
-        if (bounds) {
-          const ne = bounds.getNorthEast();
-          const sw = bounds.getSouthWest();
-          fetchCarparksInBounds({
-            ne_lat: ne.lat(),
-            ne_lng: ne.lng(),
-            sw_lat: sw.lat(),
-            sw_lng: sw.lng(),
-          });
-        }
-      }
+      fetchCarparksNearby(newLoc);
     }
   };
 
@@ -107,8 +99,7 @@ export default function NearbyCarparks() {
       Math.cos((lat1 * Math.PI) / 180) *
         Math.cos((lat2 * Math.PI) / 180) *
         Math.sin(dLng / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
   const filteredCarparks = visibleCarparks.filter((c) => {
@@ -126,17 +117,31 @@ export default function NearbyCarparks() {
     );
   });
 
+  // ✅ Re-fetch carparks if a new source was added
+  useEffect(() => {
+    if (currentPosition && location.state?.newSourceAdded) {
+      fetchCarparksNearby(currentPosition);
+    }
+  }, [location.state?.newSourceAdded]);
+
   if (!isLoaded) return <div className="loading">Loading map...</div>;
 
   return (
     <div className="map-container">
-      {/* Back to Home Button */}
-      <button
-        className="back-home-btn"
-        onClick={() => navigate("/home")}
-      >
-        ← Back to Home
-      </button>
+      {/* Buttons below map controls */}
+      <div className="top-buttons">
+        <button className="back-home-btn" onClick={() => navigate("/home")}>
+          ← Back to Home
+        </button>
+        <button
+          className="add-source-btn"
+          onClick={() =>
+            navigate("/CarparkSourceForm", { state: { fromNearby: true } })
+          }
+        >
+          + Add Carpark Source
+        </button>
+      </div>
 
       <GoogleMap
         mapContainerStyle={containerStyle}
@@ -146,7 +151,6 @@ export default function NearbyCarparks() {
       >
         {filteredCarparks.map((c) => {
           const ratio = c.available / c.total;
-          const color = getMarkerColor(ratio);
           return (
             <Marker
               key={c.id}
@@ -159,7 +163,7 @@ export default function NearbyCarparks() {
               }}
               icon={{
                 path: google.maps.SymbolPath.CIRCLE,
-                fillColor: color,
+                fillColor: getMarkerColor(ratio),
                 fillOpacity: 0.9,
                 strokeColor: "white",
                 strokeWeight: 2,
@@ -234,7 +238,7 @@ function BottomSheet({
   confirmedRadius,
   setConfirmedRadius,
   selectedMode,
-  setSelectedMode
+  setSelectedMode,
 }) {
   const y = useMotionValue(0);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -256,8 +260,6 @@ function BottomSheet({
         if (info.offset.y < -100) setIsExpanded(true);
         else setIsExpanded(false);
       }}
-      animate={{ y: isExpanded ? 0 : 0 }}
-      transition={{ type: "spring", stiffness: 0, damping: 30 }}
     >
       <div className="sheet-handle" />
 
