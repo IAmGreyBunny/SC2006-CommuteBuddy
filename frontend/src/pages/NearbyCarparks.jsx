@@ -127,7 +127,6 @@ export default function NearbyCarparks() {
 
   return (
     <div className="map-container">
-      {/* Buttons below map controls */}
       <div className="top-buttons">
         <button className="back-home-btn" onClick={() => navigate("/home")}>
           ← Back to Home

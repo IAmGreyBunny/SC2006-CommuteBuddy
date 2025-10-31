@@ -19,6 +19,7 @@
   z-index: 10;
   width: 80%;
   max-width: 400px;
+
 }
 
 .location-input {
@@ -130,15 +131,13 @@
   transition: all 0.2s ease;
 }
 
-.back-home-btn, 
-.add-source-btn {
+.back-home-btn{
   background-color: white;
   border: 1px solid #ccc;
   color: #333;
 }
 
-.back-home-btn:hover,
-.add-source-btn:hover {
+.back-home-btn:hover{
   background-color: #f0f0f0;
 }
 
