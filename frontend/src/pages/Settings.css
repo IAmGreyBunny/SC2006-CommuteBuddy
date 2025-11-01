@@ -113,7 +113,7 @@
     width: 100vw;           
     height: 100vh;   
     margin: 0; 
-    background: #21a3df;
+    background: #89a0ea;
     padding: 16px;
     box-shadow: none;
     font-family: 'Segoe UI', sans-serif;
@@ -209,7 +209,7 @@
   }
   
   input:checked + .slider {
-    background-color: #0095FF;
+    background-color: #1e94e9;
   }
   
   input:checked + .slider:before {

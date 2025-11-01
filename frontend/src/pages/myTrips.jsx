@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MdOutlineModeOfTravel } from "react-icons/md";
 import "./myTrips.css";
 
 const favouriteTrips = [
@@ -34,7 +35,7 @@ function MyTrips() {
     <>
       <div className="my-trips-container">
         <header className="header">
-          <h1>My Trips 🧾</h1>
+          <h1>My Trips <MdOutlineModeOfTravel /></h1>
         </header>
 
         <div className="tab-buttons">
