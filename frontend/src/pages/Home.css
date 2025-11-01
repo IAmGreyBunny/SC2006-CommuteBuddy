@@ -28,22 +28,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
 }
 
-/* Profile info */
 .profile-info {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
 .avatar {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(0,0,0,0.06);
+  margin-right: 10px;
 }
 
 .greeting {
@@ -57,9 +53,7 @@
   color: #666;
 }
 
-/* icons */
-.header-icons .icon-button,
-.header-icons .icon-button:focus {
+.header-icons .icon-button {
   background: none;
   border: none;
   font-size: 22px;
@@ -77,7 +71,6 @@
   margin-top: 40px;
 }
 
-/* Main headline */
 .main-text h1 {
   font-size: 30px;
   margin-bottom: 8px;
@@ -90,12 +83,6 @@
 .main-text p {
   color: #555;
   font-size: 15px;
-  background: white;
-  width: 100%;
-}
-
-.trip-input input::placeholder {
-  color: #999;
 }
 
 .transport-settings {
@@ -167,10 +154,7 @@
 .save-btn:hover {
   background: #0063cc;
 }
-.prompt-btn.primary { background: var(--accent); color: white; }
-.prompt-btn.secondary { background: #ddd; color: #333; }
 
-/* footer nav: fixed on mobile, inline on desktop */
 .footer-nav {
   display: flex;
   justify-content: space-around;
@@ -183,34 +167,12 @@
   right: 0;
 }
 
-.nav-btn { background: none; border: none; font-size: 14px; color: gray; cursor: pointer; }
-.nav-btn.active { color: var(--primary); font-weight: 700; }
-
-/* ============================
-   Responsive behavior
-   ============================ */
-
-/* small screens (mobile-like) */
-@media (max-width: 760px) {
-  .home-page-wrapper {
-    padding: 14px;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .right-sidebar { display: none; }
-
-  .trip-input {
-    grid-template-columns: 1fr;
-  }
-
-  .footer-nav {
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 0;
-    padding: 10px 0;
-  }
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: gray;
+  cursor: pointer;
 }
 
 .nav-btn.active {
@@ -242,3 +204,4 @@
   font-size: 1.1rem;
   color: #dae6fa;
 }
+

@@ -105,7 +105,7 @@ function Login() {
         Forgot your password?{" "}
         <span
           className="login-link"
-          onClick={() => navigate("/forgot-password")}
+          onClick={() => navigate("/ForgotPassword")}
         >
           Reset here
         </span>
