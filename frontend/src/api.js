@@ -45,8 +45,8 @@ export const getNearbyLocations = async (latitude, longitude, radius = 500) => {
     const params = `?lat=${latitude}&lng=${longitude}&radius=${radius}`;
     
     const [busStopsRes, mrtStationsRes] = await Promise.all([
-        api.get(`nearby-bus-stops/${params}`),
-        api.get(`nearby-mrt-stations/${params}`)
+        api.get(`api/nearby-bus-stops/${params}`),
+        api.get(`api/nearby-mrt-stations/${params}`)
     ]);
 
     const busStopsData = handleResponse(busStopsRes);
@@ -78,7 +78,7 @@ export const getBusArrivals = async (busStopCode) => {
  * Your backend expects line code (e.g., 'NSL', 'EWL').
  */
 export const getMrtCrowdRealTime = async (trainLineCode) => {
-    const response = await api.get(`mrt-crowd/${trainLineCode}/`);
+    const response = await api.get(`api/mrt-crowd/${trainLineCode}/`);
     const data = handleResponse(response);
     // The actual crowd data is deeply nested in the LTA API structure
     return data.data.value || []; 
