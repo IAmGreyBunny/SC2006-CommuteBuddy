@@ -11,8 +11,8 @@ export default function Home({ userName = "James Lee" }) {
 
   const handleTransportClick = (mode) => {
     if (mode === "Car") navigate("/NearbyCarparks"); // route car → carparks
-    else if (mode === "Train") navigate("/train-options");
-    else if (mode === "Bus") navigate("/bus-options");
+    else if (mode === "Train") navigate("/CrowdDensity");
+    else if (mode === "Bus") navigate("/LiveTracker");
   };
 
   const handleMyTripsClick = () => navigate("/my-trips");
