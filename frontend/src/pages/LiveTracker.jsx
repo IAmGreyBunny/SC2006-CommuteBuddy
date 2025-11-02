@@ -614,6 +614,43 @@ export default function LiveTracker() {
                 icon: getBusIcon(isFavorite(stop.code, 'bus')),
                 title: stop.name,
             });
+  // Touch handlers
+  const handleTouchStart = (e) => {
+    setIsDragging(true);
+    setStartY(e.touches[0].clientY);
+  };
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const currentY = e.touches[0].clientY;
+    const diff = startY - currentY;
+    const newHeight = drawerHeight + (diff / window.innerHeight) * 100;
+    setDrawerHeight(Math.max(20, Math.min(90, newHeight)));
+    setStartY(currentY);
+  };
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    snapToPosition();
+  };
+
+  // Mouse handlers (for desktop)
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartY(e.clientY);
+  };
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const currentY = e.clientY;
+    const diff = startY - currentY;
+    const newHeight = drawerHeight + (diff / window.innerHeight) * 100;
+    setDrawerHeight(Math.max(20, Math.min(90, newHeight)));
+    setStartY(currentY);
+  };
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    snapToPosition();
+  };
 
             marker.addListener("click", () => {
                 setSelectedStopCode(stop.code);
@@ -718,6 +755,21 @@ export default function LiveTracker() {
             fetchNearbyBusStops(currentLocation || defaultLocation);
         }
     }, [searchTerm, fetchSearchResults, fetchNearbyBusStops, currentLocation, nearbyBusStops.length]);
+        {/* Transport Tabs */}
+        <div className="transport-tabs">
+          <NavLink to={"/NearbyCarparks"} className="transport-tab">
+            <span className="tab-icon"><FaCar /></span>
+            <span className="tab-label">Car</span>
+          </NavLink>
+          <NavLink className="transport-tab transport-tab-active">
+            <span className="tab-icon"><FaBus /></span>
+            <span className="tab-label">Bus</span>
+          </NavLink>
+          <NavLink to={"/CrowdDensity"} className="transport-tab">
+            <span className="tab-icon"><FaTrainSubway/></span>
+            <span className="tab-label">Train</span>
+          </NavLink>
+        </div>
 
 
     // 3. Google Maps Script Loader & Initializer
