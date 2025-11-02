@@ -1,51 +1,49 @@
 import { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
-import { ACCESS_TOKEN,REFRESH_TOKEN } from "../constants";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 
-function Form({route,method})
-{
-    // Set all the default to empty, we need this to remember the variable between renders
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+function Form({ route, method }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-    // Set the name variable which is used as a label throughout the form
-    const name = method === "login" ? "Login":"Register";
+  const name = method === "login" ? "Login" : "Register";
 
-    // This part handles the logic behind form submission
-    const handleSubmit = async (e) => {
-        setLoading(true);                                               
-        e.preventDefault();                                             // This lines prevents refreshes and other default behavior
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-        try{
-            const res = await api.post(route,{username,password});      // Sends to backend API
+    try {
+      const res = await api.post(route, { username, email, password });
 
-            // If it reaches this point, res is successful, so login works, sets the access tokens 
-            if(method==="login"){
-                localStorage.setItem(ACCESS_TOKEN,res.data.access);
-                localStorage.setItem(REFRESH_TOKEN,res.data.refresh);
-                localStorage.setItem("username", username); 
-                console.log("Saved username:", localStorage.getItem("username"));
-                navigate("/home");
-            }
-            else
-            {
-                alert("Invalid username or password.");
-            }
-
-        }catch(error){
-            alert(error)
-        } finally {
-            setLoading(false);
-        }
+      if (method === "login") {
+        // save tokens to local storage
+        localStorage.setItem(ACCESS_TOKEN, res.data.access);
+        localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
+        localStorage.setItem("username", username);
+        console.log("Saved username:", localStorage.getItem("username"));
+        navigate("/home");
+      } 
+      else if (method === "register") {
+        alert("Registration successful!");
+        navigate("/login");
+      } 
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Invalid username or password.");
+    } finally {
+      setLoading(false);
     }
+  };
 
     // Add everything together into a form
     return <form onSubmit={handleSubmit}>
         <h1>{name}</h1>
         <input type = "text" value={username} onChange={(e)=>setUsername(e.target.value)} placeholder="username"/>
+        <input type="text" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="email (optional)" />
         <input type = "text" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="password"/>
         <button type="submit"> {name} </button>
     </form>

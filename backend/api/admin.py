@@ -109,7 +109,8 @@ admin.site.register(FavouriteRoute)
 admin.site.register(TransportAlert)
 
 # Register User if not already registered
-try:
-    admin.site.register(User)
-except admin.sites.AlreadyRegistered:
-    pass
+admin.site.register(User)
+# try:
+#     admin.site.register(User)
+# except admin.sites.AlreadyRegistered:
+#     pass
