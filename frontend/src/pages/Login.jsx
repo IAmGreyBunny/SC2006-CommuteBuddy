@@ -145,7 +145,6 @@
 
 
 
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
@@ -161,13 +160,14 @@ function Login() {
     setLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8000/api/token/', { // ✅ Correct JWT endpoint
+      // Django JWT usually expects 'username', not 'email'
+      const response = await fetch('http://localhost:8000/api/token/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          email: email,
+          username: email,  // ✅ Changed from 'email' to 'username'
           password: password 
         })
       });
@@ -175,7 +175,6 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store JWT tokens
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
         navigate("/");
@@ -243,3 +242,4 @@ function Login() {
 }
 
 export default Login;
+
