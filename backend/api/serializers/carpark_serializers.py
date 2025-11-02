@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from ..models import CarparkSource, Carpark, CarparkAvailability
-from ..utils.CoodinateConverter import convert_xy_to_latlng
+from ..utils.CoordinateConverter import convert_xy_to_latlng
 
 class CarparkAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,7 +17,6 @@ class CarparkSerializer(serializers.ModelSerializer):
         model = Carpark
         fields = ['id','name', 'external_id', 'x_coord', 'y_coord', 'lat', 'lng', 'availability']
 
-    # Dummy for now
     def get_lat(self,obj):
         lat,_ = convert_xy_to_latlng(obj.x_coord,obj.y_coord)
         return lat
@@ -38,5 +37,17 @@ class CarparkSourceSerializer(serializers.ModelSerializer):
             'availability_api_url',
             'info_api_url',
             'headers',
+            'availability_path_mapping',
+            'info_path_mapping',
             'carparks',
         ]
+        extra_kwargs = {
+            "carparks": {"read_only": True},
+            "availability_path_mapping":{"write_only":True}        ,
+            "info_path_mapping": {"write_only": True},
+            "headers": {"write_only": True}
+        }
+
+    def create(self, validated_data):
+        carparkSource = CarparkSource.objects.create(**validated_data)
+        return carparkSource

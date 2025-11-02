@@ -1,373 +1,206 @@
 .home-container {
-  width: 100vw;           
-  height: 100vh;  
+  width: 100vw;
+  height: 100vh;
   margin: auto;
-  background: #fff;
-  padding: 16px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  font-family: 'Segoe UI', sans-serif;
-  position: relative;
-  padding-bottom: 80px;
-}
-
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; }
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: #222;
-  -webkit-font-smoothing:antialiased;
-}
-
-/* The page wrapper controls the two-column desktop layout */
-.home-page-wrapper {
+  padding: 20px;
+  font-family: "Segoe UI", sans-serif;
   display: flex;
-  min-height: 100vh;
-  gap: 32px;
-  align-items: flex-start;
-  padding: 28px;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+
+  background: linear-gradient(135deg, #4dacf0, #667eea);
 }
 
-/* Main container (left) */
-.home-container {
-  flex: 1 1 820px;               /* expand on desktop */
-  max-width: 980px;              /* keep readable line length */
-  background: transparent;
-  padding: 0;
-  position: relative;
+.home-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
 }
 
-/* Keep interior card-like look from your original file */
-.home-container > .home-header,
-.main-text,
-.trip-input,
-.tab-navigation,
-.recent-trips,
-.location-settings,
-.transport-settings {
-  background: transparent;
-}
 
-/* A content card that wraps the top portion visually (optional) */
 .home-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
 }
 
-/* Profile info */
 .profile-info {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
 .avatar {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(0,0,0,0.06);
+  margin-right: 10px;
 }
 
 .greeting {
   margin: 0;
   font-size: 18px;
+  font-weight: 600;
 }
 
 .location-text {
-  margin: 0;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 14px;
+  color: #666;
 }
 
-/* icons */
-.header-icons .icon-button,
-.header-icons .icon-button:focus {
+.header-icons .icon-button {
   background: none;
   border: none;
-  font-size: 20px;
-  margin-left: 8px;
+  font-size: 22px;
+  margin-left: 12px;
   cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
-/* Main headline */
+.icon-button:hover {
+  transform: scale(1.1);
+}
+
+.main-text {
+  text-align: center;
+  margin-top: 40px;
+}
+
 .main-text h1 {
-  font-size: 40px;
-  margin: 14px 0 6px;
-  line-height: 1.05;
+  font-size: 30px;
+  margin-bottom: 8px;
 }
 
-.main-text .highlight {
-  color: var(--primary);
+.highlight {
+  color: #dae6fa;
 }
 
 .main-text p {
-  margin: 0 0 18px;
-  color: var(--muted);
-}
-
-/* trip input -- grouped visually similar to card */
-.trip-input {
-  display: grid;
-  grid-template-columns: 1fr 1fr 200px;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.trip-input input {
-  padding: 12px 14px;
-  border: 1px solid #e0e6ef;
-  border-radius: 8px;
+  color: #555;
   font-size: 15px;
-  background: white;
-  width: 100%;
 }
 
-.trip-input input::placeholder {
-  color: #999;
+.transport-settings {
+  text-align: center;
+  margin-top: 40px;
 }
 
-.trip-button {
-  padding: 12px 16px;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
+.transport-settings h3 {
+  font-size: 20px;
+  margin-bottom: 24px;
+  color: #222;
   font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 6px 14px rgba(0,149,255,0.12);
 }
 
-/* Tabs */
-.tab-navigation {
+.transport-list {
   display: flex;
-  gap: 10px;
-  margin-bottom: 18px;
+  justify-content: center;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.tab-btn {
-  padding: 10px 16px;
-  background: #e9ecef;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
-  color: #666;
-  cursor: pointer;
-}
-
-.tab-btn.active {
-  background: var(--primary);
-  color: white;
-  font-weight: 700;
-}
-
-/* Cards / lists */
-.location-settings h3,
-.transport-settings h3,
-.recent-trips h3 {
-  margin: 10px 0;
-  font-size: 18px;
-}
-
-/* List layout */
-.location-list,
-.transport-list,
-.trip-cards {
+.transport-item {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-/* unified item style (keeps your earlier look but scalable) */
-.location-item,
-.transport-item,
-.trip-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px;
-  background: var(--card);
-  border-radius: 12px;
-  box-shadow: 0 4px 18px rgba(24,39,75,0.04);
-}
-
-/* Trip card specifics */
-.trip-icon { font-size: 24px; }
-.trip-details { flex: 1; }
-.trip-details p { margin: 0; font-weight: 700; }
-.trip-details small { color: var(--muted); display: block; margin-top: 6px; font-size: 13px; }
-.trip-arrow { color: #aaa; font-size: 18px; }
-
-/* clickable items */
-.location-item.clickable { cursor: pointer; }
-.location-item.clickable:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(24,39,75,0.06); }
-
-/* location / transport icons */
-.location-icon, .transport-icon { font-size: 22px; }
-
-/* your location emphasis */
-.your-location { color: var(--primary); font-weight: 600; }
-
-/* ---------------------------
-   Right Sidebar (desktop)
-   --------------------------- */
-.right-sidebar {
-  width: 320px;
-  min-width: 260px;
-  display: none; /* hidden on mobile, shown on desktop via media query */
-  flex-direction: column;
-  gap: 18px;
-  align-self: flex-start;
-}
-
-/* small promo card */
-.promo-card {
-  background: var(--card);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 6px 24px rgba(24,39,75,0.05);
-}
-.promo-card h4{ margin:0 0 8px; }
-.promo-card p{ margin:0 0 12px; color:var(--muted); font-size:14px; }
-.sidebar-btn {
-  padding: 8px 12px;
-  background: var(--primary);
-  color:white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* location prompt overlay (keeps your previous styling) */
-.location-prompt-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1400;
-}
-
-.location-prompt {
   background: white;
   border-radius: 16px;
-  padding: 22px;
-  width: 380px;
-  max-width: calc(100% - 40px);
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(18, 44, 95, 0.16);
-}
-
-.close-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 20px;
+  width: 90px;
+  height: 90px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  color: #666;
+  transition: all 0.3s ease;
 }
 
-.prompt-icon { font-size: 42px; margin-bottom: 8px; }
+.transport-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
 
-.prompt-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
-.prompt-btn {
-  padding: 12px;
-  border-radius: 10px;
+.transport-item.selected {
+  background: #007bff;
+  color: white;
+  transform: translateY(-3px);
+}
+
+.transport-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.transport-label {
+  font-weight: 500;
+}
+
+.save-btn {
+  background: #007bff;
+  color: white;
   border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
   font-weight: 600;
+  margin-top: 30px;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
-.prompt-btn.primary { background: var(--accent); color: white; }
-.prompt-btn.secondary { background: #ddd; color: #333; }
 
-/* footer nav: fixed on mobile, inline on desktop */
+.save-btn:hover {
+  background: #0063cc;
+}
+
 .footer-nav {
   display: flex;
   justify-content: space-around;
-  padding: 12px 18px;
+  padding: 12px 0;
   background: white;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #ddd;
   position: fixed;
-  bottom: 12px;
-  left: 12px;
-  right: 12px;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(18,44,95,0.06);
-  z-index: 1500;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
-.nav-btn { background: none; border: none; font-size: 14px; color: gray; cursor: pointer; }
-.nav-btn.active { color: var(--primary); font-weight: 700; }
-
-/* ============================
-   Responsive behavior
-   ============================ */
-
-/* small screens (mobile-like) */
-@media (max-width: 760px) {
-  .home-page-wrapper {
-    padding: 14px;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .right-sidebar { display: none; }
-
-  .trip-input {
-    grid-template-columns: 1fr;
-  }
-
-  .footer-nav {
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 0;
-    padding: 10px 0;
-  }
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: gray;
+  cursor: pointer;
 }
 
-/* medium and up: show the right sidebar and desktop layout */
-@media (min-width: 980px) {
-  .right-sidebar { display: flex; }
-  .footer-nav {
-    position: sticky;
-    bottom: auto;
-    left: auto;
-    right: auto;
-    border-radius: 8px;
-    padding: 10px;
-    justify-content: flex-end;
-    gap: 18px;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  /* make trip cards flow in rows for a desktop feel */
-  .trip-cards {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .trip-card {
-    width: calc(50% - 8px);
-  }
-
-  .location-list, .transport-list {
-    flex-direction: column;
-  }
+.nav-btn.active {
+  color: #007bff;
+  font-weight: 600;
 }
 
-/* extra large screens - spread more */
-@media (min-width: 1280px) {
-  .home-page-wrapper { padding: 40px 64px; }
-  .trip-card { width: calc(33.333% - 10.6px); }
+.main-text {
+  margin-bottom: 5rem; 
+}
+
+.transport-settings {
+  margin-top: 0rem;
+}
+.main-text {
+  margin-top: 250px;          
+  text-align: center;
+  line-height: 1.4;
+  color: #222222;
+}
+
+.main-text h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.main-text p {
+  font-size: 1.1rem;
+  color: #dae6fa;
 }

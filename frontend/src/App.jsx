@@ -6,107 +6,158 @@ import Home from './pages/Home';
 import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
 import NearbyCarparks from './pages/NearbyCarparks';
-import CrowdDensity from './pages/CrowdDensity';
-import LiveTracker from './pages/LiveTracker';
-import NotFound from './pages/NotFound';
-
-import DensityDebugger from './pages/DensityDebugger.jsx';
-import BusDebugger from './pages/BusDebugger';
-
-// Import Form and ForgotPassword to use them directly
-import Form from './components/Form';
-import ForgotPassword from './pages/ForgotPassword'; 
+import CarparkSourceForm from './pages/CarparkSourceForm';
 import './App.css';
 
-// Custom Login wrapper using your centralized Form.jsx
-function LoginWrapper() {
-    return (
-        <div className="login-container">
-            <div className="login-card">
-                <Form route="/token/" method="login" />
-                <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '14px' }}>
-                    Don't have an account?{' '}
-                    <a href="/register" style={{ color: '#0095FF', fontWeight: 'bold' }}>
-                        Sign Up
-                    </a>
-                </p>
-                <a href="/forgot-password" className="forgot-password">Forgot Password?</a>
-            </div>
-        </div>
-    );
+
+function Login({ onSwitchToSignUp, onLoginSuccess }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Login attempted with:', email, password);
+
+    onLoginSuccess();
+    navigate('/home');
+  };
+
+  return (
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Welcome Back</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+            />
+          </div>
+          <button type="submit">Login</button>
+          <a href="#" className="forgot-password">Forgot Password?</a>
+          <p style={{ textAlign: 'center', marginTop: '1rem' }}>
+            Don't have an account?{' '}
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); onSwitchToSignUp(); }}
+              style={{ color: '#0095FF', fontWeight: 'bold' }}
+            >
+              Sign Up
+            </a>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
 }
 
-// ProtectedRoute checks localStorage for a simple token/user presence.
-// We keep this check simple and rely on the imported component in components/
+//protected route
+
 const ProtectedRoute = ({ children }) => {
-    // This assumes your ProtectedRoute.jsx handles the actual JWT logic
-    const isAuthenticated = !!localStorage.getItem('access'); 
-    return isAuthenticated ? children : <Navigate to="/login" />;
+  const isLoggedIn = !!localStorage.getItem('user'); // simple auth check
+  return isLoggedIn ? children : <Navigate to="/login" />;
 };
 
 //not found page
-const NotFoundPage = () => ( // Renamed to avoid collision with file import
-  <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-    <h1>404 - Page Not Found</h1>
-    <p>The page you are looking for does not exist.</p>
-  </div>
+
+const NotFound = () => (
+  <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+    <h1>404 - Page Not Found</h1>
+    <p>The page you are looking for does not exist.</p>
+  </div>
 );
 
-function AppRoutes() { // Renamed from App to AppRoutes for clean usage with BrowserRouter
-  const [userData] = useState({ fullName: 'James Lee' });
+function App() {
+  const [userData, setUserData] = useState({ fullName: 'James Lee' });
 
-    // Note: navigate is now imported from react-router-dom at the top level
-  return (
-    <Routes>
-      <Route path="/" element={<StartupPage />} />
-      
-      {/* AUTH ROUTES: Use Form.jsx component directly */}
-      <Route path="/login" element={<LoginWrapper />} />
-      <Route path="/register" element={<Form route="/user/register/" method="register" />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      
+  const handleSignUpSuccess = (signupData) => {
+    setUserData(signupData);
+    localStorage.setItem('user', JSON.stringify(signupData)); // save login state
+  };
 
-      {/* CORE PROTECTED APPLICATION PAGES */}
-      <Route path="/home" element={<ProtectedRoute><Home userName={userData.fullName} /></ProtectedRoute>} />
-      <Route path="/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-      <Route path="/NearbyCarparks" element={<ProtectedRoute><NearbyCarparks /></ProtectedRoute>} />
+  const handleLoginSuccess = () => {
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
 
-      {/* LIVE TRACKER & CROWD DENSITY PAGES */}
-      <Route
-    path="/LiveTracker"
-    element={
-        // <ProtectedRoute>
-            <LiveTracker /> 
-            //{/* <BusDebugger />  <-- TEMPORARILY USE THIS FOR TESTING */}
-        //</Routes>/* </ProtectedRoute>
-    }
-/>
-      {/* Crowd Density Routes: one for selector view, one for deep link */}
-      <Route path="/CrowdDensity" element={
-            // <ProtectedRoute>
-            // <DensityDebugger />
-              <CrowdDensity />
-            // 
-            } />
-      <Route path="/crowd-density/:stationCode" element={
-        // <ProtectedRoute>
-          <CrowdDensity />
-          // <DensityDebugger />
-        // </ProtectedRoute>
-        } />
+  const navigate = useNavigate(); // used for callbacks
 
+  return (
+    <Routes>
+      <Route path="/" element={<StartupPage />} />
+      <Route
+        path="/login"
+        element={
+          <Login
+            onSwitchToSignUp={() => navigate('/signup')}
+            onLoginSuccess={handleLoginSuccess}
+          />
+        }
+      />
+      <Route
+        path="/signup"
+        element={<SignUp onSignUpSuccess={handleSignUpSuccess} />}
+      />
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <Home userName={userData.fullName} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-trips"
+        element={
+          <ProtectedRoute>
+            <MyTrips />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/NearbyCarparks"
+        element={
+            <NearbyCarparks />
+        }
+      />
+      <Route
+        path="/CarparkSourceForm"
+        element={
+          <ProtectedRoute>
+            <CarparkSourceForm />
+          </ProtectedRoute>
+        }
+      />
 
-      {/* Catch-all */}
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
-  );
+      {/* Catch-all */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 }
-
 export default function WrappedApp() {
-  return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
-  );
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
 }
