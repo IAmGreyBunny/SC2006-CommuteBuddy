@@ -1,91 +1,3 @@
-// import React from "react";
-// import { useNavigate } from "react-router-dom";
-// import "./Home.css";
-
-// export default function Home({ userName = "James Lee" }) {
-//   const navigate = useNavigate();
-
-//   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-//     userName
-//   )}&background=667eea&color=fff&size=48`;
-
-//   const handleTransportClick = (mode) => {
-//     if (mode === "Car") navigate("/NearbyCarparks"); // route car → carparks
-//     else if (mode === "Train") navigate("/CrowdDensity");
-//     else if (mode === "Bus") navigate("/LiveTracker");
-//   };
-
-//   const handleMyTripsClick = () => navigate("/my-trips");
-//   const handleSettingsClick = () => navigate("/settings");
-
-//   return (
-//     <div className="home-container">
-//       {/* Header */}
-//       <header className="home-header">
-//         <div className="profile-info">
-//           <img src={avatarUrl} alt="Profile" className="avatar" />
-//           <div>
-//             <h2 className="greeting">Hi, {userName}!</h2>
-//             <p className="location-text">📍 Singapore</p>
-//           </div>
-//         </div>
-//         <div className="header-icons">
-//           <button className="icon-button">🔔</button>
-//           <button className="icon-button">⚙️</button>
-//         </div>
-//       </header>
-
-//       {/* Main Title */}
-//       <section className="main-text">
-//         <h1>
-//           Plan. <span className="highlight">Ride.</span> Arrive.
-//         </h1>
-//         <p>Choose your preferred mode of transport below.</p>
-//       </section>
-
-//       {/* Preferred Transport Section */}
-//       <section className="transport-settings">
-//         <h3>Preferred Mode of Transport</h3>
-//         <div className="transport-list">
-//           <div
-//             className="transport-item"
-//             onClick={() => handleTransportClick("Car")}
-//           >
-//             <span className="transport-icon">🚗</span>
-//             <span className="transport-label">Car</span>
-//           </div>
-//           <div
-//             className="transport-item"
-//             onClick={() => handleTransportClick("Train")}
-//           >
-//             <span className="transport-icon">🚆</span>
-//             <span className="transport-label">Train</span>
-//           </div>
-//           <div
-//             className="transport-item"
-//             onClick={() => handleTransportClick("Bus")}
-//           >
-//             <span className="transport-icon">🚌</span>
-//             <span className="transport-label">Bus</span>
-//           </div>
-//         </div>
-//       </section>
-
-//       {/* Footer */}
-//       <footer className="footer-nav">
-//         <button className="nav-btn active">🏠 Home</button>
-//         <button className="nav-btn" onClick={handleMyTripsClick}>
-//           🧾 My Trips
-//         </button>
-//         <button className="nav-btn" onClick={handleSettingsClick}>
-//           ⚙️ Settings
-//         </button>
-//       </footer>
-//     </div>
-//   );
-// }
-
-
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -117,10 +29,6 @@ export default function Home({ userName = "James Lee" }) {
             <h2 className="greeting">Hi, {userName}!</h2>
             <p className="location-text">📍 Singapore</p>
           </div>
-        </div>
-        <div className="header-icons">
-          <button className="icon-button">🔔</button>
-          <button className="icon-button">⚙️</button>
         </div>
       </header>
 

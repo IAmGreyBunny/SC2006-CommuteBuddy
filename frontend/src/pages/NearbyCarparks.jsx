@@ -8,7 +8,8 @@ import {
 } from "@react-google-maps/api";
 import { motion, useMotionValue } from "framer-motion";
 import "./NearbyCarparks.css";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, NavLink } from "react-router-dom";
+import { FaCar, FaBus, FaTrainSubway } from "react-icons/fa6";
 
 const containerStyle = { width: "100%", height: "100vh" };
 const BASE_URL =
@@ -235,8 +236,6 @@ function BottomSheet({
   setSearchRadius,
   confirmedRadius,
   setConfirmedRadius,
-  selectedMode,
-  setSelectedMode,
 }) {
   const y = useMotionValue(0);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -261,19 +260,24 @@ function BottomSheet({
     >
       <div className="sheet-handle" />
 
-      <div className="transport-nav">
-        {["car", "bus", "train"].map((mode) => (
-          <div
-            key={mode}
-            className={`nav-item ${selectedMode === mode ? "active" : ""}`}
-            onClick={() => setSelectedMode(mode)}
-          >
-            {mode === "car" && "🚗"}
-            {mode === "bus" && "🚌"}
-            {mode === "train" && "🚆"}
-            <span>{mode.charAt(0).toUpperCase() + mode.slice(1)}</span>
-          </div>
-        ))}
+      <div className="transport-tabs">
+        <NavLink to={"/NearbyCarparks"} 
+        className="transport-tab transport-tab-active">
+          <span className="tab-icon"><FaCar /></span>
+          <span className="tab-label">Car</span>
+        </NavLink>
+        <NavLink to={"/LiveTracker"} 
+        className="transport-tab">
+          <span className="tab-icon"><FaBus /></span>
+          <span className="tab-label">Bus</span>
+        </NavLink>
+        <NavLink
+          to={"/CrowdDensity"}
+          className="transport-tab"
+        >
+          <span className="tab-icon"><FaTrainSubway /></span>
+          <span className="tab-label">Train</span>
+        </NavLink>
       </div>
 
       {isExpanded && (
