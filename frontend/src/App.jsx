@@ -7,6 +7,10 @@ import MyTrips from './pages/myTrips';
 import Settings from './pages/Settings';
 import NearbyCarparks from './pages/NearbyCarparks';
 import CarparkSourceForm from './pages/CarparkSourceForm';
+import CrowdDensity from './pages/CrowdDensity';
+import LiveTracker from './pages/LiveTracker';
+import DensityDebugger from './pages/DensityDebugger.jsx';
+import BusDebugger from './pages/BusDebugger';
 import './App.css';
 
 
@@ -148,6 +152,32 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/LiveTracker"
+        element={
+        // <ProtectedRoute>
+            <LiveTracker /> 
+            //{/* <BusDebugger />  <-- TEMPORARILY USE THIS FOR TESTING */}
+        //</Routes>/* </ProtectedRoute>
+        }
+      />
+
+      <Route path="/CrowdDensity" element={
+            // <ProtectedRoute>
+            // <DensityDebugger />
+              <CrowdDensity />
+            // 
+            } />
+            
+      <Route path="/crowd-density/:stationCode" element={
+        // <ProtectedRoute>
+          <CrowdDensity />
+          // <DensityDebugger />
+        // </ProtectedRoute>
+        } />
+
+
 
       {/* Catch-all */}
       <Route path="*" element={<NotFound />} />
