@@ -1,7 +1,10 @@
-import Form from "../components/Form"; 
+import { useNavigate } from "react-router-dom";
+import Form from "../components/Form";
 import "./Login.css";
 
 function Login() {
+  const navigate = useNavigate(); 
+
   return (
     <div className="login-container">
       <h2>Login</h2>
