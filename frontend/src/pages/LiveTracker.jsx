@@ -1,1898 +1,948 @@
-// frontend/src/pages/LiveTracker.jsx - UPDATED FOR BACKEND INTEGRATION
+// import { useState, useEffect, useRef, useCallback } from "react";
+// import api from "../api";
+// import "./LiveTracker.css";
+// import { FaTrainSubway, FaBus, FaCar } from "react-icons/fa6";
+// import { NavLink, useNavigate } from "react-router-dom";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+// // Constants for display
+// const homeLocation = { lat: 1.3491, lng: 103.7494 }; // Example: Bukit Batok area (NTU is ~1.3477, 103.6819)
+// const BUS_ICON_URL = "/bus.svg"; // Assuming you have a bus.svg at the root or /src/assets/
+
+// export default function LiveTracker() {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [expandedStops, setExpandedStops] = useState({});
+//   const [drawerHeight, setDrawerHeight] = useState(30);
+//   const [isDragging, setIsDragging] = useState(false);
+//   const [startY, setStartY] = useState(0);
+//   const [nearbyBusStops, setNearbyBusStops] = useState([]);
+//   const [selectedStopCode, setSelectedStopCode] = useState(null);
+//   const [realTimeArrivals, setRealTimeArrivals] = useState({});
+//   const [loadingStops, setLoadingStops] = useState(true);
+//   const [loadingArrivals, setLoadingArrivals] = useState(false);
+//   const [favorites, setFavorites] = useState([]); // To store user's bus stop favourites
+
+//   const mapRef = useRef(null);
+//   const mapInstanceRef = useRef(null);
+//   const markersRef = useRef([]);
+//   const navigate = useNavigate();
+
+//   // --- Helper functions ---
+
+//   // Function to check if a stop is a favorite
+//   const isFavorite = (stopCode) => favorites.some(fav => fav.route_id === stopCode && fav.route_type === 'bus');
+
+//   // API: Fetch nearby bus stops (on load)
+//   const fetchNearbyBusStops = useCallback(async () => {
+//     setLoadingStops(true);
+//     try {
+//       // Using hardcoded NTU coordinates (latitude: 1.3483, longitude: 103.6831 - closer to South Spine)
+//       // Or a central point like Jurong East: 1.3330, 103.7420
+//       const lat = homeLocation.lat;
+//       const lng = homeLocation.lng;
+//       const radius = 1000; // 1km radius
+
+//       const res = await api.get(`/api/nearby-bus-stops/?lat=${lat}&lng=${lng}&radius=${radius}`);
+//       
+//       if (res.data.success && res.data.stops) {
+//         // Map the raw response to include required fields for the UI
+//         const mappedStops = res.data.stops.map(stop => ({
+//           code: stop.bus_stop_code,
+//           name: stop.description || stop.road_name,
+//           distance: `${(stop.distance * 1000).toFixed(0)} m`, // Convert km to meters
+//           lat: stop.latitude,
+//           lng: stop.longitude,
+//           // Note: buses array will be fetched in another call (fetchBusArrivals)
+//           buses: []
+//         }));
+//         setNearbyBusStops(mappedStops);
+//         initializeMarkers(mappedStops);
+//       } else {
+//         console.error("Failed to fetch nearby bus stops:", res.data.error);
+//       }
+//     } catch (error) {
+//       console.error("Error in fetchNearbyBusStops:", error);
+//     } finally {
+//       setLoadingStops(false);
+//     }
+//   }, []);
+
+
+//   // API: Fetch real-time bus arrivals for a stop
+//   const fetchBusArrivals = useCallback(async (stopCode) => {
+//     setLoadingArrivals(true);
+//     try {
+//       const res = await api.get(`/api/bus-arrival-processed/${stopCode}/`);
+//       
+//       if (res.data.success && res.data.data) {
+//         setRealTimeArrivals(prev => ({
+//           ...prev,
+//           [stopCode]: res.data.data // Store processed service data
+//         }));
+//         
+//         // Update the main nearbyBusStops list with the new data
+//         setNearbyBusStops(prevStops => prevStops.map(stop => 
+//           stop.code === stopCode ? { ...stop, buses: res.data.data } : stop
+//         ));
+//       } else {
+//         console.error(`Failed to fetch arrivals for ${stopCode}:`, res.data.error);
+//       }
+//     } catch (error) {
+//       console.error(`Error fetching arrivals for ${stopCode}:`, error);
+//     } finally {
+//       setLoadingArrivals(false);
+//     }
+//   }, []);
+
+//   // API: Fetch user's favorite routes
+//   const fetchFavorites = useCallback(async () => {
+//     try {
+//       const res = await api.get("/api/user/favourites/");
+//       setFavorites(res.data);
+//     } catch (error) {
+//       console.error("Error fetching favorites:", error);
+//     }
+//   }, []);
+
+//   // API: Add/Remove favorite
+//   const toggleFavorite = async (stopCode, stopName) => {
+//     const fav = isFavorite(stopCode);
+//     try {
+//       if (fav) {
+//         // Remove favorite
+//         const favouriteId = favorites.find(f => f.route_id === stopCode && f.route_type === 'bus').id;
+//         await api.delete(`/api/user/favourites/remove/${favouriteId}/`);
+//       } else {
+//         // Add favorite
+//         await api.post("/api/user/favourites/add/", {
+//           route_type: 'bus',
+//           route_id: stopCode,
+//           nickname: stopName,
+//         });
+//       }
+//       fetchFavorites(); // Refresh the list
+//     } catch (error) {
+//       console.error("Error toggling favorite:", error);
+//       alert(`Failed to ${fav ? 'remove' : 'add'} favorite.`);
+//     }
+//   };
+
+//   // --- Effects and Map Logic ---
+
+//   // Initial data fetch
+//   useEffect(() => {
+//     fetchNearbyBusStops();
+//     fetchFavorites();
+//   }, [fetchNearbyBusStops, fetchFavorites]);
+
+//   // Re-fetch arrivals if selected stop changes
+//   useEffect(() => {
+//     if (selectedStopCode) {
+//       fetchBusArrivals(selectedStopCode);
+//       // Set up auto-refresh every 20 seconds (matching backend cache)
+//       const intervalId = setInterval(() => {
+//         fetchBusArrivals(selectedStopCode);
+//       }, 20000);
+//       return () => clearInterval(intervalId);
+//     }
+//   }, [selectedStopCode, fetchBusArrivals]);
+
+//   // Map initialization
+//   useEffect(() => {
+//     if (window.google && mapRef.current) {
+//       initializeMap(nearbyBusStops);
+//     } else if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
+//       const script = document.createElement("script");
+//       script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCBQdPszHAS0A2vGyc9FLAhRY9CHzr5M2M`; // You must use your actual VITE_GOOGLE_MAPS_API_KEY here, replace with a proper ENV variable retrieval
+//       script.async = true;
+//       script.defer = true;
+//       script.onload = () => initializeMap(nearbyBusStops);
+//       document.head.appendChild(script);
+//     }
+//   }, [nearbyBusStops]); // Re-run when stops data is loaded
+
+//   const initializeMap = (stops) => {
+//     if (!window.google || !mapRef.current) return;
+
+//     const map = new window.google.maps.Map(mapRef.current, {
+//       center: homeLocation,
+//       zoom: 15,
+//       disableDefaultUI: false,
+//       zoomControl: true,
+//       mapTypeControl: false,
+//       streetViewControl: false,
+//       fullscreenControl: false,
+//       styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
+//     });
+
+//     mapInstanceRef.current = map;
+//     markersRef.current = []; // Clear previous markers
+
+//     new window.google.maps.Marker({
+//       position: homeLocation,
+//       map,
+//       icon: {
+//         path: window.google.maps.SymbolPath.CIRCLE,
+//         scale: 10,
+//         fillColor: "#4285F4",
+//         fillOpacity: 1,
+//         strokeColor: "#ffffff",
+//         strokeWeight: 3,
+//       },
+//       title: "Your Location",
+//     });
+
+//     stops.forEach((stop) => {
+//       const marker = new window.google.maps.Marker({
+//         position: { lat: stop.lat, lng: stop.lng },
+//         map,
+//         icon: {
+//           // Using a simple colored circle or a custom SVG for bus stops
+//           path: window.google.maps.SymbolPath.CIRCLE,
+//           scale: 7,
+//           fillColor: "#3bb59d", // Greenish color for bus/bus stop
+//           fillOpacity: 0.8,
+//           strokeColor: "#1a1a1a",
+//           strokeWeight: 1,
+//         },
+//         title: stop.name,
+//       });
+
+//       const infoWindow = new window.google.maps.InfoWindow({
+//         content: `<div style="font-weight: 600; color: #1a1a1a; padding: 4px 8px; margin: 0; line-height: 1;">${stop.name} (${stop.code})</div>`,
+//         maxWidth: 200,
+//       });
+
+//       marker.addListener("click", () => {
+//         markersRef.current.forEach((m) => m.infoWindow?.close());
+//         infoWindow.open(map, marker);
+//         setSelectedStopCode(stop.code);
+//         setExpandedStops({ [stop.code]: true });
+//         setDrawerHeight(60);
+//         map.panTo({ lat: stop.lat - 0.003, lng: stop.lng });
+
+//         setTimeout(() => {
+//           document
+//             .getElementById(`stop-${stop.code}`)
+//             ?.scrollIntoView({ behavior: "smooth", block: "start" });
+//         }, 300);
+//       });
+
+//       markersRef.current.push({ marker, infoWindow });
+//     });
+//   };
+
+//   // --- UI Logic ---
+
+//   // Drawer drag handlers (keeping your drag logic)
+//   const handleTouchStart = (e) => {
+//     setIsDragging(true);
+//     setStartY(e.touches[0].clientY);
+//   };
+//   const handleTouchMove = (e) => {
+//     if (!isDragging) return;
+//     e.preventDefault();
+//     const currentY = e.touches[0].clientY;
+//     const diff = startY - currentY;
+//     const newHeight = drawerHeight + (diff / window.innerHeight) * 100;
+//     setDrawerHeight(Math.max(20, Math.min(90, newHeight)));
+//     setStartY(currentY);
+//   };
+//   const handleTouchEnd = () => {
+//     setIsDragging(false);
+//     snapToPosition();
+//   };
+//   const handleMouseDown = (e) => {
+//     setIsDragging(true);
+//     setStartY(e.clientY);
+//   };
+//   const handleMouseMove = (e) => {
+//     if (!isDragging) return;
+//     e.preventDefault();
+//     const currentY = e.clientY;
+//     const diff = startY - currentY;
+//     const newHeight = drawerHeight + (diff / window.innerHeight) * 100;
+//     setDrawerHeight(Math.max(20, Math.min(90, newHeight)));
+//     setStartY(currentY);
+//   };
+//   const handleMouseUp = () => {
+//     setIsDragging(false);
+//     snapToPosition();
+//   };
+//   const snapToPosition = () => {
+//     if (drawerHeight < 40) setDrawerHeight(30);
+//     else if (drawerHeight > 70) setDrawerHeight(85);
+//     else setDrawerHeight(60);
+//   };
+
+//   useEffect(() => {
+//     if (isDragging) {
+//       document.addEventListener("mousemove", handleMouseMove);
+//       document.addEventListener("mouseup", handleMouseUp);
+//       return () => {
+//         document.removeEventListener("mousemove", handleMouseMove);
+//         document.removeEventListener("mouseup", handleMouseUp);
+//       };
+//     }
+//   }, [isDragging, startY, drawerHeight]);
+
+
+//   // Filter and sort stops for the list
+//   const stopsToDisplay = nearbyBusStops
+//     .filter(
+//       (stop) =>
+//         stop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         stop.code.includes(searchTerm) ||
+//         // Check against the fetched buses if available, otherwise skip this check
+//         (realTimeArrivals[stop.code] || []).some(service => 
+//           service.service_no.toLowerCase().includes(searchTerm.toLowerCase())
+//         )
+//     )
+//     .sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+
+
+//   // Toggles the expansion of a stop's details and triggers data fetch if needed
+//   const toggleStopDetails = (stop) => {
+//     const code = stop.code;
+//     setExpandedStops(prev => ({ ...prev, [code]: !prev[code] }));
+//     setSelectedStopCode(code); // Always set the selected stop code to fetch/refresh data
+
+//     // Ensure map is centered when stop is clicked
+//     if (mapInstanceRef.current) {
+//       mapInstanceRef.current.panTo({ lat: stop.lat - 0.003, lng: stop.lng });
+//     }
+//   };
+
+//   // Get UI styling for arrival times
+//   const getArrivalColor = (time) =>
+//     time <= 2 ? "#ef4444" : time <= 5 ? "#f59e0b" : "#3bb59d";
+
+//   const getArrivalLabel = (time) =>
+//     time === 0 ? "Arr" : time === 1 ? "1 min" : `${time} min`;
+
+//   return (
+//     <div className="container">
+//       <div ref={mapRef} className="map-container" />
+
+//       <div className="drawer" style={{ height: `${drawerHeight}vh` }}>
+//         <div
+//           className="drag-handle"
+//           onTouchStart={handleTouchStart}
+//           onTouchMove={handleTouchMove}
+//           onTouchEnd={handleTouchEnd}
+//           onMouseDown={handleMouseDown}
+//         >
+//           <div className="drag-bar" />
+//         </div>
+
+//         <div className="drawer-header">
+//           <input
+//             type="text"
+//             placeholder="Search bus stop or bus number..."
+//             className="search-input"
+//             value={searchTerm}
+//             onChange={(e) => setSearchTerm(e.target.value)}
+//           />
+//         </div>
+
+//         {/* Transport Tabs - Use NavLink for routing */}
+//         <div className="transport-tabs">
+//           <NavLink to={"/NearbyCarparks"} className="transport-tab">
+//             <span className="tab-icon"><FaCar /></span>
+//             <span className="tab-label">Car</span>
+//           </NavLink>
+//           <NavLink to={"/LiveTracker"} className="transport-tab transport-tab-active">
+//             <span className="tab-icon"><FaBus /></span>
+//             <span className="tab-label">Bus</span>
+//           </NavLink>
+//           <NavLink to={"/CrowdDensity"} className="transport-tab">
+//             <span className="tab-icon"><FaTrainSubway /></span>
+//             <span className="tab-label">Train</span>
+//           </NavLink>
+//         </div>
+
+//         <div className="content">
+//           {loadingStops && <div className="search-info">Loading nearby stops...</div>}
+//           {searchTerm && !loadingStops && (
+//             <div className="search-info">
+//               Found {stopsToDisplay.length} result{stopsToDisplay.length !== 1 ? "s" : ""}
+//             </div>
+//           )}
+
+//           <div className="stops-list">
+//             {!loadingStops && stopsToDisplay.length === 0 ? (
+//               <div className="empty-state">
+//                 <div className="empty-state-icon">🔍</div>
+//                 <p className="empty-state-text">No matching bus stops found</p>
+//               </div>
+//             ) : (
+//               stopsToDisplay.map((stop) => {
+//                 const isStopExpanded = expandedStops[stop.code];
+//                 const arrivals = realTimeArrivals[stop.code] || [];
+//                 const totalBuses = arrivals.length > 0 ? arrivals.length : '—';
+//                 const isFav = isFavorite(stop.code);
+
+//                 return (
+//                   <div
+//                     key={stop.code}
+//                     id={`stop-${stop.code}`}
+//                     className={`stop-card ${selectedStopCode === stop.code ? "stop-card-selected" : ""}`}
+//                   >
+//                     <div
+//                       className="stop-header"
+//                       onClick={() => toggleStopDetails(stop)}
+//                     >
+//                         <div className="stop-left">
+//                           <button 
+//                             className="favorite-btn" 
+//                             onClick={(e) => {
+//                               e.stopPropagation();
+//                               toggleFavorite(stop.code, stop.name);
+//                             }}
+//                           >
+//                             {isFav ? "⭐" : "☆"}
+//                           </button>
+//                           <div>
+//                             <div className="stop-name-row">
+//                               <h3 className="stop-name">{stop.name}</h3>
+//                               <span className="stop-code">{stop.code}</span>
+//                             </div>
+//                             <div className="stop-meta">
+//                               <span className="stop-distance">
+//                                 {stop.distance}
+//                               </span>
+//                               <span className="stop-bus-count">
+//                                 {totalBuses} services
+//                               </span>
+//                             </div>
+//                           </div>
+//                         </div>
+//                         <button className="expand-btn">
+//                           {isStopExpanded ? "▲" : "▼"}
+//                         </button>
+//                     </div>
+
+//                     {isStopExpanded && (
+//                       <div className="bus-arrivals">
+//                         {loadingArrivals && selectedStopCode === stop.code ? (
+//                           <div className="loading-indicator">Loading arrivals...</div>
+//                         ) : arrivals.length === 0 ? (
+//                           <div className="empty-state-text" style={{ padding: '16px 0', textAlign: 'center', color: '#ef4444' }}>
+//                             No buses arriving soon.
+//                           </div>
+//                         ) : (
+//                           arrivals.map((bus, i) => (
+//                             <div key={i} className="bus-row">
+//                               <div className="bus-info">
+//                                 <div className="bus-number">{bus.service_no}</div>
+//                                 <div className="bus-destination">
+//                                   → {bus.destination_code}
+//                                 </div>
+//                               </div>
+//                               <div className="arrival-times">
+//                                 {bus.buses.slice(0, 3).map((arrival, j) => (
+//                                   <div key={j} className="arrival-block">
+//                                     <div
+//                                       className="arrival-time"
+//                                       style={{
+//                                         backgroundColor: getArrivalColor(arrival.waiting_time),
+//                                       }}
+//                                     >
+//                                       {getArrivalLabel(arrival.waiting_time)}
+//                                     </div>
+//                                     <span className="bus-type-label">
+//                                       {arrival.load_display.split(' ')[0]}
+//                                     </span>
+//                                   </div>
+//                                 ))}
+//                             </div>
+//                             <button 
+//                               className="favorite-btn" 
+//                               onClick={(e) => {
+//                                 e.stopPropagation();
+//                                 toggleFavorite(bus.service_no, `Bus ${bus.service_no} at ${stop.name}`);
+//                               }}
+//                             >
+//                               {favorites.some(fav => fav.route_id === bus.service_no && fav.route_type === 'bus') ? "⭐" : "☆"}
+//                             </button>
+//                           </div>
+//                           ))
+//                         )}
+//                       </div>
+//                     )}
+//                   </div>
+//               )})
+//             )}
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+import React, { useState, useEffect, useRef, useCallback, useMemo} from "react";
+import api from "../api";
+import "./LiveTracker.css";
 import { FaTrainSubway, FaBus, FaCar } from "react-icons/fa6";
 import { NavLink, useNavigate } from "react-router-dom";
-// Use the new custom API functions from api.js
-import { getNearbyLocations, getBusArrivals, getFavorites, addFavorite, removeFavorite } from "../api"; 
-import BusIcon from "../assets/bus1.png"; // Your bus image/icon
-import "./LiveTracker.css";
 
-// Helper to determine arrival time color based on minutes
-const getArrivalColor = (time) =>
-    time <= 2 ? "#ef4444" : time <= 5 ? "#f59e0b" : "#3bb59d";
+// NOTE: Replace with your actual key in a real project
+const MAP_API_KEY = "AIzaSyCBQdPszHAS0A2vGyc9FLAhRY9CHzr5M2M"; 
+const API_POLL_INTERVAL = 5000;
+const defaultLocation = { lat: 1.3521, lng: 103.8198 }; // Default: Central Singapore area
 
-// Helper to format arrival time string
-const getArrivalLabel = (time) =>
-    time === 0 ? "Arr" : time === 1 ? "1 min" : `${time} min`;
+// --- Core Utility Functions (Moved outside component for stability) ---
+
+/** Calculates remaining minutes based on the LTA's ISO timestamp. */
+const getMinutesUntilArrival = (isoTimestamp) => {
+    if (!isoTimestamp) return null;
+    try {
+        const arrivalTime = new Date(isoTimestamp);
+        const currentTime = new Date();
+        const diffSeconds = (arrivalTime.getTime() - currentTime.getTime()) / 1000;
+        return Math.max(0, Math.floor(diffSeconds / 60)); 
+    } catch (e) { return null; }
+};
+
+const getArrivalColor = (time) => time <= 2 ? "#ef4444" : time <= 5 ? "#f59e0b" : "#3bb59d";
+const getArrivalLabel = (time) => {
+    if (time === null) return "N/A";
+    if (time === 0) return "Arr"; 
+    if (time === 1) return "1 min";
+    return `${time} min`;
+};
+const getBusIcon = (isFav) => ({
+    path: window.google.maps.SymbolPath.CIRCLE,
+    scale: 7,
+    fillColor: isFav ? "#FFD700" : "#3bb59d",
+    fillOpacity: 0.8,
+    strokeColor: "#1a1a1a",
+    strokeWeight: 1,
+});
+
 
 export default function LiveTracker() {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [expandedStops, setExpandedStops] = useState({});
-    const [drawerHeight, setDrawerHeight] = useState(30);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [expandedStops, setExpandedStops] = useState({});
+    const [drawerHeight, setDrawerHeight] = useState(30);
     const [isDragging, setIsDragging] = useState(false);
-    const [startY, setStartY] = useState(0);
-    
-    // --- LIVE DATA STATES ---
-    const [userLocation, setUserLocation] = useState(null);
-    const [nearbyBusStops, setNearbyBusStops] = useState([]);
-    const [nearbyMrtStations, setNearbyMrtStations] = useState([]);
-    const [favorites, setFavorites] = useState([]);
-    const [selectedStopCode, setSelectedStopCode] = useState(null);
-    const [busArrivals, setBusArrivals] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [startY, setStartY] = useState(0); 
 
-    const mapRef = useRef(null);
+    const [nearbyBusStops, setNearbyBusStops] = useState([]);
+    const [selectedStopCode, setSelectedStopCode] = useState(null);
+    const [liveServicesData, setLiveServicesData] = useState({}); 
+    
+    const [loadingStops, setLoadingStops] = useState(true);
+    const [loadingArrivals, setLoadingArrivals] = useState(false);
+    const [favorites, setFavorites] = useState([]); 
+    const [currentLocation, setCurrentLocation] = useState(null); 
+    const [, setVisualTick] = useState(0); 
+
+    const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
-    const markersRef = useRef([]);
-    const navigate = useNavigate();
+    const markersRef = useRef([]); 
+    const navigate = useNavigate();
 
-    // --- Core Data Fetching Functions ---
+    // --- Favorites & UI Utilities ---
+    const isFavorite = useCallback((routeId, routeType) => 
+        favorites.some(fav => fav.route_id === routeId && fav.route_type === routeType), [favorites]);
 
-    // 1. Fetch User's Favorites
-    const fetchFavorites = useCallback(async () => {
+    const fetchFavorites = useCallback(async () => {
+        if (!localStorage.getItem('access')) return; 
+        try {
+            const res = await api.get("/api/user/favourites/");
+            setFavorites(res.data.bus_favourites || []); 
+        } catch (error) { console.error("Error fetching favorites:", error); setFavorites([]); }
+    }, []);
+    
+    const toggleFavorite = async (e, routeId, routeType, nickname) => {
+        e.stopPropagation();
+        if (!localStorage.getItem('access')) { alert("You must be logged in to save favorites."); return; }
+        
+        const fav = favorites.find(fav => fav.route_id === routeId && fav.route_type === routeType);
         try {
-            const favs = await getFavorites();
-            setFavorites(favs);
-        } catch (e) {
-            // Not a critical error, likely means not logged in or no favorites
-            console.warn("Could not load user favorites. Login status check needed.", e);
+            if (fav) { await api.delete(`/api/user/favourites/remove/${fav.id}/`); } 
+            else { await api.post("/api/user/favourites/add/", { route_type: routeType, route_id: routeId, nickname: nickname }); }
+            fetchFavorites(); 
+        } catch (error) { alert(`Failed to ${fav ? 'remove' : 'add'} favorite.`); }
+    };
+
+
+    // --- GEOLOCATION & Map Initialization ---
+    const getUserLocation = useCallback(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => { setCurrentLocation({ lat: position.coords.latitude, lng: position.coords.longitude }); },
+                (err) => { setCurrentLocation(defaultLocation); },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        } else {
+            setCurrentLocation(defaultLocation);
         }
     }, []);
 
-    // 2. Fetch Nearby Locations
-    const fetchNearbyData = useCallback(async (lat, lng) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await getNearbyLocations(lat, lng, 800); // 800m radius
-            
-            // Map the favorite status onto the fetched data
-            const favIds = favorites.map(f => f.route_id);
-            const busStopsWithFav = data.busStops.map(stop => ({
-                ...stop,
-                is_favorite: favIds.includes(stop.bus_stop_code),
-                favorite_id: favorites.find(f => f.route_id === stop.bus_stop_code)?.id,
-                type: 'bus',
-                // Mock distance as backend data doesn't include it; would calculate here if needed
-                distance: `${Math.round(Math.random() * 1.5 * 10) / 10} km` 
-            }));
-            const mrtStationsWithFav = data.mrtStations.map(station => ({
-                ...station,
-                is_favorite: favIds.includes(station.station_code),
-                favorite_id: favorites.find(f => f.route_id === station.station_code)?.id,
-                type: 'mrt',
-                distance: `${Math.round(Math.random() * 1.5 * 10) / 10} km`
-            }));
-
-            setNearbyBusStops(busStopsWithFav);
-            setNearbyMrtStations(mrtStationsWithFav);
-
-            // Re-render markers if the map is initialized
-            if (mapInstanceRef.current) {
-                renderMarkers(mapInstanceRef.current, busStopsWithFav, mrtStationsWithFav);
-            }
-
-        } catch (e) {
-            setError("Failed to load nearby stops and stations.");
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    }, [favorites]); // Re-run when favorites change to update star icons
-
-    // 3. Fetch Bus Arrivals on Selection
-    const fetchAndDisplayArrivals = async (code) => {
-        setSelectedStopCode(code);
-        setLoading(true);
-        try {
-            const arrivals = await getBusArrivals(code);
-            setBusArrivals(arrivals);
-            setError(null);
-        } catch (e) {
-            setError(`Failed to fetch arrivals for ${code}.`);
-            setBusArrivals([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // --- Geolocation & Initial Load ---
-    useEffect(() => {
-        // Start by fetching favorites
-        fetchFavorites();
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    const newLocation = { lat: latitude, lng: longitude };
-                    setUserLocation(newLocation);
-                    // Map initialization depends on the location and a loaded API
-                    initializeMap(newLocation); 
-                },
-                (err) => {
-                    console.error("Geolocation Error:", err);
-                    setError("Location access denied. Displaying general map view.");
-                    setLoading(false);
-                    // Still initialize map, but centered generally on SG
-                    initializeMap({ lat: 1.3521, lng: 103.8198 }); 
-                }
-            );
-        } else {
-            setError("Geolocation is not supported by your browser.");
-            setLoading(false);
-            initializeMap({ lat: 1.3521, lng: 103.8198 });
-        }
-    }, [fetchFavorites]);
-
-    // Fetch nearby data once location and favorites are available
-    useEffect(() => {
-        if (userLocation && favorites.length > -1) {
-            fetchNearbyData(userLocation.lat, userLocation.lng);
-        }
-    }, [userLocation, favorites.length]); // dependencies: user location and favorites count
-
-    // --- Map Logic ---
-
-    const initializeMap = (center) => {
+    const initializeMap = useCallback((centerLocation, stops) => {
         if (!window.google || !mapRef.current) return;
 
+        markersRef.current.forEach(m => m.marker?.setMap(null));
+        markersRef.current = []; 
+
         const map = new window.google.maps.Map(mapRef.current, {
-            center: center,
+            center: centerLocation,
             zoom: 15,
             disableDefaultUI: true,
-            zoomControl: true,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-            styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
         });
-
         mapInstanceRef.current = map;
 
-        // User Location Marker
+        // 1. Add User Location Marker
         new window.google.maps.Marker({
-            position: center,
-            map: map,
-            icon: {
-                path: window.google.maps.SymbolPath.CIRCLE,
-                scale: 8,
-                fillColor: "#0095FF",
-                fillOpacity: 1,
-                strokeColor: "#ffffff",
-                strokeWeight: 3,
-            },
+            position: centerLocation,
+            map,
+            icon: { path: window.google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 3 },
             title: "Your Location",
         });
 
-        // Initial render of transport markers (will be updated when data loads)
-        renderMarkers(map, nearbyBusStops, nearbyMrtStations);
-    };
-
-    const renderMarkers = (map, busStops, mrtStations) => {
-        // Clear old markers
-        markersRef.current.forEach((m) => m.marker.setMap(null));
-        markersRef.current = [];
-
-        [...busStops, ...mrtStations].forEach((stopOrStation) => {
-            const isBus = stopOrStation.type === 'bus';
-            const iconUrl = isBus ? BusIcon : 'https://maps.google.com/mapfiles/kml/shapes/rail.png';
-            const size = isBus ? new window.google.maps.Size(35, 35) : new window.google.maps.Size(30, 30);
-            
+        // 2. Add Bus Stop Markers
+        stops.forEach((stop) => {
             const marker = new window.google.maps.Marker({
-                position: { lat: stopOrStation.latitude, lng: stopOrStation.longitude },
-                map: map,
-                icon: {
-                    url: iconUrl,
-                    scaledSize: size,
-                    // If MRT, adjust anchor point for better visibility
-                    ...(isBus ? {} : { anchor: new window.google.maps.Point(15, 30) })
-                },
-                title: stopOrStation.name || stopOrStation.description,
-            });
-
-            const infoWindow = new window.google.maps.InfoWindow({
-                content: `<div style="font-weight: 600; color: #1a1a1a; padding: 4px 8px; line-height: 1;">${stopOrStation.name || stopOrStation.description}</div>`,
-                maxWidth: 200,
+                position: { lat: stop.latitude, lng: stop.longitude },
+                map,
+                icon: getBusIcon(isFavorite(stop.code, 'bus')),
+                title: stop.name,
             });
 
             marker.addListener("click", () => {
-                markersRef.current.forEach((m) => m.infoWindow.close());
-                infoWindow.open(map, marker);
-                
-                // When marker is clicked, expand the drawer and fetch details
-                if (isBus) {
-                    fetchAndDisplayArrivals(stopOrStation.bus_stop_code);
-                    toggleExpand(stopOrStation.bus_stop_code);
-                    setSelectedStop(stopOrStation);
-                } else {
-                    navigate(`/crowd-density/${stopOrStation.station_code}`);
-                }
-                setDrawerHeight(60); 
-                map.panTo({ lat: stopOrStation.latitude - 0.003, lng: stopOrStation.longitude });
+                setSelectedStopCode(stop.code);
+                setExpandedStops({ [stop.code]: true });
+                setDrawerHeight(60);
+                map.panTo({ lat: stop.latitude - 0.003, lng: stop.longitude });
+
+                scrollToStop(stop.code);
             });
-
-            markersRef.current.push({ marker, infoWindow });
+            markersRef.current.push({ marker, stop });
         });
-    };
+    }, [isFavorite]);
 
-    // --- Favorite Toggle Logic ---
-    const handleFavoriteToggle = async (type, id, favoriteId) => {
-        const isFav = favoriteId !== undefined;
-        try {
-            if (isFav) {
-                await removeFavorite(favoriteId);
-            } else {
-                await addFavorite(type, id);
-            }
-            // Re-fetch favorites to update state, which will trigger fetchNearbyData
-            await fetchFavorites();
-        } catch (e) {
-            alert(`Failed to update favorite: ${e.message}`);
+
+    // --- API Calls (Stable Logic) ---
+    const fetchNearbyBusStops = useCallback(async (location) => {
+        if (!location) return; 
+        setLoadingStops(true);
+        try {
+            const url = `/api/nearby-bus-stops/?lat=${location.lat}&lng=${location.lng}&radius=1000`;
+            const res = await api.get(url);
+
+            if (res.data.success && res.data.stops) {
+                const mappedStops = res.data.stops.map(stop => ({
+                    code: stop.bus_stop_code,
+                    name: stop.description || stop.road_name,
+                    //distance: stop.distance_km ? `${(stop.distance_km * 1000).toFixed(0)} m` : "N/A", 
+                    ...stop
+                }));
+                setNearbyBusStops(mappedStops);
+                
+                if (mappedStops.length > 0) {
+                    setSelectedStopCode(prevCode => prevCode || mappedStops[0].code);
+                }
+            } 
+        } catch (error) { console.error("Error fetching nearby bus stops:", error); } 
+        finally { setLoadingStops(false); }
+    }, [initializeMap]);
+
+
+    // 3. API: Fetch Search Results 
+    const fetchSearchResults = useCallback(async (query) => {
+        if (!query || query.length < 2) {
+            setNearbyBusStops([]); // Clear search to display nearby stops
+            setLoadingStops(false);
+            return;
         }
-    };
+        setLoadingStops(true);
+        try {
+            const res = await api.get(`/api/search/bus-stops/?q=${query}`);
+            
+            if (res.data.success && res.data.results) {
+                const mappedResults = res.data.results.map(stop => ({
+                    code: stop.bus_stop_code,
+                    name: stop.description || stop.road_name,
+                    //distance: 'N/A', 
+                    ...stop 
+                }));
+                setNearbyBusStops(mappedResults); // Use nearbyBusStops to display filtered list
+            } else {
+                setNearbyBusStops([]);
+            }
+        } catch (err) {
+            console.error(`Search Connection Error: ${err.message}.`);
+        } finally {
+            setLoadingStops(false);
+        }
+    }, []);
+
+    const fetchBusArrivals = useCallback(async (stopCode) => {
+        if (!stopCode) return;
+        if (!liveServicesData[stopCode]) setLoadingArrivals(true); 
+        try {
+            const res = await api.get(`/api/bus-arrival-processed/${stopCode}/`);
+            if (res.data.success) { setLiveServicesData(prev => ({ ...prev, [stopCode]: res.data.services || [] })); } 
+        } catch (error) { console.error(`Error fetching arrivals for ${stopCode}:`, error); } 
+        finally { setLoadingArrivals(false); }
+    }, []);
 
 
-    // --- UI/Drawer Logic (kept minimal) ---
+    // --- EFFECTS ---
 
-    // Drawer handlers (kept as is for functionality)
+    // 1. Get Location and Favorites
+    useEffect(() => {
+        getUserLocation();
+        fetchFavorites();
+    }, [getUserLocation, fetchFavorites]);
+
+    // 2. Fetch Nearby Stops / Update Map when Location or Stops Change
+    useEffect(() => {
+        if (currentLocation && searchTerm.length < 2) {
+            fetchNearbyBusStops(currentLocation);
+        }
+    }, [currentLocation, fetchNearbyBusStops, searchTerm]); 
+    
+    // 2b. Trigger search separately for immediate feedback
+    useEffect(() => {
+        if (searchTerm.length >= 2) {
+             fetchSearchResults(searchTerm);
+        } else if (searchTerm.length === 0 && nearbyBusStops.length === 0 && currentLocation) {
+            // Re-fetch nearby stops if search is cleared
+            fetchNearbyBusStops(currentLocation || defaultLocation);
+        }
+    }, [searchTerm, fetchSearchResults, fetchNearbyBusStops, currentLocation, nearbyBusStops.length]);
+
+
+    // 3. Google Maps Script Loader & Initializer
+    useEffect(() => {
+        if (currentLocation && nearbyBusStops.length > 0) {
+            if (window.google) {
+                initializeMap(currentLocation, nearbyBusStops);
+            } else if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
+                const script = document.createElement("script");
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${MAP_API_KEY}`; 
+                script.async = true;
+                script.defer = true;
+                script.onload = () => initializeMap(currentLocation, nearbyBusStops);
+                document.head.appendChild(script);
+            }
+        }
+    }, [currentLocation, nearbyBusStops, initializeMap]);
+
+
+    // 4. API Polling (Stable)
+    useEffect(() => {
+        let apiIntervalId;
+        if (selectedStopCode) {
+            fetchBusArrivals(selectedStopCode); 
+            apiIntervalId = setInterval(() => { fetchBusArrivals(selectedStopCode); }, API_POLL_INTERVAL); 
+        }
+        return () => { if (apiIntervalId) clearInterval(apiIntervalId); };
+    }, [selectedStopCode, fetchBusArrivals]);
+
+    // 5. Visual Countdown (Fast)
+    useEffect(() => {
+        const visualIntervalId = setInterval(() => { setVisualTick(prev => prev + 1); }, 1000); 
+        return () => clearInterval(visualIntervalId);
+    }, []);
+
+
+    // --- RENDER LOGIC ---
+    // The list displays the nearby stops (filtered by search term if active)
+    const currentStopsList = nearbyBusStops.filter((stop) =>
+        stop.name.toLowerCase().includes(searchTerm.toLowerCase()) || stop.code.includes(searchTerm)
+    );
+
+    const currentServices = liveServicesData[selectedStopCode] || [];
+
+    const toggleStopDetails = (stop) => {
+        const code = stop.code;
+        setExpandedStops(prev => ({ ...prev, [code]: !prev[code] }));
+        setSelectedStopCode(code); 
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.panTo({ lat: stop.latitude - 0.003, lng: stop.longitude });
+        }
+        scrollToStop(code);
+    };
+
+    // --- SCROLL UTILITY ---
+    const scrollToStop = (stopCode) => {
+        // Use a short timeout to ensure the DOM has updated (especially after expansion/drawer movement)
+        setTimeout(() => {
+            const element = document.getElementById(`stop-${stopCode}`);
+            if (element) {
+                element.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' // Scrolls the element to the top of the visible area
+                });
+            }
+        }, 100); 
+    };
+
+    // Placeholder drag handlers (to avoid errors)
     const handleTouchStart = (e) => { setIsDragging(true); setStartY(e.touches[0].clientY); };
     const handleTouchMove = (e) => {
-        if (!isDragging) return; e.preventDefault();
+        if (!isDragging) return;
+        e.preventDefault();
         const currentY = e.touches[0].clientY;
         const diff = startY - currentY;
         const newHeight = drawerHeight + (diff / window.innerHeight) * 100;
-        setDrawerHeight(Math.max(20, Math.min(90, newHeight))); setStartY(currentY);
+        setDrawerHeight(Math.max(20, Math.min(90, newHeight)));
+        setStartY(currentY);
     };
-    const handleTouchEnd = () => { setIsDragging(false); snapToPosition(); };
+    const handleTouchEnd = () => { setIsDragging(false); }; // Simplified drag end
     const handleMouseDown = (e) => { setIsDragging(true); setStartY(e.clientY); };
     const handleMouseMove = (e) => {
-        if (!isDragging) return; e.preventDefault();
+        if (!isDragging) return;
+        e.preventDefault();
         const currentY = e.clientY;
         const diff = startY - currentY;
         const newHeight = drawerHeight + (diff / window.innerHeight) * 100;
-        setDrawerHeight(Math.max(20, Math.min(90, newHeight))); setStartY(currentY);
+        setDrawerHeight(Math.max(20, Math.min(90, newHeight)));
+        setStartY(currentY);
     };
-    const handleMouseUp = () => { setIsDragging(false); snapToPosition(); };
-    const snapToPosition = () => {
-        if (drawerHeight < 40) setDrawerHeight(30);
-        else if (drawerHeight > 70) setDrawerHeight(85);
-        else setDrawerHeight(60);
-    };
+    const handleMouseUp = () => { setIsDragging(false); };
+
+    // useEffect(() => {
+    //     // ... (Mount/unmount listeners for drag, simplified)
+    // }, [isDragging]);
     useEffect(() => {
-        if (isDragging) {
-            document.addEventListener("mousemove", handleMouseMove);
-            document.addEventListener("mouseup", handleMouseUp);
-            return () => {
-                document.removeEventListener("mousemove", handleMouseMove);
-                document.removeEventListener("mouseup", handleMouseUp);
-            };
-        }
-    }, [isDragging, startY, drawerHeight]);
+        if (isDragging) {
+            // Attach global listeners for continuous dragging
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            document.body.style.userSelect = 'none'; // Prevent selection
 
-    const toggleExpand = (code) =>
-        setExpandedStops((prev) => ({ ...prev, [code]: !prev[code] }));
+        } else {
+            // Remove global listeners when dragging stops
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.body.style.userSelect = '';
+        }
 
-    // Combined and sorted list for display in the drawer
-    const combinedStops = [...nearbyBusStops, ...nearbyMrtStations].filter(item => 
-        (item.name || item.description).toLowerCase().includes(searchTerm.toLowerCase()) || 
-        item.bus_stop_code?.includes(searchTerm) || 
-        item.station_code?.includes(searchTerm)
-    ).sort(
-        (a, b) => parseFloat(a.distance) - parseFloat(b.distance)
-    );
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.body.style.userSelect = '';
+        };
+    }, [isDragging, handleMouseMove, handleMouseUp]);
 
-    // --- RENDER ---
+    return (
+        <div className="container">
+            <div ref={mapRef} className="map-container" /> 
 
-    if (loading && !userLocation && !error) return <div className="loading">🛰️ Locating transport...</div>;
-    
-    // We combine MRT and Bus for the main list, but need to clearly separate them in the display.
-    const renderBusStopsList = combinedStops.filter(item => item.type === 'bus').map((stop) => (
-        <div
-            key={stop.bus_stop_code}
-            id={`stop-${stop.bus_stop_code}`}
-            className={`stop-card ${selectedStopCode === stop.bus_stop_code ? "stop-card-selected" : ""}`}
-        >
-            <div className="stop-header" onClick={() => fetchAndDisplayArrivals(stop.bus_stop_code)}>
-                <div className="stop-left">
-                    <button 
-                        className="favorite-btn" 
-                        onClick={(e) => {
-                            e.stopPropagation(); // Prevent card expansion
-                            handleFavoriteToggle('bus', stop.bus_stop_code, stop.favorite_id);
-                        }}
-                    >
-                        {stop.is_favorite ? '⭐' : '☆'}
-                    </button>
-                    <div>
-                        <div className="stop-name-row">
-                            <h3 className="stop-name">{stop.description}</h3>
-                            <span className="stop-code">{stop.bus_stop_code}</span>
-                        </div>
-                        <div className="stop-meta">
-                            <span className="stop-distance">Approx. {stop.distance}</span>
-                        </div>
-                    </div>
-                </div>
-                <button className="expand-btn" onClick={(e) => { e.stopPropagation(); toggleExpand(stop.bus_stop_code); }}>
-                    {expandedStops[stop.bus_stop_code] ? "▲" : "▼"}
-                </button>
-            </div>
-
-            {/* BUS ARRIVAL DETAILS (Conditional) */}
-            {expandedStops[stop.bus_stop_code] && selectedStopCode === stop.bus_stop_code && (
-                <div className="bus-arrivals">
-                    {loading ? (
-                        <p>Loading arrivals...</p>
-                    ) : busArrivals.length === 0 ? (
-                        <p>No real-time arrivals available.</p>
-                    ) : (
-                        busArrivals.map((service, i) => (
-                            <div key={i} className="bus-row">
-                                <div className="bus-info">
-                                    <div className="bus-number">{service.service_no}</div>
-                                    <div className="bus-destination">→ {service.operator_name}</div>
-                                </div>
-                                <div className="arrival-times">
-                                    {service.buses.slice(0, 3).map((bus, j) => (
-                                        <div key={j} className="arrival-block">
-                                            <div
-                                                className="arrival-time"
-                                                style={{ backgroundColor: getArrivalColor(bus.waiting_time) }}
-                                            >
-                                                {getArrivalLabel(bus.waiting_time)}
-                                            </div>
-                                            <div className="bus-type-label">{bus.load_display.split(' ')[0]}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-            )}
-        </div>
-    ));
-
-    const renderMrtStationsList = combinedStops.filter(item => item.type === 'mrt').map((station) => (
-        <div
-            key={station.station_code}
-            className="stop-card"
-        >
-            <div className="stop-header" onClick={() => navigate(`/crowd-density/${station.station_code}`)}>
-                <div className="stop-left">
-                    <button 
-                        className="favorite-btn" 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleFavoriteToggle('mrt', station.station_code, station.favorite_id);
-                        }}
-                    >
-                        {station.is_favorite ? '⭐' : '☆'}
-                    </button>
-                    <div>
-                        <div className="stop-name-row">
-                            <h3 className="stop-name">🚇 {station.name}</h3>
-                            <span className="stop-code">{station.station_code}</span>
-                        </div>
-                        <div className="stop-meta">
-                            <span className="stop-distance">Lines: {station.lines.map(l => l.line_code).join(', ')}</span>
-                        </div>
-                    </div>
-                </div>
-                <button className="expand-btn">
-                    View Crowd
-                </button>
-            </div>
-        </div>
-    ));
-
-    return (
-        <div className="container">
-            <div ref={mapRef} className="map-container" />
-
-            <div className="drawer" style={{ height: `${drawerHeight}vh` }}>
-                <div
+            <div className="drawer" style={{ height: `${drawerHeight}vh` }}>
+                {/* Drag handle */}
+                <div 
                     className="drag-handle"
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                     onMouseDown={handleMouseDown}
+                    // onMouseMove={handleMouseMove}
+                    // onMouseUp={handleMouseUp}
                 >
                     <div className="drag-bar" />
                 </div>
 
-                <div className="drawer-header">
-                    <input
-                        type="text"
-                        placeholder="Search stop/station or bus number..."
-                        className="search-input"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
+                <div className="drawer-header">
+                    <input
+                        type="text"
+                        placeholder="Search bus stop or bus number..."
+                        className="search-input"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
 
-                <div className="transport-tabs">
-                    {/* Assuming you want to link out of LiveTracker to these components */}
-                    <button className="transport-tab" onClick={() => navigate("/NearbyCarparks")}>
-                        <span className="tab-icon"><FaCar /></span>
-                        <span className="tab-label">Car</span>
-                    </button>
-                    <div className="transport-tab transport-tab-active">
-                        <span className="tab-icon"><FaBus /></span>
-                        <span className="tab-label">Bus</span>
-                    </div>
-                    <button className="transport-tab" onClick={() => navigate("/CrowdDensity")}>
-                        <span className="tab-icon"><FaTrainSubway /></span>
-                        <span className="tab-label">Train</span>
-                    </button>
-                </div>
+                {/* Transport Tabs */}
+                <div className="transport-tabs">
+                    <NavLink to={"/NearbyCarparks"} className="transport-tab"><span className="tab-icon"><FaCar /></span><span className="tab-label">Car</span></NavLink>
+                    <NavLink to={"/LiveTracker"} className="transport-tab transport-tab-active"><span className="tab-icon"><FaBus /></span><span className="tab-label">Bus</span></NavLink>
+                    <NavLink to={"/CrowdDensity"} className="transport-tab"><span className="tab-icon"><FaTrainSubway /></span><span className="tab-label">Train</span></NavLink>
+                </div>
 
-                <div className="content">
-                    {error ? (
-                        <div className="empty-state error">
-                            <div className="empty-state-icon">❌</div>
-                            <p className="empty-state-text">{error}</p>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="search-info">
-                                {loading ? "Finding nearby stops..." : `Found ${combinedStops.length} nearby locations. `}
-                            </div>
-                            
-                            <div className="stops-list">
-                                {combinedStops.length === 0 && !loading && (
-                                    <div className="empty-state">
-                                        <div className="empty-state-icon">🔍</div>
-                                        <p className="empty-state-text">No bus stops or MRT stations found nearby.</p>
-                                    </div>
-                                )}
-                                
-                                {renderBusStopsList}
-                                {renderMrtStationsList}
+                <div className="content">
+                    {loadingStops && currentStopsList.length === 0 && <div className="search-info">Loading nearby stops...</div>}
+                    
+                    <div className="stops-list">
+                        {currentStopsList.length === 0 ? (
+                            <div className="empty-state"><div className="empty-state-icon">🔍</div><p className="empty-state-text">No matching stops found.</p></div>
+                        ) : (
+                          currentStopsList.map((stop) => {
+                            const isStopExpanded = expandedStops[stop.code];
+                            const services = liveServicesData[stop.code] || [];
+                            const totalServices = services.length;
+                            const isStopFav = isFavorite(stop.code, 'bus'); 
 
-                            </div>
-                        </>
-                    )}
-                </div>
-            </div>
-            
-            <footer className="footer">
-                 <button className="nav-btn" onClick={() => navigate("/home")}>🏠 Home</button>
-                 <button className="nav-btn nav-btn-active">📍 Tracker</button>
-                 <button className="nav-btn" onClick={() => navigate("/my-trips")}>🧾 My Trips</button>
-                 <button className="nav-btn" onClick={() => navigate("/settings")}>⚙️ Settings</button>
-            </footer>
+                            return (
+                              <div key={stop.code} id={`stop-${stop.code}`} className={`stop-card ${selectedStopCode === stop.code ? "stop-card-selected" : ""}`}>
+                                <div className="stop-header" onClick={() => toggleStopDetails(stop)}>
+                                        <div className="stop-left">
+                                            <button className="favorite-btn" onClick={(e) => {e.stopPropagation(); toggleFavorite(e, stop.code, 'bus', stop.name);}}>{isStopFav ? "⭐" : "☆"}</button>
+                                            <div>
+                                                <div className="stop-name-row">
+                                                    <h3 className="stop-name">{stop.name}</h3>
+                                                    <span className="stop-code">{stop.code}</span>
+                                                </div>
+                                                <div className="stop-meta">
+                                                    {/* <span className="stop-distance">{stop.distance}</span> */}
+                                                    <span className="stop-bus-count">{totalServices} services</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button className="expand-btn">{isStopExpanded ? "▲" : "▼"}</button>
+                                </div>
 
-        </div>
-    );
+                                {isStopExpanded && (
+                                  <div className="bus-arrivals">
+                                    {loadingArrivals && selectedStopCode === stop.code && services.length === 0 ? (
+                                      <div className="loading-indicator">Loading arrivals...</div>
+                                    ) : services.length === 0 ? (
+                                      <div className="empty-state-text" style={{ padding: '16px 0', textAlign: 'center', color: '#ef4444' }}>No buses arriving soon.</div>
+                                    ) : (
+                                      services.map((service, i) => (
+                                        <div key={i} className="bus-row">
+                                          <div className="bus-info">
+                                            <div className="bus-number">{service.service_no}</div>
+                                            <div className="bus-destination">→ {service.buses[0]?.destination_code || 'N/A'}</div>
+                                          </div>
+                                          <div className="arrival-times">
+                                            {service.buses.slice(0, 3).map((bus, j) => {
+                                              const liveTime = getMinutesUntilArrival(bus.estimated_arrival);
+                                              return (
+                                                  <div key={j} className="arrival-block">
+                                                    <div className="arrival-time" style={{ backgroundColor: getArrivalColor(liveTime) }}>
+                                                        **{getArrivalLabel(liveTime)}**                                     </div>
+                                                    <span className="bus-type-label">{bus.load_display.split(' ')[0]}</span>
+                                                  </div>
+                                            )})}
+                                          </div>
+                                          <button 
+                                              className="favorite-btn" 
+                                              onClick={(e) => {e.stopPropagation(); toggleFavorite(e, service.service_no, 'bus', `Bus ${service.service_no} at ${stop.name}`);}}
+                                          >
+                                              {isFavorite(service.service_no, 'bus') ? "⭐" : "☆"}
+                                          </button>
+                                    </div>
+                                  ))
+                                )}
+                            </div>
+                            
+                        )}
+                    </div>
+              )})
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useState, useEffect, useRef, useCallback } from "react";
-// import { FaTrainSubway, FaBus, FaCar } from "react-icons/fa6";
-// import { NavLink, useNavigate } from "react-router-dom";
-// import { getNearbyLocations, getBusArrivals, getFavorites, addFavorite, removeFavorite } from "../api"; 
-// import BusIcon from "../assets/bus1.png";
-// import "./LiveTracker.css";
-
-// // Helper to determine arrival time color based on minutes
-// const getArrivalColor = (time) =>
-//     time <= 2 ? "#ef4444" : time <= 5 ? "#f59e0b" : "#3bb59d";
-
-// // Helper to format arrival time string
-// const getArrivalLabel = (time) =>
-//     time === 0 ? "Arr" : time === 1 ? "1 min" : `${time} min`;
-
-// export default function LiveTracker() {
-//     const [searchTerm, setSearchTerm] = useState("");
-//     const [expandedStops, setExpandedStops] = useState({});
-//     const [drawerHeight, setDrawerHeight] = useState(30);
-//     const [isDragging, setIsDragging] = useState(false);
-//     const [startY, setStartY] = useState(0);
-    
-//     // --- LIVE DATA STATES ---
-//     const [userLocation, setUserLocation] = useState(null);
-//     const [nearbyBusStops, setNearbyBusStops] = useState([]);
-//     const [nearbyMrtStations, setNearbyMrtStations] = useState([]);
-//     const [favorites, setFavorites] = useState([]);
-//     const [selectedStopCode, setSelectedStopCode] = useState(null);
-//     const [busArrivals, setBusArrivals] = useState([]);
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState(null);
-
-//     const mapRef = useRef(null);
-//     const mapInstanceRef = useRef(null);
-//     const markersRef = useRef([]);
-//     const navigate = useNavigate();
-
-//     // --- Core Data Fetching Functions ---
-
-//     // 1. Fetch User's Favorites
-//     const fetchFavorites = useCallback(async () => {
-//         try {
-//             // Note: Since auth is bypassed, this might still return a 401 response if the backend
-//             // isn't configured for anonymous access, but we'll capture an empty array.
-//             const favs = await getFavorites();
-//             setFavorites(favs);
-//         } catch (e) {
-//             console.warn("Could not load user favorites in testing mode.", e);
-//             setFavorites([]); // Ensure favorites is an empty array on failure
-//         }
-//     }, []);
-
-//     // 2. Map Initialization and Marker Rendering
-//     const renderMarkers = useCallback((map, busStops, mrtStations) => {
-//         if (!map) return;
-        
-//         // Clear old markers
-//         markersRef.current.forEach((m) => m.marker.setMap(null));
-//         markersRef.current = [];
-
-//         [...busStops, ...mrtStations].forEach((stopOrStation) => {
-//             const isBus = stopOrStation.type === 'bus';
-//             const iconUrl = isBus ? BusIcon : 'https://maps.google.com/mapfiles/kml/shapes/rail.png';
-//             const size = isBus ? new window.google.maps.Size(35, 35) : new window.google.maps.Size(30, 30);
-            
-//             // Safety check for valid coordinates
-//             if (stopOrStation.latitude === 0 || stopOrStation.longitude === 0) return;
-            
-//             const marker = new window.google.maps.Marker({
-//                 position: { lat: stopOrStation.latitude, lng: stopOrStation.longitude },
-//                 map: map,
-//                 icon: {
-//                     url: iconUrl,
-//                     scaledSize: size,
-//                     ...(isBus ? {} : { anchor: new window.google.maps.Point(15, 30) })
-//                 },
-//                 title: stopOrStation.name || stopOrStation.description,
-//             });
-
-//             const infoWindow = new window.google.maps.InfoWindow({
-//                 content: `<div style="font-weight: 600; color: #1a1a1a; padding: 4px 8px; line-height: 1;">${stopOrStation.name || stopOrStation.description}</div>`,
-//                 maxWidth: 200,
-//             });
-
-//             marker.addListener("click", () => {
-//                 markersRef.current.forEach((m) => m.infoWindow.close());
-//                 infoWindow.open(map, marker);
-                
-//                 if (isBus) {
-//                     fetchAndDisplayArrivals(stopOrStation.bus_stop_code);
-//                     toggleExpand(stopOrStation.bus_stop_code);
-//                     setSelectedStopCode(stopOrStation.bus_stop_code);
-//                 } else {
-//                     navigate(`/crowd-density/${stopOrStation.station_code}`);
-//                 }
-//                 setDrawerHeight(60); 
-//                 map.panTo({ lat: stopOrStation.latitude - 0.003, lng: stopOrStation.longitude });
-//             });
-
-//             markersRef.current.push({ marker, infoWindow });
-//         });
-//     }, [navigate]); // Added navigate dependency
-
-//     // 3. Fetch Nearby Data
-//     const fetchNearbyData = useCallback(async (lat, lng) => {
-//         setLoading(true);
-//         setError(null);
-//         try {
-//             const data = await getNearbyLocations(lat, lng, 800);
-            
-//             const favIds = favorites.map(f => f.route_id);
-
-//             const mapData = (item, type, codeKey) => ({
-//                 ...item,
-//                 is_favorite: favIds.includes(item[codeKey]),
-//                 favorite_id: favorites.find(f => f.route_id === item[codeKey])?.id,
-//                 type: type,
-//                 // Mock distance as Django currently doesn't provide it in the response model, 
-//                 // but we need it for sorting/display
-//                 distance: `${Math.round(Math.random() * 1.5 * 10) / 10} km`, 
-//                 bus_stop_code: item.bus_stop_code || item.station_code, // Unify the key
-//                 name: item.name || item.description // Unify the name
-//             });
-
-//             const busStopsWithFav = data.busStops.map(stop => mapData(stop, 'bus', 'bus_stop_code'));
-//             const mrtStationsWithFav = data.mrtStations.map(station => mapData(station, 'mrt', 'station_code'));
-
-//             setNearbyBusStops(busStopsWithFav);
-//             setNearbyMrtStations(mrtStationsWithFav);
-
-//             // Rerender markers immediately after fetching new data
-//             renderMarkers(mapInstanceRef.current, busStopsWithFav, mrtStationsWithFav);
-
-//         } catch (e) {
-//             setError("Failed to load nearby stops and stations. Check backend logs for non-401 errors.");
-//             console.error("Fetch nearby data error:", e);
-//         } finally {
-//             setLoading(false);
-//         }
-//     }, [favorites, renderMarkers]); // Added renderMarkers dependency
-
-//     // 4. Fetch Bus Arrivals on Selection
-//     const fetchAndDisplayArrivals = async (code) => {
-//         setSelectedStopCode(code);
-//         setLoading(true);
-//         try {
-//             const arrivals = await getBusArrivals(code);
-//             // Assuming getBusArrivals returns { services: [...] }
-//             setBusArrivals(arrivals.services || arrivals); 
-//             setError(null);
-//         } catch (e) {
-//             setError(`Failed to fetch arrivals for ${code}.`);
-//             setBusArrivals([]);
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-
-//     // --- Geolocation & Initial Load (Combined Hook) ---
-//     useEffect(() => {
-//         // 1. Load favorites (non-blocking)
-//         fetchFavorites();
-        
-//         let initialLocation = { lat: 1.3521, lng: 103.8198 }; // Default SG Center
-
-//         // 2. Get Geolocation
-//         if (navigator.geolocation) {
-//             navigator.geolocation.getCurrentPosition(
-//                 (position) => {
-//                     const { latitude, longitude } = position.coords;
-//                     initialLocation = { lat: latitude, lng: longitude };
-//                     setUserLocation(initialLocation);
-                    
-//                     // 3. Initialize Map after getting location
-//                     if (window.google && mapRef.current) {
-//                         const map = new window.google.maps.Map(mapRef.current, {
-//                             center: initialLocation,
-//                             zoom: 15,
-//                             disableDefaultUI: true,
-//                             zoomControl: true,
-//                             mapTypeControl: false,
-//                             streetViewControl: false,
-//                             fullscreenControl: false,
-//                             styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
-//                         });
-//                         mapInstanceRef.current = map;
-                        
-//                         new window.google.maps.Marker({
-//                             position: initialLocation,
-//                             map: map,
-//                             icon: {
-//                                 path: window.google.maps.SymbolPath.CIRCLE,
-//                                 scale: 8,
-//                                 fillColor: "#0095FF",
-//                                 fillOpacity: 1,
-//                                 strokeColor: "#ffffff",
-//                                 strokeWeight: 3,
-//                             },
-//                             title: "Your Location",
-//                         });
-                        
-//                         // 4. Trigger data fetch after map/location is ready
-//                         fetchNearbyData(initialLocation.lat, initialLocation.lng);
-//                     } else {
-//                         console.error("Google Maps API not yet loaded.");
-//                         setLoading(false);
-//                     }
-//                 },
-//                 (err) => {
-//                     console.error("Geolocation Error:", err);
-//                     setError("Location access denied. Using default center.");
-//                     setUserLocation(initialLocation);
-//                     setLoading(false);
-//                     // Still try to initialize map at default location
-//                     if (window.google && mapRef.current) {
-//                          const map = new window.google.maps.Map(mapRef.current, {
-//                             center: initialLocation,
-//                             zoom: 12,
-//                             // ... other options
-//                          });
-//                          mapInstanceRef.current = map;
-//                          fetchNearbyData(initialLocation.lat, initialLocation.lng);
-//                     }
-//                 }
-//             );
-//         } else {
-//             setError("Geolocation not supported. Using default center.");
-//             setUserLocation(initialLocation);
-//             setLoading(false);
-//             // Still try to initialize map at default location
-//             if (window.google && mapRef.current) {
-//                  const map = new window.google.maps.Map(mapRef.current, {
-//                     center: initialLocation,
-//                     zoom: 12,
-//                     // ... other options
-//                  });
-//                  mapInstanceRef.current = map;
-//                  fetchNearbyData(initialLocation.lat, initialLocation.lng);
-//             }
-//         }
-        
-//         // This is a minimal guard to catch if the API script hasn't loaded yet
-//         if (!window.google) {
-//             // Wait for Google Maps script to load (which is handled in index.html/App.jsx)
-//             const scriptCheck = setInterval(() => {
-//                 if (window.google && mapRef.current) {
-//                     clearInterval(scriptCheck);
-//                     // Re-run the main logic to pick up initialization
-//                     // NOTE: Due to the complexity, relying on the full component re-render when location/favorites change is often necessary.
-//                 }
-//             }, 500);
-//         }
-
-//     }, []); // Run only once
-
-//     // --- Favorite Toggle Logic ---
-//     const handleFavoriteToggle = async (type, id, favoriteId) => {
-//         const isFav = favoriteId !== undefined;
-//         try {
-//             if (isFav) {
-//                 await removeFavorite(favoriteId);
-//             } else {
-//                 await addFavorite(type, id);
-//             }
-//             // Re-fetch favorites and nearby data to update icons/list
-//             await fetchFavorites();
-//             if (userLocation) {
-//                  await fetchNearbyData(userLocation.lat, userLocation.lng);
-//             }
-//         } catch (e) {
-//             alert(`Failed to update favorite. (Are you logged in?)`);
-//             console.error("Favorite toggle error:", e);
-//         }
-//     };
-
-
-//     // --- UI/Drawer Logic ---
-
-//     // Drawer handlers (kept as is for functionality)
-//     const handleTouchStart = (e) => { setIsDragging(true); setStartY(e.touches[0].clientY); };
-//     const handleTouchMove = (e) => {
-//         if (!isDragging) return; e.preventDefault();
-//         const currentY = e.touches[0].clientY;
-//         const diff = startY - currentY;
-//         const newHeight = drawerHeight + (diff / window.innerHeight) * 100;
-//         setDrawerHeight(Math.max(20, Math.min(90, newHeight))); setStartY(currentY);
-//     };
-//     const handleTouchEnd = () => { setIsDragging(false); snapToPosition(); };
-//     const handleMouseDown = (e) => { setIsDragging(true); setStartY(e.clientY); };
-//     const handleMouseMove = (e) => {
-//         if (!isDragging) return; e.preventDefault();
-//         const currentY = e.clientY;
-//         const diff = startY - currentY;
-//         const newHeight = drawerHeight + (diff / window.innerHeight) * 100;
-//         setDrawerHeight(Math.max(20, Math.min(90, newHeight))); setStartY(currentY);
-//     };
-//     const handleMouseUp = () => { setIsDragging(false); snapToPosition(); };
-//     const snapToPosition = () => {
-//         if (drawerHeight < 40) setDrawerHeight(30);
-//         else if (drawerHeight > 70) setDrawerHeight(85);
-//         else setDrawerHeight(60);
-//     };
-//     useEffect(() => {
-//         if (isDragging) {
-//             document.addEventListener("mousemove", handleMouseMove);
-//             document.addEventListener("mouseup", handleMouseUp);
-//             return () => {
-//                 document.removeEventListener("mousemove", handleMouseMove);
-//                 document.removeEventListener("mouseup", handleMouseUp);
-//             };
-//         }
-//     }, [isDragging, startY, drawerHeight]);
-
-//     const toggleExpand = (code) =>
-//         setExpandedStops((prev) => ({ ...prev, [code]: !prev[code] }));
-
-//     // Combined and sorted list for display in the drawer
-//     const combinedStops = [...nearbyBusStops, ...nearbyMrtStations].filter(item => 
-//         (item.name || item.description).toLowerCase().includes(searchTerm.toLowerCase()) || 
-//         item.bus_stop_code?.includes(searchTerm) || 
-//         item.station_code?.includes(searchTerm)
-//     ).sort(
-//         (a, b) => parseFloat(a.distance) - parseFloat(b.distance)
-//     );
-
-//     // --- RENDER ---
-
-//     if (loading && !userLocation && !error) return <div className="loading">🛰️ Locating transport...</div>;
-    
-    
-//     const renderBusStopsList = combinedStops.filter(item => item.type === 'bus').map((stop) => (
-//         <div
-//             key={stop.bus_stop_code}
-//             id={`stop-${stop.bus_stop_code}`}
-//             className={`stop-card ${selectedStopCode === stop.bus_stop_code ? "stop-card-selected" : ""}`}
-//         >
-//             <div className="stop-header" onClick={() => fetchAndDisplayArrivals(stop.bus_stop_code)}>
-//                 <div className="stop-left">
-//                     <button 
-//                         className="favorite-btn" 
-//                         onClick={(e) => {
-//                             e.stopPropagation(); // Prevent card expansion
-//                             handleFavoriteToggle('bus', stop.bus_stop_code, stop.favorite_id);
-//                         }}
-//                     >
-//                         {stop.is_favorite ? '⭐' : '☆'}
-//                     </button>
-//                     <div>
-//                         <div className="stop-name-row">
-//                             <h3 className="stop-name">{stop.name || stop.description}</h3>
-//                             <span className="stop-code">{stop.bus_stop_code}</span>
-//                         </div>
-//                         <div className="stop-meta">
-//                             <span className="stop-distance">Approx. {stop.distance}</span>
-//                         </div>
-//                     </div>
-//                 </div>
-//                 <button className="expand-btn" onClick={(e) => { e.stopPropagation(); toggleExpand(stop.bus_stop_code); }}>
-//                     {expandedStops[stop.bus_stop_code] ? "▲" : "▼"}
-//                 </button>
-//             </div>
-
-//             {/* BUS ARRIVAL DETAILS (Conditional) */}
-//             {expandedStops[stop.bus_stop_code] && selectedStopCode === stop.bus_stop_code && (
-//                 <div className="bus-arrivals">
-//                     {loading ? (
-//                         <p>Loading arrivals...</p>
-//                     ) : busArrivals.length === 0 ? (
-//                         <p>No real-time arrivals available for this stop.</p>
-//                     ) : (
-//                         busArrivals.map((service, i) => (
-//                             <div key={i} className="bus-row">
-//                                 <div className="bus-info">
-//                                     <div className="bus-number">{service.service_no}</div>
-//                                     <div className="bus-destination">→ {service.operator_name}</div>
-//                                 </div>
-//                                 <div className="arrival-times">
-//                                     {service.buses.slice(0, 3).map((bus, j) => (
-//                                         <div key={j} className="arrival-block">
-//                                             <div
-//                                                 className="arrival-time"
-//                                                 style={{ backgroundColor: getArrivalColor(bus.waiting_time) }}
-//                                             >
-//                                                 {getArrivalLabel(bus.waiting_time)}
-//                                             </div>
-//                                             <div className="bus-type-label">{bus.load_display.split(' ')[0]}</div>
-//                                         </div>
-//                                     ))}
-//                                 </div>
-//                             </div>
-//                         ))
-//                     )}
-//                 </div>
-//             )}
-//         </div>
-//     ));
-
-//     const renderMrtStationsList = combinedStops.filter(item => item.type === 'mrt').map((station) => (
-//         <div
-//             key={station.station_code}
-//             className="stop-card"
-//         >
-//             <div className="stop-header" onClick={() => navigate(`/crowd-density/${station.station_code}`)}>
-//                 <div className="stop-left">
-//                     <button 
-//                         className="favorite-btn" 
-//                         onClick={(e) => {
-//                             e.stopPropagation();
-//                             handleFavoriteToggle('mrt', station.station_code, station.favorite_id);
-//                         }}
-//                     >
-//                         {station.is_favorite ? '⭐' : '☆'}
-//                     </button>
-//                     <div>
-//                         <div className="stop-name-row">
-//                             <h3 className="stop-name">🚇 {station.name || station.description}</h3>
-//                             <span className="stop-code">{station.station_code}</span>
-//                         </div>
-//                         <div className="stop-meta">
-//                             {/* Assuming lines property is available directly on the station object */}
-//                             <span className="stop-distance">Lines: {station.lines?.map(l => l.line_code).join(', ') || 'N/A'}</span>
-//                         </div>
-//                     </div>
-//                 </div>
-//                 <button className="expand-btn">
-//                     View Crowd
-//                 </button>
-//             </div>
-//         </div>
-//     ));
-
-//     return (
-//         <div className="container">
-//             <div ref={mapRef} className="map-container" />
-
-//             <div className="drawer" style={{ height: `${drawerHeight}vh` }}>
-//                 <div
-//                     className="drag-handle"
-//                     onTouchStart={handleTouchStart}
-//                     onTouchMove={handleTouchMove}
-//                     onTouchEnd={handleTouchEnd}
-//                     onMouseDown={handleMouseDown}
-//                 >
-//                     <div className="drag-bar" />
-//                 </div>
-
-//                 <div className="drawer-header">
-//                     <input
-//                         type="text"
-//                         placeholder="Search stop/station or bus number..."
-//                         className="search-input"
-//                         value={searchTerm}
-//                         onChange={(e) => setSearchTerm(e.target.value)}
-//                     />
-//                 </div>
-
-//                 <div className="transport-tabs">
-//                     {/* Assuming you want to link out of LiveTracker to these components */}
-//                     <button className="transport-tab" onClick={() => navigate("/NearbyCarparks")}>
-//                         <span className="tab-icon"><FaCar /></span>
-//                         <span className="tab-label">Car</span>
-//                     </button>
-//                     <div className="transport-tab transport-tab-active">
-//                         <span className="tab-icon"><FaBus /></span>
-//                         <span className="tab-label">Bus</span>
-//                     </div>
-//                     <button className="transport-tab" onClick={() => navigate("/CrowdDensity")}>
-//                         <span className="tab-icon"><FaTrainSubway /></span>
-//                         <span className="tab-label">Train</span>
-//                     </button>
-//                 </div>
-
-//                 <div className="content">
-//                     {error ? (
-//                         <div className="empty-state error">
-//                             <div className="empty-state-icon">❌</div>
-//                             <p className="empty-state-text">{error}</p>
-//                         </div>
-//                     ) : (
-//                         <>
-//                             <div className="search-info">
-//                                 {loading ? "Finding nearby stops..." : `Found ${combinedStops.length} nearby locations.`}
-//                             </div>
-                            
-//                             <div className="stops-list">
-//                                 {combinedStops.length === 0 && !loading ? (
-//                                     <div className="empty-state">
-//                                         <div className="empty-state-icon">🔍</div>
-//                                         <p className="empty-state-text">No bus stops or MRT stations found nearby.</p>
-//                                     </div>
-//                                 ) : (
-//                                     <>
-//                                     {renderBusStopsList}
-//                                     {renderMrtStationsList}
-//                                     </>
-//                                 )}
-
-//                             </div>
-//                         </>
-//                     )}
-//                 </div>
-//             </div>
-            
-//             <footer className="footer">
-//                  <button className="nav-btn" onClick={() => navigate("/home")}>🏠 Home</button>
-//                  <button className="nav-btn nav-btn-active">📍 Tracker</button>
-//                  <button className="nav-btn" onClick={() => navigate("/my-trips")}>🧾 My Trips</button>
-//                  <button className="nav-btn" onClick={() => navigate("/settings")}>⚙️ Settings</button>
-//             </footer>
-
-//         </div>
-//     );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useState, useEffect, useRef, useCallback } from "react";
-// import { FaTrainSubway, FaBus, FaCar } from "react-icons/fa6";
-// import { NavLink, useNavigate } from "react-router-dom";
-// import { getNearbyLocations, getBusArrivals, getFavorites, addFavorite, removeFavorite } from "../api"; 
-// import BusIcon from "../assets/bus1.png";
-// import "./LiveTracker.css";
-
-// // Helper functions (getArrivalColor, getArrivalLabel, etc.) remain unchanged...
-
-// const getArrivalColor = (time) =>
-//     time <= 2 ? "#ef4444" : time <= 5 ? "#f59e0b" : "#3bb59d";
-
-// const getArrivalLabel = (time) =>
-//     time === 0 ? "Arr" : time === 1 ? "1 min" : `${time} min`;
-
-// export default function LiveTracker() {
-//     const [searchTerm, setSearchTerm] = useState("");
-//     const [expandedStops, setExpandedStops] = useState({});
-//     const [drawerHeight, setDrawerHeight] = useState(30);
-//     const [isDragging, setIsDragging] = useState(false);
-//     const [startY, setStartY] = useState(0);
-    
-//     // --- LIVE DATA STATES ---
-//     const [userLocation, setUserLocation] = useState(null);
-//     const [nearbyBusStops, setNearbyBusStops] = useState([]);
-//     const [nearbyMrtStations, setNearbyMrtStations] = useState([]);
-//     const [favorites, setFavorites] = useState([]);
-//     const [selectedStopCode, setSelectedStopCode] = useState(null);
-//     const [busArrivals, setBusArrivals] = useState([]);
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState(null);
-//     // New state to hold the coordinates used for the successful API query
-//     const [queryLocation, setQueryLocation] = useState(null); 
-
-//     const mapRef = useRef(null);
-//     const mapInstanceRef = useRef(null);
-//     const markersRef = useRef([]);
-//     const navigate = useNavigate();
-
-//     // --- Core Data Fetching Functions ---
-//     const fetchFavorites = useCallback(async () => {
-//         try {
-//             const favs = await getFavorites();
-//             setFavorites(favs);
-//         } catch (e) {
-//             setFavorites([]);
-//         }
-//     }, []);
-
-//     const renderMarkers = useCallback((map, busStops, mrtStations) => {
-//         if (!map || !window.google) return;
-        
-//         markersRef.current.forEach((m) => m.marker.setMap(null));
-//         markersRef.current = [];
-
-//         [...busStops, ...mrtStations].forEach((stopOrStation) => {
-//             const isBus = stopOrStation.type === 'bus';
-//             const iconUrl = isBus ? BusIcon : 'https://maps.google.com/mapfiles/kml/shapes/rail.png';
-//             const size = isBus ? new window.google.maps.Size(35, 35) : new window.google.maps.Size(30, 30);
-            
-//             if (stopOrStation.latitude === 0 || stopOrStation.longitude === 0) return;
-            
-//             const marker = new window.google.maps.Marker({
-//                 position: { lat: stopOrStation.latitude, lng: stopOrStation.longitude },
-//                 map: map,
-//                 icon: {
-//                     url: iconUrl,
-//                     scaledSize: size,
-//                     ...(isBus ? {} : { anchor: new window.google.maps.Point(15, 30) })
-//                 },
-//                 title: stopOrStation.name || stopOrStation.description,
-//             });
-
-//             const infoWindow = new window.google.maps.InfoWindow({
-//                 content: `<div style="font-weight: 600; color: #1a1a1a; padding: 4px 8px; line-height: 1;">${stopOrStation.name || stopOrStation.description}</div>`,
-//                 maxWidth: 200,
-//             });
-
-//             marker.addListener("click", () => {
-//                 markersRef.current.forEach((m) => m.infoWindow.close());
-//                 infoWindow.open(map, marker);
-                
-//                 if (isBus) {
-//                     fetchAndDisplayArrivals(stopOrStation.bus_stop_code);
-//                     toggleExpand(stopOrStation.bus_stop_code);
-//                     setSelectedStopCode(stopOrStation.bus_stop_code);
-//                 } else {
-//                     navigate(`/crowd-density/${stopOrStation.station_code}`);
-//                 }
-//                 setDrawerHeight(60); 
-//                 map.panTo({ lat: stopOrStation.latitude - 0.003, lng: stopOrStation.longitude });
-//             });
-
-//             markersRef.current.push({ marker, infoWindow });
-//         });
-//     }, [navigate]);
-
-//     const fetchNearbyData = useCallback(async (lat, lng) => {
-//         setLoading(true);
-//         setError(null);
-//         try {
-//             const data = await getNearbyLocations(lat, lng, 800);
-            
-//             // --- CRITICAL DEBUG LINE ---
-//             setQueryLocation({ lat, lng }); 
-//             // ---------------------------
-
-//             const favIds = favorites.map(f => f.route_id);
-
-//             const mapData = (item, type, codeKey) => ({
-//                 ...item,
-//                 is_favorite: favIds.includes(item[codeKey]),
-//                 favorite_id: favorites.find(f => f.route_id === item[codeKey])?.id,
-//                 type: type,
-//                 distance: `${Math.round(Math.random() * 1.5 * 10) / 10} km`, 
-//                 bus_stop_code: item.bus_stop_code || item.station_code,
-//                 name: item.name || item.description 
-//             });
-
-//             const busStopsWithFav = data.busStops.map(stop => mapData(stop, 'bus', 'bus_stop_code'));
-//             const mrtStationsWithFav = data.mrtStations.map(station => mapData(station, 'mrt', 'station_code'));
-
-//             setNearbyBusStops(busStopsWithFav);
-//             setNearbyMrtStations(mrtStationsWithFav);
-
-//             renderMarkers(mapInstanceRef.current, busStopsWithFav, mrtStationsWithFav);
-
-//         } catch (e) {
-//             setError("Failed to load nearby stops and stations. Check backend logs for non-401 errors.");
-//             console.error("Fetch nearby data error:", e);
-//             setNearbyBusStops([]);
-//             setNearbyMrtStations([]);
-//         } finally {
-//             setLoading(false);
-//         }
-//     }, [favorites, renderMarkers]);
-
-//     const fetchAndDisplayArrivals = async (code) => { /* ... unchanged ... */ };
-
-
-//     // --- Geolocation & Initial Load (Combined Hook) ---
-//     useEffect(() => {
-//         fetchFavorites();
-        
-//         let initialLocation = { lat: 1.3926, lng: 103.8954 }; // Set default to Sengkang area (where your test worked)
-
-//         const initMap = (center) => {
-//              if (window.google && mapRef.current) {
-//                 const map = new window.google.maps.Map(mapRef.current, {
-//                     center: center,
-//                     zoom: 15,
-//                     disableDefaultUI: true,
-//                     zoomControl: true,
-//                     mapTypeControl: false,
-//                     streetViewControl: false,
-//                     fullscreenControl: false,
-//                     styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
-//                 });
-//                 mapInstanceRef.current = map;
-                
-//                 new window.google.maps.Marker({
-//                     position: center,
-//                     map: map,
-//                     icon: {
-//                         path: window.google.maps.SymbolPath.CIRCLE,
-//                         scale: 8,
-//                         fillColor: "#0095FF",
-//                         fillOpacity: 1,
-//                         strokeColor: "#ffffff",
-//                         strokeWeight: 3,
-//                     },
-//                     title: "Your Location",
-//                 });
-                
-//                 fetchNearbyData(center.lat, center.lng);
-//             } else {
-//                 console.error("Google Maps API not yet loaded.");
-//                 setLoading(false);
-//             }
-//         };
-
-
-//         if (navigator.geolocation) {
-//             navigator.geolocation.getCurrentPosition(
-//                 (position) => {
-//                     initialLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-//                     setUserLocation(initialLocation);
-//                     initMap(initialLocation);
-//                 },
-//                 (err) => {
-//                     console.error("Geolocation Error:", err);
-//                     setError(`Location access denied. Using default location (${initialLocation.lat.toFixed(4)}, ${initialLocation.lng.toFixed(4)})`);
-//                     setUserLocation(initialLocation);
-//                     initMap(initialLocation); 
-//                 }
-//             );
-//         } else {
-//             setError("Geolocation not supported. Using default center.");
-//             setUserLocation(initialLocation);
-//             initMap(initialLocation);
-//         }
-//     }, []);
-
-
-//     // Drawer handlers (kept for functionality) ...
-
-//     const toggleExpand = (code) =>
-//         setExpandedStops((prev) => ({ ...prev, [code]: !prev[code] }));
-
-//     const combinedStops = [...nearbyBusStops, ...nearbyMrtStations].filter(item => 
-//         (item.name || item.description).toLowerCase().includes(searchTerm.toLowerCase()) || 
-//         item.bus_stop_code?.includes(searchTerm) || 
-//         item.station_code?.includes(searchTerm)
-//     ).sort(
-//         (a, b) => parseFloat(a.distance) - parseFloat(b.distance)
-//     );
-
-//     // --- RENDER ---
-
-//     if (loading && !queryLocation && !error) return <div className="loading">🛰️ Finding nearby stops...</div>;
-    
-    
-//     const renderBusStopsList = combinedStops.filter(item => item.type === 'bus').map((stop) => (
-//         <div
-//             key={stop.bus_stop_code}
-//             id={`stop-${stop.bus_stop_code}`}
-//             className={`stop-card ${selectedStopCode === stop.bus_stop_code ? "stop-card-selected" : ""}`}
-//         >
-//             {/* ... Bus Stop List rendering (unchanged from last correct version) ... */}
-//             <div className="stop-header" onClick={() => fetchAndDisplayArrivals(stop.bus_stop_code)}>
-//                 <div className="stop-left">
-//                     <button 
-//                         className="favorite-btn" 
-//                         onClick={(e) => {
-//                             e.stopPropagation(); 
-//                             handleFavoriteToggle('bus', stop.bus_stop_code, stop.favorite_id);
-//                         }}
-//                     >
-//                         {stop.is_favorite ? '⭐' : '☆'}
-//                     </button>
-//                     <div>
-//                         <div className="stop-name-row">
-//                             <h3 className="stop-name">{stop.name || stop.description}</h3>
-//                             <span className="stop-code">{stop.bus_stop_code}</span>
-//                         </div>
-//                         <div className="stop-meta">
-//                             <span className="stop-distance">Approx. {stop.distance}</span>
-//                         </div>
-//                     </div>
-//                 </div>
-//                 <button className="expand-btn" onClick={(e) => { e.stopPropagation(); toggleExpand(stop.bus_stop_code); }}>
-//                     {expandedStops[stop.bus_stop_code] ? "▲" : "▼"}
-//                 </button>
-//             </div>
-
-//             {expandedStops[stop.bus_stop_code] && selectedStopCode === stop.bus_stop_code && (
-//                 <div className="bus-arrivals">
-//                     {loading ? (
-//                         <p>Loading arrivals...</p>
-//                     ) : busArrivals.length === 0 ? (
-//                         <p>No real-time arrivals available for this stop.</p>
-//                     ) : (
-//                         busArrivals.map((service, i) => (
-//                             <div key={i} className="bus-row">
-//                                 <div className="bus-info">
-//                                     <div className="bus-number">{service.service_no}</div>
-//                                     <div className="bus-destination">→ {service.operator_name}</div>
-//                                 </div>
-//                                 <div className="arrival-times">
-//                                     {service.buses.slice(0, 3).map((bus, j) => (
-//                                         <div key={j} className="arrival-block">
-//                                             <div
-//                                                 className="arrival-time"
-//                                                 style={{ backgroundColor: getArrivalColor(bus.waiting_time) }}
-//                                             >
-//                                                 {getArrivalLabel(bus.waiting_time)}
-//                                             </div>
-//                                             <div className="bus-type-label">{bus.load_display.split(' ')[0]}</div>
-//                                         </div>
-//                                     ))}
-//                                 </div>
-//                             </div>
-//                         ))
-//                     )}
-//                 </div>
-//             )}
-//         </div>
-//     ));
-
-//     const renderMrtStationsList = combinedStops.filter(item => item.type === 'mrt').map((station) => (
-//         <div
-//             key={station.station_code}
-//             className="stop-card"
-//         >
-//             {/* ... MRT Station List rendering (unchanged from last correct version) ... */}
-//              <div className="stop-header" onClick={() => navigate(`/crowd-density/${station.station_code}`)}>
-//                 <div className="stop-left">
-//                     <button 
-//                         className="favorite-btn" 
-//                         onClick={(e) => {
-//                             e.stopPropagation();
-//                             handleFavoriteToggle('mrt', station.station_code, station.favorite_id);
-//                         }}
-//                     >
-//                         {station.is_favorite ? '⭐' : '☆'}
-//                     </button>
-//                     <div>
-//                         <div className="stop-name-row">
-//                             <h3 className="stop-name">🚇 {station.name || station.description}</h3>
-//                             <span className="stop-code">{station.station_code}</span>
-//                         </div>
-//                         <div className="stop-meta">
-//                             <span className="stop-distance">Lines: {station.lines?.map(l => l.line_code).join(', ') || 'N/A'}</span>
-//                         </div>
-//                     </div>
-//                 </div>
-//                 <button className="expand-btn">
-//                     View Crowd
-//                 </button>
-//             </div>
-//         </div>
-//     ));
-
-//     return (
-//         <div className="container">
-//             <div ref={mapRef} className="map-container" />
-
-//             <div className="drawer" style={{ height: `${drawerHeight}vh` }}>
-//                 <div className="drag-handle" /* ... drag props ... */>
-//                     <div className="drag-bar" />
-//                 </div>
-
-//                 <div className="drawer-header">
-//                     <input
-//                         type="text"
-//                         placeholder="Search stop/station or bus number..."
-//                         className="search-input"
-//                         value={searchTerm}
-//                         onChange={(e) => setSearchTerm(e.target.value)}
-//                     />
-//                 </div>
-
-//                 <div className="transport-tabs">
-//                     {/* ... transport tabs ... */}
-//                     <button className="transport-tab" onClick={() => navigate("/NearbyCarparks")}>
-//                         <span className="tab-icon"><FaCar /></span>
-//                         <span className="tab-label">Car</span>
-//                     </button>
-//                     <div className="transport-tab transport-tab-active">
-//                         <span className="tab-icon"><FaBus /></span>
-//                         <span className="tab-label">Bus</span>
-//                     </div>
-//                     <button className="transport-tab" onClick={() => navigate("/CrowdDensity")}>
-//                         <span className="tab-icon"><FaTrainSubway /></span>
-//                         <span className="tab-label">Train</span>
-//                     </button>
-//                 </div>
-
-//                 <div className="content">
-//                     {/* --- CRITICAL DEBUG DISPLAY --- */}
-//                     <p style={{ color: '#0095FF', textAlign: 'center', fontSize: '12px', marginBottom: '10px' }}>
-//                         Current Search Location: **{queryLocation ? `${queryLocation.lat.toFixed(4)}, ${queryLocation.lng.toFixed(4)}` : 'Awaiting Location...'}**
-//                     </p>
-//                     {/* --- END DEBUG DISPLAY --- */}
-
-//                     {error ? (
-//                         <div className="empty-state error">
-//                             <div className="empty-state-icon">❌</div>
-//                             <p className="empty-state-text">{error}</p>
-//                         </div>
-//                     ) : (
-//                         <>
-//                             <div className="search-info">
-//                                 {loading ? "Finding nearby stops..." : `Found ${combinedStops.length} nearby locations.`}
-//                             </div>
-                            
-//                             <div className="stops-list">
-//                                 {combinedStops.length === 0 && !loading ? (
-//                                     <div className="empty-state">
-//                                         <div className="empty-state-icon">🔍</div>
-//                                         <p className="empty-state-text">No bus stops or MRT stations found nearby.</p>
-//                                     </div>
-//                                 ) : (
-//                                     <>
-//                                     {renderBusStopsList}
-//                                     {renderMrtStationsList}
-//                                     </>
-//                                 )}
-
-//                             </div>
-//                         </>
-//                     )}
-//                 </div>
-//             </div>
-            
-//             <footer className="footer">
-//                  <button className="nav-btn" onClick={() => navigate("/home")}>🏠 Home</button>
-//                  <button className="nav-btn nav-btn-active">📍 Tracker</button>
-//                  <button className="nav-btn" onClick={() => navigate("/my-trips")}>🧾 My Trips</button>
-//                  <button className="nav-btn" onClick={() => navigate("/settings")}>⚙️ Settings</button>
-//             </footer>
-
-//         </div>
-//     );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useState, useEffect, useRef, useCallback } from "react";
-// import { FaTrainSubway, FaBus, FaCar } from "react-icons/fa6";
-// import { NavLink, useNavigate } from "react-router-dom";
-// import { getNearbyLocations, getBusArrivals, getFavorites, addFavorite, removeFavorite } from "../api"; 
-// import BusIcon from "../assets/bus1.png";
-// import "./LiveTracker.css";
-
-// // Helper functions (getArrivalColor, getArrivalLabel, etc.) remain unchanged...
-
-// const getArrivalColor = (time) =>
-//     time <= 2 ? "#ef4444" : time <= 5 ? "#f59e0b" : "#3bb59d";
-
-// const getArrivalLabel = (time) =>
-//     time === 0 ? "Arr" : time === 1 ? "1 min" : `${time} min`;
-
-// export default function LiveTracker() {
-//     const [searchTerm, setSearchTerm] = useState("");
-//     const [expandedStops, setExpandedStops] = useState({});
-//     const [drawerHeight, setDrawerHeight] = useState(30);
-//     const [isDragging, setIsDragging] = useState(false);
-//     const [startY, setStartY] = useState(0);
-    
-//     // --- LIVE DATA STATES ---
-//     const [userLocation, setUserLocation] = useState(null);
-//     const [nearbyBusStops, setNearbyBusStops] = useState([]);
-//     const [nearbyMrtStations, setNearbyMrtStations] = useState([]);
-//     const [favorites, setFavorites] = useState([]);
-//     const [selectedStopCode, setSelectedStopCode] = useState(null);
-//     const [busArrivals, setBusArrivals] = useState([]);
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState(null);
-//     // New state to hold the coordinates used for the successful API query
-//     const [queryLocation, setQueryLocation] = useState(null); 
-
-//     const mapRef = useRef(null);
-//     const mapInstanceRef = useRef(null);
-//     const markersRef = useRef([]);
-//     const navigate = useNavigate();
-
-//     // --- Core Data Fetching Functions ---
-//     const fetchFavorites = useCallback(async () => {
-//         try {
-//             const favs = await getFavorites();
-//             setFavorites(favs);
-//         } catch (e) {
-//             setFavorites([]);
-//         }
-//     }, []);
-
-//     const renderMarkers = useCallback((map, busStops, mrtStations) => {
-//         if (!map || !window.google) return;
-        
-//         markersRef.current.forEach((m) => m.marker.setMap(null));
-//         markersRef.current = [];
-
-//         [...busStops, ...mrtStations].forEach((stopOrStation) => {
-//             const isBus = stopOrStation.type === 'bus';
-//             const iconUrl = isBus ? BusIcon : 'https://maps.google.com/mapfiles/kml/shapes/rail.png';
-//             const size = isBus ? new window.google.maps.Size(35, 35) : new window.google.maps.Size(30, 30);
-            
-//             if (stopOrStation.latitude === 0 || stopOrStation.longitude === 0) return;
-            
-//             const marker = new window.google.maps.Marker({
-//                 position: { lat: stopOrStation.latitude, lng: stopOrStation.longitude },
-//                 map: map,
-//                 icon: {
-//                     url: iconUrl,
-//                     scaledSize: size,
-//                     ...(isBus ? {} : { anchor: new window.google.maps.Point(15, 30) })
-//                 },
-//                 title: stopOrStation.name || stopOrStation.description,
-//             });
-
-//             const infoWindow = new window.google.maps.InfoWindow({
-//                 content: `<div style="font-weight: 600; color: #1a1a1a; padding: 4px 8px; line-height: 1;">${stopOrStation.name || stopOrStation.description}</div>`,
-//                 maxWidth: 200,
-//             });
-
-//             marker.addListener("click", () => {
-//                 markersRef.current.forEach((m) => m.infoWindow.close());
-//                 infoWindow.open(map, marker);
-                
-//                 if (isBus) {
-//                     fetchAndDisplayArrivals(stopOrStation.bus_stop_code);
-//                     toggleExpand(stopOrStation.bus_stop_code);
-//                     setSelectedStopCode(stopOrStation.bus_stop_code);
-//                 } else {
-//                     navigate(`/crowd-density/${stopOrStation.station_code}`);
-//                 }
-//                 setDrawerHeight(60); 
-//                 map.panTo({ lat: stopOrStation.latitude - 0.003, lng: stopOrStation.longitude });
-//             });
-
-//             markersRef.current.push({ marker, infoWindow });
-//         });
-//     }, [navigate]);
-
-//     const fetchNearbyData = useCallback(async (lat, lng) => {
-//         setLoading(true);
-//         setError(null);
-//         try {
-//             const data = await getNearbyLocations(lat, lng, 800);
-            
-//             // --- CRITICAL DEBUG LINE ---
-//             setQueryLocation({ lat, lng }); 
-//             // ---------------------------
-
-//             const favIds = favorites.map(f => f.route_id);
-
-//             const mapData = (item, type, codeKey) => ({
-//                 ...item,
-//                 is_favorite: favIds.includes(item[codeKey]),
-//                 favorite_id: favorites.find(f => f.route_id === item[codeKey])?.id,
-//                 type: type,
-//                 distance: `${Math.round(Math.random() * 1.5 * 10) / 10} km`, 
-//                 bus_stop_code: item.bus_stop_code || item.station_code,
-//                 name: item.name || item.description 
-//             });
-
-//             const busStopsWithFav = data.busStops.map(stop => mapData(stop, 'bus', 'bus_stop_code'));
-//             const mrtStationsWithFav = data.mrtStations.map(station => mapData(station, 'mrt', 'station_code'));
-
-//             setNearbyBusStops(busStopsWithFav);
-//             setNearbyMrtStations(mrtStationsWithFav);
-
-//             renderMarkers(mapInstanceRef.current, busStopsWithFav, mrtStationsWithFav);
-
-//         } catch (e) {
-//             setError("Failed to load nearby stops and stations. Check backend logs for non-401 errors.");
-//             console.error("Fetch nearby data error:", e);
-//             setNearbyBusStops([]);
-//             setNearbyMrtStations([]);
-//         } finally {
-//             setLoading(false);
-//         }
-//     }, [favorites, renderMarkers]);
-
-//     const fetchAndDisplayArrivals = async (code) => { 
-//         setSelectedStopCode(code);
-//         setLoading(true);
-//         try {
-//             const arrivals = await getBusArrivals(code);
-//             // Assuming getBusArrivals returns { services: [...] }
-//             setBusArrivals(arrivals.services || arrivals); 
-//             setError(null);
-//         } catch (e) {
-//             setError(`Failed to fetch arrivals for ${code}.`);
-//             setBusArrivals([]);
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-
-//     // --- Geolocation & Initial Load (Combined Hook) ---
-//     useEffect(() => {
-//         fetchFavorites();
-        
-//         // **DEFAULT LOCATION SET TO SENGKANG (Where your test worked)**
-//         const SENGKANG_LOCATION = { lat: 1.3926, lng: 103.8954 }; 
-//         let initialLocation = SENGKANG_LOCATION; 
-
-//         const initMap = (center) => {
-//              if (window.google && mapRef.current) {
-//                 const map = new window.google.maps.Map(mapRef.current, {
-//                     center: center,
-//                     zoom: 15,
-//                     disableDefaultUI: true,
-//                     zoomControl: true,
-//                     mapTypeControl: false,
-//                     streetViewControl: false,
-//                     fullscreenControl: false,
-//                     styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
-//                 });
-//                 mapInstanceRef.current = map;
-                
-//                 new window.google.maps.Marker({
-//                     position: center,
-//                     map: map,
-//                     icon: {
-//                         path: window.google.maps.SymbolPath.CIRCLE,
-//                         scale: 8,
-//                         fillColor: "#0095FF",
-//                         fillOpacity: 1,
-//                         strokeColor: "#ffffff",
-//                         strokeWeight: 3,
-//                     },
-//                     title: "Your Location",
-//                 });
-                
-//                 fetchNearbyData(center.lat, center.lng);
-//             } else {
-//                 console.error("Google Maps API not yet loaded.");
-//                 setLoading(false);
-//             }
-//         };
-
-
-//         if (navigator.geolocation) {
-//             navigator.geolocation.getCurrentPosition(
-//                 // Success: Use actual location
-//                 (position) => {
-//                     initialLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-//                     setUserLocation(initialLocation);
-//                     initMap(initialLocation);
-//                 },
-//                 // Failure: Use fallback Sengkang location
-//                 (err) => {
-//                     console.error("Geolocation Error: Using fallback location.", err);
-//                     setError(`Location access denied. Using default Sengkang location (${SENGKANG_LOCATION.lat.toFixed(4)}, ${SENGKANG_LOCATION.lng.toFixed(4)})`);
-//                     setUserLocation(SENGKANG_LOCATION);
-//                     initMap(SENGKANG_LOCATION); 
-//                 }
-//             );
-//         } else {
-//             // Geolocation not supported: Use fallback Sengkang location
-//             setError("Geolocation not supported. Using default Sengkang center.");
-//             setUserLocation(SENGKANG_LOCATION);
-//             initMap(SENGKANG_LOCATION);
-//         }
-//     }, []);
-
-
-//     // Drawer handlers (kept for functionality) ...
-
-//     const toggleExpand = (code) =>
-//         setExpandedStops((prev) => ({ ...prev, [code]: !prev[code] }));
-
-//     const combinedStops = [...nearbyBusStops, ...nearbyMrtStations].filter(item => 
-//         (item.name || item.description).toLowerCase().includes(searchTerm.toLowerCase()) || 
-//         item.bus_stop_code?.includes(searchTerm) || 
-//         item.station_code?.includes(searchTerm)
-//     ).sort(
-//         (a, b) => parseFloat(a.distance) - parseFloat(b.distance)
-//     );
-
-//     // --- RENDER ---
-
-//     if (loading && !queryLocation && !error) return <div className="loading">🛰️ Finding nearby stops...</div>;
-    
-    
-//     const renderBusStopsList = combinedStops.filter(item => item.type === 'bus').map((stop) => (
-//         <div
-//             key={stop.bus_stop_code}
-//             id={`stop-${stop.bus_stop_code}`}
-//             className={`stop-card ${selectedStopCode === stop.bus_stop_code ? "stop-card-selected" : ""}`}
-//         >
-//             {/* ... Bus Stop List rendering (unchanged from last correct version) ... */}
-//             <div className="stop-header" onClick={() => fetchAndDisplayArrivals(stop.bus_stop_code)}>
-//                 <div className="stop-left">
-//                     <button 
-//                         className="favorite-btn" 
-//                         onClick={(e) => {
-//                             e.stopPropagation(); 
-//                             handleFavoriteToggle('bus', stop.bus_stop_code, stop.favorite_id);
-//                         }}
-//                     >
-//                         {stop.is_favorite ? '⭐' : '☆'}
-//                     </button>
-//                     <div>
-//                         <div className="stop-name-row">
-//                             <h3 className="stop-name">{stop.name || stop.description}</h3>
-//                             <span className="stop-code">{stop.bus_stop_code}</span>
-//                         </div>
-//                         <div className="stop-meta">
-//                             <span className="stop-distance">Approx. {stop.distance}</span>
-//                         </div>
-//                     </div>
-//                 </div>
-//                 <button className="expand-btn" onClick={(e) => { e.stopPropagation(); toggleExpand(stop.bus_stop_code); }}>
-//                     {expandedStops[stop.bus_stop_code] ? "▲" : "▼"}
-//                 </button>
-//             </div>
-
-//             {expandedStops[stop.bus_stop_code] && selectedStopCode === stop.bus_stop_code && (
-//                 <div className="bus-arrivals">
-//                     {loading ? (
-//                         <p>Loading arrivals...</p>
-//                     ) : busArrivals.length === 0 ? (
-//                         <p>No real-time arrivals available for this stop.</p>
-//                     ) : (
-//                         busArrivals.map((service, i) => (
-//                             <div key={i} className="bus-row">
-//                                 <div className="bus-info">
-//                                     <div className="bus-number">{service.service_no}</div>
-//                                     <div className="bus-destination">→ {service.operator_name}</div>
-//                                 </div>
-//                                 <div className="arrival-times">
-//                                     {service.buses.slice(0, 3).map((bus, j) => (
-//                                         <div key={j} className="arrival-block">
-//                                             <div
-//                                                 className="arrival-time"
-//                                                 style={{ backgroundColor: getArrivalColor(bus.waiting_time) }}
-//                                             >
-//                                                 {getArrivalLabel(bus.waiting_time)}
-//                                             </div>
-//                                             <div className="bus-type-label">{bus.load_display.split(' ')[0]}</div>
-//                                         </div>
-//                                     ))}
-//                                 </div>
-//                             </div>
-//                         ))
-//                     )}
-//                 </div>
-//             )}
-//         </div>
-//     ));
-
-//     const renderMrtStationsList = combinedStops.filter(item => item.type === 'mrt').map((station) => (
-//         <div
-//             key={station.station_code}
-//             className="stop-card"
-//         >
-//             {/* ... MRT Station List rendering (unchanged from last correct version) ... */}
-//              <div className="stop-header" onClick={() => navigate(`/crowd-density/${station.station_code}`)}>
-//                 <div className="stop-left">
-//                     <button 
-//                         className="favorite-btn" 
-//                         onClick={(e) => {
-//                             e.stopPropagation();
-//                             handleFavoriteToggle('mrt', station.station_code, station.favorite_id);
-//                         }}
-//                     >
-//                         {station.is_favorite ? '⭐' : '☆'}
-//                     </button>
-//                     <div>
-//                         <div className="stop-name-row">
-//                             <h3 className="stop-name">🚇 {station.name || station.description}</h3>
-//                             <span className="stop-code">{station.station_code}</span>
-//                         </div>
-//                         <div className="stop-meta">
-//                             <span className="stop-distance">Lines: {station.lines?.map(l => l.line_code).join(', ') || 'N/A'}</span>
-//                         </div>
-//                     </div>
-//                 </div>
-//                 <button className="expand-btn">
-//                     View Crowd
-//                 </button>
-//             </div>
-//         </div>
-//     ));
-
-//     return (
-//         <div className="container">
-//             <div ref={mapRef} className="map-container" />
-
-//             <div className="drawer" style={{ height: `${drawerHeight}vh` }}>
-//                 <div className="drag-handle" /* ... drag props ... */>
-//                     <div className="drag-bar" />
-//                 </div>
-
-//                 <div className="drawer-header">
-//                     <input
-//                         type="text"
-//                         placeholder="Search stop/station or bus number..."
-//                         className="search-input"
-//                         value={searchTerm}
-//                         onChange={(e) => setSearchTerm(e.target.value)}
-//                     />
-//                 </div>
-
-//                 <div className="transport-tabs">
-//                     {/* ... transport tabs ... */}
-//                     <button className="transport-tab" onClick={() => navigate("/NearbyCarparks")}>
-//                         <span className="tab-icon"><FaCar /></span>
-//                         <span className="tab-label">Car</span>
-//                     </button>
-//                     <div className="transport-tab transport-tab-active">
-//                         <span className="tab-icon"><FaBus /></span>
-//                         <span className="tab-label">Bus</span>
-//                     </div>
-//                     <button className="transport-tab" onClick={() => navigate("/CrowdDensity")}>
-//                         <span className="tab-icon"><FaTrainSubway /></span>
-//                         <span className="tab-label">Train</span>
-//                     </button>
-//                 </div>
-
-//                 <div className="content">
-//                     {/* --- CRITICAL DEBUG DISPLAY --- */}
-//                     <p style={{ color: '#0095FF', textAlign: 'center', fontSize: '12px', marginBottom: '10px' }}>
-//                         Current Search Location: **{queryLocation ? `${queryLocation.lat.toFixed(4)}, ${queryLocation.lng.toFixed(4)}` : 'Awaiting Location...'}**
-//                     </p>
-//                     {/* --- END DEBUG DISPLAY --- */}
-
-//                     {error ? (
-//                         <div className="empty-state error">
-//                             <div className="empty-state-icon">❌</div>
-//                             <p className="empty-state-text">{error}</p>
-//                         </div>
-//                     ) : (
-//                         <>
-//                             <div className="search-info">
-//                                 {loading ? "Finding nearby stops..." : `Found ${combinedStops.length} nearby locations.`}
-//                             </div>
-                            
-//                             <div className="stops-list">
-//                                 {combinedStops.length === 0 && !loading ? (
-//                                     <div className="empty-state">
-//                                         <div className="empty-state-icon">🔍</div>
-//                                         <p className="empty-state-text">No bus stops or MRT stations found nearby.</p>
-//                                     </div>
-//                                 ) : (
-//                                     <>
-//                                     {renderBusStopsList}
-//                                     {renderMrtStationsList}
-//                                     </>
-//                                 )}
-
-//                             </div>
-//                         </>
-//                     )}
-//                 </div>
-//             </div>
-            
-//             <footer className="footer">
-//                  <button className="nav-btn" onClick={() => navigate("/home")}>🏠 Home</button>
-//                  <button className="nav-btn nav-btn-active">📍 Tracker</button>
-//                  <button className="nav-btn" onClick={() => navigate("/my-trips")}>🧾 My Trips</button>
-//                  <button className="nav-btn" onClick={() => navigate("/settings")}>⚙️ Settings</button>
-//             </footer>
-
-//         </div>
-//     );
-// }

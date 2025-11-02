@@ -1,139 +1,149 @@
-// frontend/src/pages/myTrips.jsx - UPDATED FOR BACKEND INTEGRATION
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getFavorites, removeFavorite } from "../api"; // Import real API calls
+import api from "../api";
 import "./myTrips.css";
 
-// Note: Recents tab remains dummy data as there's no backend endpoint for 'recent trips'
+// The hardcoded data for trips is removed.
+
+// Placeholder for trip icon based on route type (can be improved)
+const getRouteIcon = (routeType) => {
+  switch (routeType) {
+    case "bus": return "🚌";
+    case "mrt": return "🚆";
+    default: return "📍";
+  }
+};
 
 function MyTrips() {
-    const [activeTab, setActiveTab] = useState("favourites");
-    const [favorites, setFavorites] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("favourites");
+  const [favorites, setFavorites] = useState([]);
+  const [recents, setRecents] = useState([]); // This would typically come from a /recent-trips API
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-    // Mock data for Recents (since your backend doesn't have a 'Recents' endpoint)
-    const recents = [
-        { id: 101, route_id: "99", nickname: "Jurong East to Orchard", route_type: "bus", info: "13.5 km | 33 mins" },
-        { id: 102, route_id: "NTU", nickname: "NTU to Changi Airport", route_type: "mrt", info: "38.5 km | 58 mins" },
-    ];
+  // API: Fetch user's favorite routes
+  const fetchFavorites = useCallback(async () => {
+    try {
+      const res = await api.get("/api/user/favourites/");
+      setFavorites(res.data);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+    }
+  }, []);
 
-    const fetchUserFavorites = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const favs = await getFavorites();
-            setFavorites(favs);
-        } catch (e) {
-            setError("Failed to load favourites. Please ensure you are logged in.");
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  // Placeholder for recent trips logic (since you don't have a specific endpoint, keeping it dummy)
+  const fetchRecents = () => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setRecents([
+        { id: 1, route_id: "bus_179", route_type: "bus", nickname: "NTU to Boon Lay", created_at: "2025-10-25T10:00:00Z" },
+        { id: 2, route_id: "mrt_DTL", route_type: "mrt", nickname: "Jln Besar to Bugis", created_at: "2025-10-24T15:30:00Z" },
+      ]);
+      setLoading(false);
+    }, 500);
+  };
 
-    useEffect(() => {
-        if (activeTab === 'favourites') {
-            fetchUserFavorites();
-        }
-    }, [activeTab, fetchUserFavorites]);
+  useEffect(() => {
+    if (activeTab === "favourites") {
+      fetchFavorites();
+    } else {
+      fetchRecents();
+    }
+  }, [activeTab, fetchFavorites]);
 
-    const handleRemoveFavorite = async (favoriteId, e) => {
-        e.stopPropagation(); // Stop click propagating to the card
-        try {
-            await removeFavorite(favoriteId);
-            // Optimistically update the list
-            setFavorites(current => current.filter(fav => fav.id !== favoriteId));
-        } catch (e) {
-            alert(`Failed to remove favorite: ${e.message}`);
-        }
-    };
-    
-    const handleTripClick = (routeType, routeId) => {
-        if (routeType === 'mrt') {
-            navigate(`/crowd-density/${routeId}`);
-        } else {
-            // Bus stop ID/Route ID might need to be passed to LiveTracker if map centering is desired
-            alert(`Navigating to ${routeType.toUpperCase()} stop/route ${routeId} on the map.`);
-            navigate('/LiveTracker'); 
-        }
-    }
+  const handleHomeClick = () => navigate("/home");
+  const handleSettingsClick = () => navigate("/settings");
+  
+  // Function to remove a favorite
+  const handleRemoveFavorite = async (e, favoriteId) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to remove this favorite?")) return;
 
+    try {
+      await api.delete(`/api/user/favourites/remove/${favoriteId}/`);
+      alert("Favorite removed successfully!");
+      fetchFavorites(); // Refresh the list
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      alert("Failed to remove favorite. Please try again.");
+    }
+  };
 
-    const tripsToDisplay = activeTab === "favourites" ? favorites : recents;
-    const isFavoritesTab = activeTab === "favourites";
+  const displayList = activeTab === "favourites" ? favorites : recents;
 
-    return (
-        <>
-            <div className="my-trips-container">
-                <header className="header">
-                    <h1>My Trips 🧾</h1>
-                </header>
+  return (
+    <>
+      <div className="my-trips-container">
+        <header className="header">
+          <h1>My Trips 🧾</h1>
+        </header>
 
-                <div className="tab-buttons">
-                    <button
-                        className={isFavoritesTab ? "tab active" : "tab"}
-                        onClick={() => setActiveTab("favourites")}
-                    >
-                        Favourites
-                    </button>
-                    <button
-                        className={!isFavoritesTab ? "tab active" : "tab"}
-                        onClick={() => setActiveTab("recent")}
-                    >
-                        Recents (Mock)
-                    </button>
-                </div>
-                
-                {isFavoritesTab && loading && <div className="loading" style={{ padding: '20px', textAlign: 'center' }}>Loading favourites...</div>}
-                {isFavoritesTab && error && <div className="error-state" style={{ padding: '20px', textAlign: 'center', color: 'red' }}>{error}</div>}
+        <div className="tab-buttons">
+          <button
+            className={activeTab === "favourites" ? "tab active" : "tab"}
+            onClick={() => setActiveTab("favourites")}
+          >
+            **Favourites**
+          </button>
+          <button
+            className={activeTab === "recent" ? "tab active" : "tab"}
+            onClick={() => setActiveTab("recent")}
+          >
+            Recents
+          </button>
+        </div>
 
-                <div className="trips-list">
-                    {tripsToDisplay.length === 0 && !loading ? (
-                        <p style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                            {isFavoritesTab ? "You haven't saved any favourite routes yet." : "No recent trips available."}
-                        </p>
-                    ) : (
-                        tripsToDisplay.map((trip) => (
-                            <div 
-                                key={trip.id} 
-                                className="trip-card"
-                                onClick={() => handleTripClick(trip.route_type || trip.mode.toLowerCase(), trip.route_id || trip.id)}
-                            >
-                                <div className="trip-icon">{trip.route_type === 'mrt' || trip.mode === 'Train' ? '🚆' : '🚌'}</div>
-                                <div className="trip-details">
-                                    <p>
-                                        {trip.nickname || `${trip.route_type?.toUpperCase() || trip.mode} Route ${trip.route_id || trip.id}`}
-                                    </p>
-                                    <small>
-                                        {trip.route_type?.toUpperCase() || trip.mode} ID: {trip.route_id || trip.id} 
-                                        {trip.info && ` | ${trip.info}`}
-                                    </small>
-                                </div>
-                                {isFavoritesTab && (
-                                    <button 
-                                        onClick={(e) => handleRemoveFavorite(trip.id, e)} 
-                                        style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#ef4444' }}
-                                    >
-                                        🗑️
-                                    </button>
-                                )}
-                                {!isFavoritesTab && <div className="trip-arrow">➔</div>}
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
+        <div className="trips-list">
+          {loading ? (
+            <p style={{ textAlign: 'center', padding: '20px', color: '#666' }}>Loading...</p>
+          ) : displayList.length === 0 ? (
+            <p style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+              No {activeTab} yet. Go to Live Tracker to add a favourite!
+            </p>
+          ) : (
+            displayList.map((trip) => (
+              <div key={trip.id} className="trip-card">
+                <div className="trip-icon">{getRouteIcon(trip.route_type)}</div>
+                <div className="trip-details">
+                  <p>
+                    {trip.nickname || `${trip.route_type.toUpperCase()} ${trip.route_id}`}
+                  </p>
+                  <small>
+                    {trip.route_type.toUpperCase()} Route | ID: {trip.route_id}
+                  </small>
+                </div>
+                {activeTab === "favourites" && (
+                  <button 
+                    onClick={(e) => handleRemoveFavorite(e, trip.id)} 
+                    style={{ 
+                      background: 'none', 
+                      border: 'none', 
+                      color: '#ef4444', 
+                      cursor: 'pointer', 
+                      fontSize: '1.5rem' 
+                    }}
+                  >
+                    🗑️
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
-            <footer className="footer-nav">
-                <button className="nav-btn" onClick={() => navigate("/home")}>🏠 Home</button>
-                <button className="nav-btn active">🧾 My Trips</button>
-                <button className="nav-btn" onClick={() => navigate("/settings")}>⚙️ Settings</button>
-            </footer>
-        </>
-    );
+      <footer className="footer-nav">
+        <button className="nav-btn" onClick={handleHomeClick}>
+          🏠 Home
+        </button>
+        <button className="nav-btn active">🧾 My Trips</button>
+        <button className="nav-btn" onClick={handleSettingsClick}>
+          ⚙️ Settings
+        </button>
+      </footer>
+    </>
+  );
 }
 
 export default MyTrips;

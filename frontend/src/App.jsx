@@ -9,6 +9,10 @@ import NearbyCarparks from './pages/NearbyCarparks';
 import CrowdDensity from './pages/CrowdDensity';
 import LiveTracker from './pages/LiveTracker';
 import NotFound from './pages/NotFound';
+
+import DensityDebugger from './pages/DensityDebugger.jsx';
+import BusDebugger from './pages/BusDebugger';
+
 // Import Form and ForgotPassword to use them directly
 import Form from './components/Form';
 import ForgotPassword from './pages/ForgotPassword'; 
@@ -69,10 +73,28 @@ function AppRoutes() { // Renamed from App to AppRoutes for clean usage with Bro
       <Route path="/NearbyCarparks" element={<ProtectedRoute><NearbyCarparks /></ProtectedRoute>} />
 
       {/* LIVE TRACKER & CROWD DENSITY PAGES */}
-      <Route path="/LiveTracker" element={<ProtectedRoute><LiveTracker /></ProtectedRoute>} />
+      <Route
+    path="/LiveTracker"
+    element={
+        // <ProtectedRoute>
+            <LiveTracker /> 
+            //{/* <BusDebugger />  <-- TEMPORARILY USE THIS FOR TESTING */}
+        //</Routes>/* </ProtectedRoute>
+    }
+/>
       {/* Crowd Density Routes: one for selector view, one for deep link */}
-      <Route path="/CrowdDensity" element={<ProtectedRoute><CrowdDensity /></ProtectedRoute>} />
-      <Route path="/crowd-density/:stationCode" element={<ProtectedRoute><CrowdDensity /></ProtectedRoute>} />
+      <Route path="/CrowdDensity" element={
+            // <ProtectedRoute>
+            // <DensityDebugger />
+              <CrowdDensity />
+            // 
+            } />
+      <Route path="/crowd-density/:stationCode" element={
+        // <ProtectedRoute>
+          <CrowdDensity />
+          // <DensityDebugger />
+        // </ProtectedRoute>
+        } />
 
 
       {/* Catch-all */}
