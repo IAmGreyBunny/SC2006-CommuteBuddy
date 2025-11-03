@@ -1,37 +1,64 @@
+/* Login.css */
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #0095FF 100%);
+  color: #333;
+}
+
 .login-container {
-  max-width: 400px;
-  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
   text-align: center;
-  padding: 20px;
+  padding: 2rem;
 }
 
-.login-input {
+.login-container h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 5px;
+  max-width: 350px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+input {
+  padding: 12px;
+  border-radius: 6px;
   border: 1px solid #ccc;
-  font-size: 16px;
+  font-size: 1rem;
 }
 
-.login-button {
-  width: 100%;
-  padding: 10px;
+button {
+  padding: 12px;
   background-color: #0095ff;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
+  font-size: 1rem;
   cursor: pointer;
-  font-size: 16px;
   transition: background 0.3s ease;
 }
 
-.login-button:hover {
+button:hover {
   background-color: #007bdf;
 }
 
 .login-link {
-  color: #0095ff;
+  color: #ffffff;
   cursor: pointer;
   font-weight: 500;
 }
@@ -40,3 +67,7 @@
   text-decoration: underline;
 }
 
+p {
+  margin-top: 1rem;
+  color: white;
+}
