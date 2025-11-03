@@ -10,6 +10,7 @@ import CrowdDensity from './pages/CrowdDensity';
 import LiveTracker from './pages/LiveTracker';
 import CarparkSourceForm from './pages/CarparkSourceForm';
 import ForgotPassword from './pages/ForgotPassword';
+import ProtectedRoute from './components/ProtectedRoute'
 import './App.css';
 
 
@@ -76,12 +77,6 @@ function Login({ onSwitchToSignUp, onLoginSuccess }) {
   );
 }
 
-//protected route
-
-const ProtectedRoute = ({ children }) => {
-  const isLoggedIn = !!localStorage.getItem('user'); // simple auth check
-  return isLoggedIn ? children : <Navigate to="/login" />;
-};
 
 //not found page
 
