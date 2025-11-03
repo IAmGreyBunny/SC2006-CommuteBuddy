@@ -7,14 +7,32 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const validatePassword = (pwd) => {
+    if (pwd.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) {
+      return "Password must contain at least one special character.";
+    }
+    return null;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    const pwdError = validatePassword(password);
+    if (pwdError) {
+        alert(pwdError);
+        return;
+    }
+
     setLoading(true);
 
     try {
-      // User registration endpoint
       const res = await api.post("/api/user/register/", {
         username,
         email,
@@ -26,7 +44,7 @@ function RegisterForm() {
       navigate("/login");
     } catch (error) {
       console.error("Registration error:", error);
-      alert("Error registering user.");
+      setError(err.response?.data?.message || "Error registering user.");
     } finally {
       setLoading(false);
     }
@@ -55,6 +73,7 @@ function RegisterForm() {
         placeholder="Password"
         required
       />
+      {error && <p style={{ color: "red" }}>{error}</p>} {/* show error */}
       <button type="submit" disabled={loading}>
         {loading ? "Registering..." : "Register"}
       </button>
