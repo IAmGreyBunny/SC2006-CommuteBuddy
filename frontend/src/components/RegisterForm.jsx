@@ -7,10 +7,29 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const validatePassword = (pwd) => {
+    if (pwd.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) {
+      return "Password must contain at least one special character.";
+    }
+    return null;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    const pwdError = validatePassword(password);
+    if (pwdError) {
+        alert(pwdError);
+        return;
+    }
+
     setLoading(true);
 
     try {
@@ -25,7 +44,7 @@ function RegisterForm() {
       navigate("/login");
     } catch (error) {
       console.error("Registration error:", error);
-      alert("Error registering user.");
+      setError(error.response?.data?.message || "Error registering user.");
     } finally {
       setLoading(false);
     }
