@@ -14,7 +14,6 @@ function RegisterForm() {
     setLoading(true);
 
     try {
-      // User registration endpoint
       const res = await api.post("/api/user/register/", {
         username,
         email,
