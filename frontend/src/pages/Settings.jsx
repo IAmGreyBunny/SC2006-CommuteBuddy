@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Settings.css";
 import ProfilePopup from "./ProfilePopup";
+import ChangePasswordPopup from "./ChangePasswordPopup";
 
 const Settings = () => {
   const [tripReminders, setTripReminders] = useState(false);
@@ -10,6 +11,7 @@ const Settings = () => {
   const [peakHourAlerts, setPeakHourAlerts] = useState(false);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false); 
+  const [showPasswordPopup, setShowPasswordPopup] = useState(false);
   const [username, setUsername] = useState("Guest");
 
   const navigate = useNavigate();
@@ -49,10 +51,11 @@ const Settings = () => {
           <span>👤 Edit Profile</span>
           <span className="arrow">›</span>
         </div>
-        <div className="settings-item">
+        <div className="settings-item" onClick={() => setShowPasswordPopup(true)}>
           <span>🔒 Change Password</span>
           <span className="arrow">›</span>
         </div>
+
       </section>
 
       {/* Account Actions */}
@@ -95,6 +98,11 @@ const Settings = () => {
           avatarUrl={avatarUrl} 
         />
       )}
+
+      {showPasswordPopup && (
+        <ChangePasswordPopup onClose={() => setShowPasswordPopup(false)} />
+      )}
+
     </div>
   );
 };

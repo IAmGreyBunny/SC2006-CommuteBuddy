@@ -14,6 +14,7 @@ from api.views import search_bus_stops, search_mrt_stations, search_bus_services
 from api.views import BusStopViewSet, BusRouteViewSet, BusScheduleViewSet, RealTimeBusViewSet
 from api.views import MRTLineViewSet, MRTStationViewSet, MRTScheduleViewSet
 from api.views import MyTokenObtainPairView # Added this to store username in token response
+from api.views import MyTokenObtainPairView, CreateUserView, UserProfileView # For edit profile on settings
 
 
 router = routers.DefaultRouter()
@@ -30,6 +31,8 @@ router.register(r'alerts', AlertViewSet, basename='alert')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'), # For edit profile on settings
+    path('api/user/profile/', UserProfileView.as_view(), name='user-profile'),
     path("api/token/", MyTokenObtainPairView.as_view(), name="get_token"), # Added this to store username in token response
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),  # Added this to store username in token response
     path("api/user/register/", CreateUserView.as_view(), name="register"),

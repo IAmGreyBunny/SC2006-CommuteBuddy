@@ -39,6 +39,7 @@
   cursor: pointer;
   color: #555;
   transition: color 0.2s ease;
+  z-index: 10;
 }
 
 .close-btn:hover {
@@ -106,4 +107,20 @@
 
 .edit-btn:hover {
   background: #0056cc;
+}
+
+.profile-input {
+  width: 100%;
+  padding: 10px 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.profile-input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
 }
