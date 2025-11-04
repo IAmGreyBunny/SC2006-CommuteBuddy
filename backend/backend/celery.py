@@ -108,3 +108,6 @@ if platform.system() == "Windows":
 else:
     app.conf.worker_pool = "prefork"
     app.conf.worker_concurrency = 8  # Increased for better performance
+
+app.conf.worker_pool = "eventlet"
+app.conf.worker_concurrency = 4

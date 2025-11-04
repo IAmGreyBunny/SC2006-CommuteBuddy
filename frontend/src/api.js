@@ -1,26 +1,26 @@
-// This file handles how api work
-import axios from "axios"
-import { ACCESS_TOKEN } from "./constants"
+import axios from "axios";
+import { ACCESS_TOKEN } from "./constants";
 
-// Creates an axios object with base url, so we don't have to call the whole url all the time
+// Use environment variable from Vite's import.meta.env
+// Fallback to localhost:8000 if not defined (matching your backend URLs)
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL
-})
+    baseURL: API_BASE_URL,
+});
 
-// Create an interceptor which allows modification of api request before it is being sent
-// Adds an interceptor to automatically add the access token of the user to requests
+// Interceptor to automatically add the access token of the user to requests
 api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem(ACCESS_TOKEN);
-        if(token)
-        {
-            config.headers.Authorization = `Bearer ${token}`
-        }
-        return config
-    },
-    (error) => {
-        return Promise.reject(error)
-    }
-)
+    (config) => {
+        const token = localStorage.getItem(ACCESS_TOKEN);
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
-export default api
+export default api;

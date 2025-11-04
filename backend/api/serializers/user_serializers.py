@@ -4,7 +4,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 # Overwrites the default simple jwt serializer
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = User.USERNAME_FIELD  # uses "email"
+    username_field = User.USERNAME_FIELD  
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

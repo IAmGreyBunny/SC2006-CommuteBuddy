@@ -1,12 +1,13 @@
-
+/* Login.css */
 
 body {
   margin: 0;
+  font-family: "Poppins", sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #0095FF 100%);
   color: #333;
 }
 
-.register-container {
+.login-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -16,7 +17,7 @@ body {
   padding: 2rem;
 }
 
-.register-container h2 {
+.login-container h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
   color: white;
@@ -56,13 +57,13 @@ button:hover {
   background-color: #007bdf;
 }
 
-.register-link {
+.login-link {
   color: #ffffff;
   cursor: pointer;
   font-weight: 500;
 }
 
-.register-link:hover {
+.login-link:hover {
   text-decoration: underline;
 }
 
