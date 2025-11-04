@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Settings.css";
 import ProfilePopup from "./ProfilePopup";
@@ -9,9 +9,19 @@ const Settings = () => {
   const [serviceDisruptions, setServiceDisruptions] = useState(false);
   const [peakHourAlerts, setPeakHourAlerts] = useState(false);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // Correct state
+  const [showLogoutModal, setShowLogoutModal] = useState(false); 
+  const [username, setUsername] = useState("Guest");
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const stored = localStorage.getItem("username");
+    if (stored) setUsername(stored);
+  }, []);
+
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    username
+  )}&background=667eea&color=fff&size=48`;
 
   const handleHomeClick = () => navigate('/home');
   const handleMyTripsClick = () => navigate('/my-trips');
@@ -78,7 +88,13 @@ const Settings = () => {
         <button className="nav-btn active">⚙️ Settings</button>
       </footer>
 
-      {showProfilePopup && <ProfilePopup onClose={closeProfilePopup} />}
+      {showProfilePopup && (
+        <ProfilePopup 
+          onClose={closeProfilePopup} 
+          username={username} 
+          avatarUrl={avatarUrl} 
+        />
+      )}
     </div>
   );
 };

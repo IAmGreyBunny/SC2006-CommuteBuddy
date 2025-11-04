@@ -1,9 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./ProfilePopup.css";
 
-const logoPath = "/profile.png"; 
-
 const ProfilePopup = ({ onClose }) => {
+  const [username, setUsername] = useState("Guest");
+  const [email, setEmail] = useState("guest@example.com");
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    const storedEmail = localStorage.getItem("email"); 
+    if (storedUsername) setUsername(storedUsername);
+    if (storedEmail) setEmail(storedEmail);
+  }, []);
+
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    username
+  )}&background=667eea&color=fff&size=48`;
+
   return (
     <div className="popup-overlay">
       <div className="popup-content">
@@ -12,10 +24,10 @@ const ProfilePopup = ({ onClose }) => {
         </button>
 
         <div className="profile-container">
-          <img src={logoPath} className="profile-avatar" alt="Profile" />
+          <img src={avatarUrl} className="profile-avatar" alt="Profile" />
 
-          <h2>James Lee</h2>
-          <p>jameslee01@gmail.com</p>
+          <h2>{username}</h2>
+          <p>{email}</p>
 
           <div className="profile-buttons">
             <button className="cancel-btn" onClick={onClose}>
@@ -30,3 +42,4 @@ const ProfilePopup = ({ onClose }) => {
 };
 
 export default ProfilePopup;
+
