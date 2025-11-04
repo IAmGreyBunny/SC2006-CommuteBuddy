@@ -3,33 +3,27 @@ import { useNavigate } from "react-router-dom";
 import "./Settings.css";
 import ProfilePopup from "./ProfilePopup";
 
-const Settings = ( {navigateTo} ) => {
+const Settings = () => {
   const [tripReminders, setTripReminders] = useState(false);
   const [liveArrivalAlerts, setLiveArrivalAlerts] = useState(false);
   const [serviceDisruptions, setServiceDisruptions] = useState(false);
   const [peakHourAlerts, setPeakHourAlerts] = useState(false);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // Correct state
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
-  // updated routing
-  const handleHomeClick = () => {
-    navigate('/home');
+  const handleHomeClick = () => navigate('/home');
+  const handleMyTripsClick = () => navigate('/my-trips');
+  const handleEditProfileClick = () => setShowProfilePopup(true);
+  const closeProfilePopup = () => setShowProfilePopup(false);
+
+  const handleLogoutClick = () => setShowLogoutModal(true);
+  const cancelLogout = () => setShowLogoutModal(false);
+  const confirmLogout = () => {
+    localStorage.clear();
+    navigate('/login');
   };
-
-  const handleMyTripsClick = () => {
-    navigate('/my-trips');
-  };
-
-
-  const handleEditProfileClick = () => {
-    setShowProfilePopup(true);
-  };
-  
-  const closeProfilePopup = () => {
-    setShowProfilePopup(false);
-  };
-  
 
   return (
     <div className="settings-container">
@@ -51,59 +45,10 @@ const Settings = ( {navigateTo} ) => {
         </div>
       </section>
 
-      {/* Notifications */}
-      {/* <section className="settings-section">
-        <h3>Notifications</h3>
-        <div className="settings-item">
-          <span>🔔 Trip Reminders</span>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={tripReminders}
-              onChange={() => setTripReminders(!tripReminders)}
-            />
-            <span className="slider round"></span>
-          </label>
-        </div>
-        <div className="settings-item">
-          <span>💡 Live Arrival Alerts</span>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={liveArrivalAlerts}
-              onChange={() => setLiveArrivalAlerts(!liveArrivalAlerts)}
-            />
-            <span className="slider round"></span>
-          </label>
-        </div>
-        <div className="settings-item">
-          <span>ℹ️ Service Disruptions or Delays</span>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={serviceDisruptions}
-              onChange={() => setServiceDisruptions(!serviceDisruptions)}
-            />
-            <span className="slider round"></span>
-          </label>
-        </div>
-        <div className="settings-item">
-          <span>💡 Peak Hour Alerts</span>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={peakHourAlerts}
-              onChange={() => setPeakHourAlerts(!peakHourAlerts)}
-            />
-            <span className="slider round"></span>
-          </label>
-        </div>
-      </section> */}
-
       {/* Account Actions */}
       <section className="settings-section">
         <h3>Account Actions</h3>
-        <div className="settings-item">
+        <div className="settings-item" onClick={handleLogoutClick}>
           <span>➡️ Logout</span>
           <span className="arrow">›</span>
         </div>
@@ -112,13 +57,27 @@ const Settings = ( {navigateTo} ) => {
           <span className="arrow">›</span>
         </div>
       </section>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div className="modal-actions">
+              <button className="modal-btn cancel" onClick={cancelLogout}>Cancel</button>
+              <button className="modal-btn confirm" onClick={confirmLogout}>Logout</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer className="footer-nav">
         <button className="nav-btn" onClick={handleHomeClick}>🏠 Home</button>
         <button className="nav-btn" onClick={handleMyTripsClick}>🧾 My Trips</button>
         <button className="nav-btn active">⚙️ Settings</button>
       </footer>
 
-      {/* Popup */}
       {showProfilePopup && <ProfilePopup onClose={closeProfilePopup} />}
     </div>
   );

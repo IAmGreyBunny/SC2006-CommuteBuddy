@@ -1,15 +1,16 @@
+
 .home-container {
   width: 100vw;
   height: 100vh;
   margin: auto;
-  padding: 20px;
+  padding: 40px;
   font-family: "Segoe UI", sans-serif;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   box-sizing: border-box;
-
   background: linear-gradient(135deg, #4dacf0, #667eea);
+  position: relative;
 }
 
 .home-container::before {
@@ -24,184 +25,128 @@
 }
 
 
-.home-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .profile-info {
   display: flex;
   align-items: center;
+  margin-bottom: 40px;
 }
 
 .avatar {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 16px;
 }
 
 .greeting {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.location-text {
-  font-size: 14px;
-  color: #666;
-}
-
-.header-icons .icon-button {
-  background: none;
-  border: none;
-  font-size: 22px;
-  margin-left: 12px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.icon-button:hover {
-  transform: scale(1.1);
+  font-size: 24px;
+  font-weight: 700;
 }
 
 .main-text {
+  margin-top: 120px;
   text-align: center;
-  margin-top: 40px;
+  line-height: 1.5;
+  color: #222222;
+  margin-bottom: 6rem;
 }
 
 .main-text h1 {
-  font-size: 30px;
-  margin-bottom: 8px;
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.main-text p {
+  font-size: 1.3rem;
+  color: #dae6fa;
 }
 
 .highlight {
   color: #dae6fa;
 }
 
-.main-text p {
-  color: #555;
-  font-size: 15px;
-}
-
 .transport-settings {
   text-align: center;
-  margin-top: 40px;
+  margin-top: 2rem;
 }
 
 .transport-settings h3 {
-  font-size: 20px;
+  font-size: 22px;
   margin-bottom: 24px;
-  color: #222;
   font-weight: 600;
 }
 
 .transport-list {
   display: flex;
   justify-content: center;
-  gap: 16px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
 .transport-item {
+  width: 120px;
+  height: 120px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: white;
-  border-radius: 16px;
-  width: 90px;
-  height: 90px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .transport-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .transport-item.selected {
-  background: #007bff;
-  color: white;
-  transform: translateY(-3px);
+  background: rgba(0, 123, 255, 0.2);
 }
 
 .transport-icon {
-  font-size: 28px;
-  margin-bottom: 6px;
+  font-size: 36px;
+  margin-bottom: 8px;
 }
 
 .transport-label {
-  font-weight: 500;
-}
-
-.save-btn {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 16px;
   font-weight: 600;
-  margin-top: 30px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.save-btn:hover {
-  background: #0063cc;
+  font-size: 1rem;
 }
 
 .footer-nav {
   display: flex;
   justify-content: space-around;
-  padding: 12px 0;
-  background: white;
-  border-top: 1px solid #ddd;
+  padding: 16px 0;
+  background: rgba(255, 255, 255, 0.2); 
+  border-top: none; 
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 10; 
 }
 
 .nav-btn {
-  background: none;
+  background: transparent !important; 
   border: none;
-  font-size: 14px;
+  font-size: 16px;
   color: gray;
   cursor: pointer;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.nav-btn:hover {
+  color: #007bff;
+  transform: scale(1.05);
 }
 
 .nav-btn.active {
   color: #007bff;
   font-weight: 600;
 }
-
-.main-text {
-  margin-bottom: 5rem; 
-}
-
-.transport-settings {
-  margin-top: 0rem;
-}
-.main-text {
-  margin-top: 250px;          
-  text-align: center;
-  line-height: 1.4;
-  color: #222222;
-}
-
-.main-text h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.main-text p {
-  font-size: 1.1rem;
-  color: #dae6fa;
-}
-

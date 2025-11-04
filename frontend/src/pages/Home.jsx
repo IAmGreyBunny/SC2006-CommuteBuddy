@@ -31,7 +31,6 @@ export default function Home() {
           <img src={avatarUrl} alt="Profile" className="avatar" />
           <div>
             <h2 className="greeting">Hi, {username}!</h2>
-            <p className="location-text">📍 Singapore</p>
           </div>
         </div>
       </header>
