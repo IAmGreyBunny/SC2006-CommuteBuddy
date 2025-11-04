@@ -14,12 +14,14 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      // Token obtain pair endpoint
       const res = await api.post("/api/token/", { email, password });
+
+      console.log("Login response:", res.data);
 
       localStorage.setItem(ACCESS_TOKEN, res.data.access);
       localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
       localStorage.setItem("email", email);
+      localStorage.setItem("username", res.data.username); //store username 
 
       console.log("User logged in:", email);
       navigate("/home");

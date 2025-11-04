@@ -13,6 +13,8 @@ from api.views import user_favourites, add_favourite, remove_favourite
 from api.views import search_bus_stops, search_mrt_stations, search_bus_services
 from api.views import BusStopViewSet, BusRouteViewSet, BusScheduleViewSet, RealTimeBusViewSet
 from api.views import MRTLineViewSet, MRTStationViewSet, MRTScheduleViewSet
+from api.views import MyTokenObtainPairView # Added this to store username in token response
+
 
 router = routers.DefaultRouter()
 router.register(r'bus-stops', BusStopViewSet, basename='bus-stop')
@@ -28,6 +30,8 @@ router.register(r'alerts', AlertViewSet, basename='alert')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("api/token/", MyTokenObtainPairView.as_view(), name="get_token"), # Added this to store username in token response
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),  # Added this to store username in token response
     path("api/user/register/", CreateUserView.as_view(), name="register"),
     path("api/token/", TokenObtainPairView.as_view(), name="get_token"),
     path("api/token/refresh/", TokenObtainPairView.as_view(), name="refresh"),

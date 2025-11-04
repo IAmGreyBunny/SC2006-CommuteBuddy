@@ -4,7 +4,13 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 # Overwrites the default simple jwt serializer
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = User.USERNAME_FIELD  
+    username_field = User.USERNAME_FIELD 
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # Add username to the response
+        data['username'] = self.user.username
+        return data 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
