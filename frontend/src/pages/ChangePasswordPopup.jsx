@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import "./ProfilePopup.css"; 
+import api from "../api";
+import { ACCESS_TOKEN } from "../constants";
+import "./ProfilePopup.css";
 
 const ChangePasswordPopup = ({ onClose }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       alert("Please fill in all fields.");
       return;
@@ -17,8 +20,39 @@ const ChangePasswordPopup = ({ onClose }) => {
       return;
     }
 
-    alert("Password changed successfully!");
-    onClose();
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    if (!token) {
+      alert("You are not logged in.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.put(
+        "/api/user/change-password/", 
+        {
+          current_password: currentPassword,
+          new_password: newPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      alert("Password changed successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Change password error:", error);
+      alert(
+        error.response?.data?.message ||
+          "Failed to change password. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOverlayClick = (e) => {
@@ -61,8 +95,12 @@ const ChangePasswordPopup = ({ onClose }) => {
             <button className="cancel-btn" onClick={onClose}>
               Cancel
             </button>
-            <button className="edit-btn" onClick={handleSave}>
-              Save
+            <button
+              className="edit-btn"
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
