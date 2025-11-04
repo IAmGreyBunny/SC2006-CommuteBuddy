@@ -13,7 +13,7 @@ from api.views import (
     nearby_mrt_stations, mrt_crowd_real_time, mrt_crowd_forecast, mrt_service_alerts,
     user_favourites, add_favourite, remove_favourite,
     search_bus_stops, search_mrt_stations, search_bus_services,
-    MyTokenObtainPairView, UserProfileView, ChangePasswordView
+    MyTokenObtainPairView, UserProfileView, ChangePasswordView, DeleteAccountView
 )
 
 router = routers.DefaultRouter()
@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/user/register/', CreateUserView.as_view(), name='register'),
     path('api/user/profile/', UserProfileView.as_view(), name='user-profile'),
     path('api/user/change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path("api/user/delete-account/", DeleteAccountView.as_view(), name="delete-account"),
 
     # Carpark endpoints
     path('api/carpark/get_carpark_list/', CarparkSourceListView.as_view(), name='get_carpark_list'),

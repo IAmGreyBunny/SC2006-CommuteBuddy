@@ -58,3 +58,12 @@ class ChangePasswordView(APIView):
             return Response({"message": "Password changed successfully."})
         
         return Response(serializer.errors, status=400)
+
+# For delete account on settings
+class DeleteAccountView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({"message": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)

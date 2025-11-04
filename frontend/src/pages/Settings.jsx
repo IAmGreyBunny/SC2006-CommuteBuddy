@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api";
+import { ACCESS_TOKEN } from "../constants";
 import "./Settings.css";
 import ProfilePopup from "./ProfilePopup";
 import ChangePasswordPopup from "./ChangePasswordPopup";
 
 const Settings = () => {
-  const [tripReminders, setTripReminders] = useState(false);
-  const [liveArrivalAlerts, setLiveArrivalAlerts] = useState(false);
-  const [serviceDisruptions, setServiceDisruptions] = useState(false);
-  const [peakHourAlerts, setPeakHourAlerts] = useState(false);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false); 
   const [showPasswordPopup, setShowPasswordPopup] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [username, setUsername] = useState("Guest");
 
   const navigate = useNavigate();
@@ -30,11 +29,37 @@ const Settings = () => {
   const handleEditProfileClick = () => setShowProfilePopup(true);
   const closeProfilePopup = () => setShowProfilePopup(false);
 
+  // Logout handlers
   const handleLogoutClick = () => setShowLogoutModal(true);
   const cancelLogout = () => setShowLogoutModal(false);
   const confirmLogout = () => {
     localStorage.clear();
     navigate('/login');
+  };
+
+  // Delete account handlers
+  const handleDeleteClick = () => setShowDeleteModal(true);
+  const cancelDelete = () => setShowDeleteModal(false);
+  const confirmDelete = async () => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    if (!token) {
+      alert("You are not logged in.");
+      return;
+    }
+
+    try {
+      await api.delete("/api/user/delete-account/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("Account deleted successfully!");
+      localStorage.clear();
+      navigate("/login");
+    } catch (error) {
+      console.error("Delete account error:", error);
+      alert(
+        error.response?.data?.message || "Failed to delete account. Please try again."
+      );
+    }
   };
 
   return (
@@ -55,7 +80,6 @@ const Settings = () => {
           <span>🔒 Change Password</span>
           <span className="arrow">›</span>
         </div>
-
       </section>
 
       {/* Account Actions */}
@@ -65,7 +89,7 @@ const Settings = () => {
           <span>➡️ Logout</span>
           <span className="arrow">›</span>
         </div>
-        <div className="settings-item">
+        <div className="settings-item" onClick={handleDeleteClick}>
           <span>❌ Delete Account</span>
           <span className="arrow">›</span>
         </div>
@@ -80,6 +104,20 @@ const Settings = () => {
             <div className="modal-actions">
               <button className="modal-btn cancel" onClick={cancelLogout}>Cancel</button>
               <button className="modal-btn confirm" onClick={confirmLogout}>Logout</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Confirm Delete Account</h3>
+            <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+            <div className="modal-actions">
+              <button className="modal-btn cancel" onClick={cancelDelete}>Cancel</button>
+              <button className="modal-btn confirm" onClick={confirmDelete}>Delete</button>
             </div>
           </div>
         </div>
@@ -102,7 +140,6 @@ const Settings = () => {
       {showPasswordPopup && (
         <ChangePasswordPopup onClose={() => setShowPasswordPopup(false)} />
       )}
-
     </div>
   );
 };
