@@ -53,6 +53,7 @@ class CarparkSourceSerializer(serializers.ModelSerializer):
         carparkSource = CarparkSource.objects.create(**validated_data)
         return carparkSource
 
+# Favourites for add carpark
 class AddFavouriteCarparkSerializer(serializers.ModelSerializer):
     carpark = serializers.PrimaryKeyRelatedField(queryset=Carpark.objects.all())
 
