@@ -14,7 +14,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css';
 
-
+localStorage.clear();
+sessionStorage.clear();
 
 //not found page
 const NotFound = () => (
