@@ -3,11 +3,13 @@ from django.db.models import F, ExpressionWrapper, FloatField
 from django.db.models.functions import Power
 
 from ..utils import CoordinateConverter
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics
 
 from ..models import CarparkSource,Carpark,CarparkAvailability
-from ..serializers import CarparkSourceSerializer
+from ..models import FavouriteCarpark
+from ..serializers import CarparkSourceSerializer, GetFavouriteCarparkSerializer
+from ..serializers import AddFavouriteCarparkSerializer
 
 class CarparkSourceListView(generics.ListAPIView):
     serializer_class = CarparkSourceSerializer
@@ -92,3 +94,18 @@ class CarparkWithinRadiusView(generics.ListAPIView):
         )
 
         return sources
+
+class AddFavouriteCarparkView(generics.CreateAPIView):
+    serializer_class = AddFavouriteCarparkSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Attach the current user automatically
+        serializer.save(user=self.request.user)
+
+class FavouriteCarparkListView(generics.ListAPIView):
+    serializer_class = GetFavouriteCarparkSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return FavouriteCarpark.objects.filter(user=self.request.user)

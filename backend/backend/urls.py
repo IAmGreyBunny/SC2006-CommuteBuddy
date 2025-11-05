@@ -1,5 +1,10 @@
+
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path,include
+from api.views import CreateUserView,CarparkSourceListView, CarparkSourceCreateView, CarparksInBoundsView, CarparkWithinRadiusView
+from api.views import AddFavouriteCarparkView, FavouriteCarparkListView
+from api.views import CreateUserView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -46,6 +51,8 @@ urlpatterns = [
     path('api/carpark/get_carpark_in_bound/', CarparksInBoundsView.as_view(), name='get_carparks_in_bound'),
     path('api/carpark/create_carpark_source/', CarparkSourceCreateView.as_view(), name='create_carpark_source'),
     path('api/carpark/get_carpark_within_radius/', CarparkWithinRadiusView.as_view(), name='get_carpark_within_radius'),
+    path("api/carpark/add_favourite/",AddFavouriteCarparkView.as_view(),name='add_favourite_carpark'),
+    path("api/carpark/get_favourite/",FavouriteCarparkListView.as_view(),name='add_favourite_carpark'),
 
     # Bus endpoints
     path('api/bus-arrival/<str:bus_stop_code>/', bus_arrival, name='bus_arrival'),
