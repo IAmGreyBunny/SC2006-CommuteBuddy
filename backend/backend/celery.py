@@ -96,7 +96,7 @@ app.conf.beat_schedule = {
     },
     "update_carpark_info": {
         "task": "api.tasks.update_carpark_info",
-        "schedule": 60.0,  # every 60 seconds
+        "schedule": 120.0,  # every 120 seconds
     }
 }
 
@@ -108,6 +108,3 @@ if platform.system() == "Windows":
 else:
     app.conf.worker_pool = "prefork"
     app.conf.worker_concurrency = 8  # Increased for better performance
-
-app.conf.worker_pool = "eventlet"
-app.conf.worker_concurrency = 4
