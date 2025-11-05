@@ -73,3 +73,24 @@ class CarparkAvailability(models.Model):
 
     def __str__(self):
         return f"Availability for carpark {self.carpark}"
+
+
+class FavouriteCarpark(models.Model):
+    carpark = models.ForeignKey(
+        'Carpark',
+        on_delete=models.CASCADE,
+        related_name='favourited_user')
+
+    user = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='favourite_carpark')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'carpark'], name='unique_user_carpark')
+        ]
+
+
+    def __str__(self):
+        return f"{self.user.username}[{self.user.id}] - {self.carpark.id}"

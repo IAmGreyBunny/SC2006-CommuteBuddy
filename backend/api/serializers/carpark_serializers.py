@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from ..models import CarparkSource, Carpark, CarparkAvailability
+from ..models import FavouriteCarpark
 from ..utils.CoordinateConverter import convert_xy_to_latlng
 
 class CarparkAvailabilitySerializer(serializers.ModelSerializer):
@@ -51,3 +52,23 @@ class CarparkSourceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         carparkSource = CarparkSource.objects.create(**validated_data)
         return carparkSource
+
+class AddFavouriteCarparkSerializer(serializers.ModelSerializer):
+    carpark = serializers.PrimaryKeyRelatedField(queryset=Carpark.objects.all())
+
+    class Meta:
+        model = FavouriteCarpark
+        fields = ['id', 'user','carpark']
+        read_only_fields = ['id']
+
+    def create(self, validated_data):
+        # Automatically attach the logged-in user
+        user = self.context['request'].user
+        return FavouriteCarpark.objects.create(user=user, **validated_data)
+
+class GetFavouriteCarparkSerializer(serializers.ModelSerializer):
+    carpark = CarparkSerializer(read_only=True)  # nested serializer
+
+    class Meta:
+        model = FavouriteCarpark
+        fields = ['id', 'carpark']  # no user field needed
