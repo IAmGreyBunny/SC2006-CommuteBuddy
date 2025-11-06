@@ -4,6 +4,10 @@ import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
 import "./Settings.css";
 import ProfilePopup from "./ProfilePopup";
+import { FaUnlock } from "react-icons/fa";
+import { IoLogOut } from "react-icons/io5";
+import { RiDeleteBin7Fill } from "react-icons/ri";
+import { FaHome } from "react-icons/fa";
 import ChangePasswordPopup from "./ChangePasswordPopup";
 
 const Settings = () => {
@@ -77,7 +81,7 @@ const Settings = () => {
           <span className="arrow">›</span>
         </div>
         <div className="settings-item" onClick={() => setShowPasswordPopup(true)}>
-          <span>🔒 Change Password</span>
+          <span><FaUnlock /> Change Password</span>
           <span className="arrow">›</span>
         </div>
       </section>
@@ -86,11 +90,11 @@ const Settings = () => {
       <section className="settings-section">
         <h3>Account Actions</h3>
         <div className="settings-item" onClick={handleLogoutClick}>
-          <span>➡️ Logout</span>
+          <span><IoLogOut /> Logout</span>
           <span className="arrow">›</span>
         </div>
         <div className="settings-item" onClick={handleDeleteClick}>
-          <span>❌ Delete Account</span>
+          <span><RiDeleteBin7Fill /> Delete Account</span>
           <span className="arrow">›</span>
         </div>
       </section>
@@ -124,7 +128,7 @@ const Settings = () => {
       )}
 
       <footer className="footer-nav">
-        <button className="nav-btn" onClick={handleHomeClick}>🏠 Home</button>
+        <button className="nav-btn" onClick={handleHomeClick}><FaHome /> Home</button>
         <button className="nav-btn" onClick={handleMyTripsClick}>⭐ My Favourites</button>
         <button className="nav-btn active">⚙️ Settings</button>
       </footer>

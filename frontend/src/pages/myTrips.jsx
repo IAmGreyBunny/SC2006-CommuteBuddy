@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api"; 
+import { FaBusAlt } from "react-icons/fa";
+import { FaTrainSubway } from "react-icons/fa6";
+import { FaHome } from "react-icons/fa";
 import "./myTrips.css";
 
 function MyTrips() {
@@ -90,8 +93,8 @@ function MyTrips() {
 
       <div className="tab-buttons">
         <button className={activeTab === "carparks" ? "tab active" : "tab"} onClick={() => setActiveTab("carparks")}>🅿️ Carparks</button>
-        <button className={activeTab === "bus" ? "tab active" : "tab"} onClick={() => setActiveTab("bus")}>🚌 Bus</button>
-        <button className={activeTab === "train" ? "tab active" : "tab"} onClick={() => setActiveTab("train")}>🚆 Train</button>
+        <button className={activeTab === "bus" ? "tab active" : "tab"} onClick={() => setActiveTab("bus")}><FaBusAlt /> Bus</button>
+        <button className={activeTab === "train" ? "tab active" : "tab"} onClick={() => setActiveTab("train")}><FaTrainSubway /> Train</button>
       </div>
 {/* 
       {activeTab === "carparks" && (
@@ -135,7 +138,7 @@ function MyTrips() {
       </div>
 
       <footer className="footer-nav">
-        <button className="nav-btn" onClick={handleHomeClick}>🏠 Home</button>
+        <button className="nav-btn" onClick={handleHomeClick}><FaHome /> Home</button>
         <button className="nav-btn active">⭐ My Favourites</button>
         <button className="nav-btn" onClick={handleSettingsClick}>⚙️ Settings</button>
       </footer>
