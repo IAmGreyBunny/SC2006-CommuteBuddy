@@ -523,7 +523,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo} from "react";
 import api from "../api";
 import "./LiveTracker.css";
 import { FaTrainSubway, FaBus, FaCar } from "react-icons/fa6";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 
 // NOTE: Replace with your actual key in a real project
 const MAP_API_KEY = "AIzaSyCBQdPszHAS0A2vGyc9FLAhRY9CHzr5M2M"; 
@@ -581,6 +581,7 @@ export default function LiveTracker() {
     const mapInstanceRef = useRef(null);
     const markersRef = useRef([]); 
     const navigate = useNavigate();
+    const location = useLocation();
 
     // --- Favorites & UI Utilities ---
     const isFavorite = useCallback((routeId, routeType) => 
@@ -730,10 +731,33 @@ export default function LiveTracker() {
     // --- EFFECTS ---
 
     // 1. Get Location and Favorites
+    // useEffect(() => {
+    //     getUserLocation();
+    //     fetchFavorites();
+    // }, [getUserLocation, fetchFavorites]);
     useEffect(() => {
         getUserLocation();
         fetchFavorites();
-    }, [getUserLocation, fetchFavorites]);
+
+        // **NEW: Check for state from MyTrips.jsx redirection**
+        if (location.state?.targetType === 'bus' && location.state.targetCode) {
+            const favStopCode = location.state.targetCode;
+            
+            // 1. Set the selected stop/search term immediately and expand it
+            setSelectedStopCode(favStopCode);
+            setExpandedStops({ [favStopCode]: true });
+            setDrawerHeight(60); 
+
+            // Set search term to trigger search/filter
+            setSearchTerm(favStopCode);
+
+            // 2. Clear the state after use
+            navigate(location.pathname, { replace: true, state: {} });
+
+            // 3. Ensure scrolling happens after content renders
+            setTimeout(() => { scrollToStop(favStopCode); }, 500);
+        }
+    }, [getUserLocation, fetchFavorites, location.state?.targetCode, navigate]);
 
     // 2. Fetch Nearby Stops / Update Map when Location or Stops Change
     useEffect(() => {
