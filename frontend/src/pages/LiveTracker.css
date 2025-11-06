@@ -259,6 +259,20 @@
   font-size: 20px;
   cursor: pointer;
   padding: 4px;
+
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #64748b;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.favorite-btn:hover {
+    color: #3bb59d;
+    transform: scale(1.1);
 }
 
 .stop-name-row {

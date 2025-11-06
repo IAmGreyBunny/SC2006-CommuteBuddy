@@ -908,7 +908,7 @@ export default function LiveTracker() {
                 <div className="drawer-header">
                     <input
                         type="text"
-                        placeholder="Search bus stop or bus number..."
+                        placeholder="Search bus stop"
                         className="search-input"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
