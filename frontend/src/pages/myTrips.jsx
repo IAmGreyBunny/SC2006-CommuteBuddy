@@ -93,7 +93,7 @@ function MyTrips() {
         <button className={activeTab === "bus" ? "tab active" : "tab"} onClick={() => setActiveTab("bus")}>🚌 Bus</button>
         <button className={activeTab === "train" ? "tab active" : "tab"} onClick={() => setActiveTab("train")}>🚆 Train</button>
       </div>
-
+{/* 
       {activeTab === "carparks" && (
           <div className="add-section">
           <input
@@ -108,21 +108,7 @@ function MyTrips() {
           </datalist>
           <button onClick={handleAddFavourite}>＋ Add</button>
         </div>
-      )}
-
-      {/* <div className="add-section">
-        <input
-          type="text"
-          placeholder={`Add new ${activeTab} favourite...`}
-          value={newFav}
-          onChange={(e) => setNewFav(e.target.value)}
-          list="carpark-options"
-        />
-        <datalist id="carpark-options">
-          {allCarparks.map(c => <option key={c.id} value={c.name} />)}
-        </datalist>
-        <button onClick={handleAddFavourite}>＋ Add</button>
-      </div> */}
+      )} */}
 
       <div className="trips-list">
         {items.length === 0 ? <p className="empty-text">No favourites added yet.</p> :
