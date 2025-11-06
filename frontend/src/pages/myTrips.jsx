@@ -119,7 +119,6 @@ import api from "../api";
 import "./myTrips.css";
 
 function MyTrips() {
-  // Set default to 'bus' or keep 'carparks' based on preference. Sticking to 'bus' for now.
   const [activeTab, setActiveTab] = useState("carparks"); 
   const [favourites, setFavourites] = useState({ carparks: [], bus: [], train: [] });
   const [allCarparks, setAllCarparks] = useState([]); 
