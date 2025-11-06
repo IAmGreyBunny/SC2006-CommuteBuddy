@@ -223,11 +223,10 @@ export default function NearbyCarparks() {
                   } catch (err) {
                     console.error("Error adding favourite:", err.response?.data || err);
 
-                    // if (err.response?.status === 401) {
-                    //   alert("You must log in to add favourites!");
-                    //   navigate("/login"); 
-                    // } else 
-                    if (err.response?.status === 400) {
+                    if (err.response?.status === 401) {
+                      alert("You must log in to add favourites!");
+                      navigate("/login"); 
+                    } else if (err.response?.status === 400) {
                       alert("Bad request. Make sure this carpark is valid or not already in favourites.");
                     } else {
                       alert("An unexpected error occurred. Please try again.");
