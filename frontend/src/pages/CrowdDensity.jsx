@@ -676,7 +676,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import api from "../api";
 import { FaTrainSubway, FaBus, FaCar, FaTriangleExclamation } from "react-icons/fa6";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./CrowdDensity.css";
 
 // Constants
@@ -789,7 +789,6 @@ const CrowdDensity = () => {
     const mapInstanceRef = useRef(null);
     const markersRef = useRef([]);
     const navigate = useNavigate();
-    const location = useLocation(); // Hook to access navigation state
 
     // --- Geolocation ---
     const getUserLocation = useCallback(() => {
@@ -1014,19 +1013,7 @@ const CrowdDensity = () => {
         fetchMrtStations();
         fetchServiceAlerts();
         fetchFavorites();
-
-        if (location.state?.targetType === 'mrt' && location.state.targetCode) {
-            const favStationCode = location.state.targetCode;
-
-            // Set the search term to immediately filter the list
-            setSearchTerm(favStationCode);
-            setDrawerHeight(60); 
-
-            // Clear the state after use
-            navigate(location.pathname, { replace: true, state: {} });
-        }
-
-    }, [getUserLocation, fetchMrtStations, fetchServiceAlerts, fetchFavorites, location.state?.targetCode, navigate]);
+    }, [getUserLocation, fetchMrtStations, fetchServiceAlerts, fetchFavorites]);
 
     useEffect(() => {
         let intervalId;
@@ -1119,12 +1106,6 @@ const CrowdDensity = () => {
         station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         station.code.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    useEffect(() => {
-        if (searchTerm && filteredStations.length === 1 && filteredStations[0].code.toLowerCase() === searchTerm.toLowerCase()) {
-            setSelectedStation(filteredStations[0]);
-        }
-    }, [searchTerm, filteredStations]);
     
     const displayList = searchTerm ? filteredStations : nearestStations;
     const title = searchTerm 
