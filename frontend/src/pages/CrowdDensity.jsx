@@ -1264,8 +1264,8 @@ const CrowdDensity = () => {
                                 style={{
                                     padding: '8px 16px',
                                     marginBottom: '16px',
-                                    backgroundColor: '#f3f4f6',
-                                    border: '1px solid #d1d5db',
+                                    backgroundColor: '#3d73dfff',
+                                    border: '1px solid #5d92e1ff',
                                     borderRadius: '8px',
                                     cursor: 'pointer'
                                 }}
