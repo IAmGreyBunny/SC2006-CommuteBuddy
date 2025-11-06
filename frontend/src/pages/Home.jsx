@@ -62,7 +62,7 @@ export default function Home() {
 
       <footer className="footer-nav">
         <button className="nav-btn active">🏠 Home</button>
-        <button className="nav-btn" onClick={handleMyTripsClick}>🧾 My Trips</button>
+        <button className="nav-btn" onClick={handleMyTripsClick}>⭐ My Favourites</button>
         <button className="nav-btn" onClick={handleSettingsClick}>⚙️ Settings</button>
       </footer>
     </div>

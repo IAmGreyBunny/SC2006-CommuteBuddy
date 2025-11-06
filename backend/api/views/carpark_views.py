@@ -100,8 +100,7 @@ class AddFavouriteCarparkView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        # Attach the current user automatically
-        serializer.save(user=self.request.user)
+        serializer.save()
 
 class FavouriteCarparkListView(generics.ListAPIView):
     serializer_class = GetFavouriteCarparkSerializer
