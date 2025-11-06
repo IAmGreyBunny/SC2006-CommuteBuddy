@@ -10,7 +10,6 @@ import { motion, useMotionValue } from "framer-motion";
 import "./NearbyCarparks.css";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import { FaCar, FaBus, FaTrainSubway } from "react-icons/fa6";
-import api from "../api";
 
 const containerStyle = { width: "100%", height: "100vh" };
 const BASE_URL =
@@ -30,9 +29,6 @@ export default function NearbyCarparks() {
   const [searchRadius, setSearchRadius] = useState(2);
   const [confirmedRadius, setConfirmedRadius] = useState(2);
   const [selectedMode, setSelectedMode] = useState("car");
-  const [selectedCarpark, setSelectedCarpark] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-
 
   const autocompleteRef = useRef(null);
   const mapRef = useRef(null);
@@ -172,10 +168,6 @@ export default function NearbyCarparks() {
                 strokeWeight: 2,
                 scale: 20,
               }}
-              onClick={() => {
-                setSelectedCarpark(c);
-                setShowModal(true);
-              }}
             />
           );
         })}
@@ -197,53 +189,6 @@ export default function NearbyCarparks() {
         )}
       </GoogleMap>
 
-      {showModal && selectedCarpark && (
-        <div className="modal-backdrop" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Favourite Carpark</h3>
-            <p>Do you want to add <strong>{selectedCarpark.name}</strong> to your favourites?</p>
-            <div className="modal-actions">
-              <button
-                className="modal-btn cancel"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-btn confirm"
-                onClick={async () => {
-                  if (!selectedCarpark) return;
-
-                  try {
-                    console.log("Posting favourite:", selectedCarpark.id); //debug
-                    await api.post("http://localhost:8000/api/carpark/add_favourite/", { carpark: selectedCarpark.id });
-
-                    setShowModal(false);
-                    alert(`${selectedCarpark.name} added to favourites!`);
-                  } catch (err) {
-                    console.error("Error adding favourite:", err.response?.data || err);
-
-                    if (err.response?.status === 401) {
-                      alert("You must log in to add favourites!");
-                      navigate("/login"); 
-                    } else if (err.response?.status === 400) {
-                      alert("Bad request. Make sure this carpark is valid or not already in favourites.");
-                    } else {
-                      alert("An unexpected error occurred. Please try again.");
-                    }
-                  }
-                }}
-              >
-                Add
-              </button>
-
-
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="location-card"></div>
       <div className="location-card">
         <span className="location-icon">📍</span>
         <Autocomplete

@@ -1,111 +1,85 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api"; 
 import "./myTrips.css";
 
+const favouriteTrips = [
+  { id: 1, from: "Boon Lay Int", to: "Jurong East", distance: "9.2 km", duration: "35 mins", mode: "Bus" },
+  { id: 2, from: "Bishan Park", to: "313 Somerset", distance: "11.5 km", duration: "25 mins", mode: "Car" },
+  { id: 3, from: "Clarke Quay", to: "Tiong Bahru Market", distance: "5.1 km", duration: "28 mins", mode: "Bus" },
+  { id: 4, from: "Block 426", to: "Oh My Mango Bingsu", distance: "8.8 km", duration: "30 mins", mode: "Car" },
+];
+
+const recents = [
+  { id: 1, from: "Jurong East", to: "Orchard Road", distance: "13.5 km", duration: "33 mins", mode: "Bus" },
+  { id: 2, from: "NTU North Spine", to: "Changi Airport", distance: "38.5 km", duration: "58 mins", mode: "Car" },
+  { id: 3, from: "Clarke Quay Central", to: "Marina Bay Sands", distance: "2.1 km", duration: "19 mins", mode: "Bus" },
+  { id: 4, from: "Block 301", to: "Lickers, blk 177", distance: "1.5 km", duration: "6 mins", mode: "Car" },
+];
+
 function MyTrips() {
-  const [activeTab, setActiveTab] = useState("carparks");
-  const [favourites, setFavourites] = useState({ carparks: [], bus: [], train: [] });
-  const [allCarparks, setAllCarparks] = useState([]); 
-  const [newFav, setNewFav] = useState("");
+  const [activeTab, setActiveTab] = useState("favourites");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchFavourites();
-    fetchAllCarparks();
-  }, []);
-
-  const fetchFavourites = async () => {
-    try {
-      const res = await api.get("http://localhost:8000/api/carpark/get_favourite/");
-      setFavourites(prev => ({ ...prev, carparks: res.data || [] }));
-    } catch (err) {
-      console.error("Error fetching favourites:", err);
-      if (err.response?.status === 401) {
-        alert("Please log in to view favourites!");
-      }
-    }
+  const handleHomeClick = () => {
+    navigate("/home");
   };
 
-  const fetchAllCarparks = async () => {
-    try {
-      const res = await api.get("http://localhost:8000/api/carpark/get_favourite/");
-      setAllCarparks(res.data || []);
-    } catch (err) {
-      console.error("Error fetching carparks:", err);
-    }
+  const handleSettingsClick = () => {
+    navigate("/settings");
   };
 
-  const handleAddFavourite = async () => {
-    if (!newFav.trim()) return;
-
-    // find carpark by name
-    const selected = allCarparks.find(c => c.name.toLowerCase() === newFav.toLowerCase());
-    if (!selected) {
-      alert("Carpark not found!");
-      return;
-    }
-
-    try {
-      await api.post("/carpark/add_favourite/", { carpark: selected.id });
-      fetchFavourites();
-      setNewFav("");
-      alert(`${selected.name} added to favourites!`);
-    } catch (err) {
-      console.error("Error adding favourite:", err);
-      if (err.response?.status === 401) {
-        alert("You must log in to add favourites!");
-      }
-    }
-  };
-
-  const handleHomeClick = () => navigate("/home");
-  const handleSettingsClick = () => navigate("/settings");
-
-  const items = favourites[activeTab] || [];
+  const trips = activeTab === "favourites" ? favouriteTrips : recents;
 
   return (
-    <div className="my-trips-container">
-      <header className="header"><h1>⭐ My Favourites</h1></header>
+    <>
+      <div className="my-trips-container">
+        <header className="header">
+          <h1>My Trips 🧾</h1>
+        </header>
 
-      <div className="tab-buttons">
-        <button className={activeTab === "carparks" ? "tab active" : "tab"} onClick={() => setActiveTab("carparks")}>🅿️ Carparks</button>
-        <button className={activeTab === "bus" ? "tab active" : "tab"} onClick={() => setActiveTab("bus")}>🚌 Bus</button>
-        <button className={activeTab === "train" ? "tab active" : "tab"} onClick={() => setActiveTab("train")}>🚆 Train</button>
-      </div>
+        <div className="tab-buttons">
+          <button
+            className={activeTab === "favourites" ? "tab active" : "tab"}
+            onClick={() => setActiveTab("favourites")}
+          >
+            Favourites
+          </button>
+          <button
+            className={activeTab === "recent" ? "tab active" : "tab"}
+            onClick={() => setActiveTab("recent")}
+          >
+            Recents
+          </button>
+        </div>
 
-      <div className="add-section">
-        <input
-          type="text"
-          placeholder={`Add new ${activeTab} favourite...`}
-          value={newFav}
-          onChange={(e) => setNewFav(e.target.value)}
-          list="carpark-options"
-        />
-        <datalist id="carpark-options">
-          {allCarparks.map(c => <option key={c.id} value={c.name} />)}
-        </datalist>
-        <button onClick={handleAddFavourite}>＋ Add</button>
-      </div>
-
-      <div className="trips-list">
-        {items.length === 0 ? <p className="empty-text">No favourites added yet.</p> :
-          items.map((item, idx) => (
-            <div key={idx} className="trip-card">
-              <div className="trip-icon">{activeTab === "carparks" ? "🅿️" : activeTab === "bus" ? "🚌" : "🚆"}</div>
-              <div className="trip-details"><p>{item.name}</p></div>
-              <div className="trip-arrow">⭐</div>
+        <div className="trips-list">
+          {trips.map((trip) => (
+            <div key={trip.id} className="trip-card">
+              <div className="trip-icon">🚌</div>
+              <div className="trip-details">
+                <p>
+                  {trip.from} → {trip.to}
+                </p>
+                <small>
+                  {trip.distance} | {trip.duration} | {trip.mode}
+                </small>
+              </div>
+              <div className="trip-arrow">➔</div>
             </div>
-          ))
-        }
+          ))}
+        </div>
       </div>
 
       <footer className="footer-nav">
-        <button className="nav-btn" onClick={handleHomeClick}>🏠 Home</button>
-        <button className="nav-btn active">⭐ My Favourites</button>
-        <button className="nav-btn" onClick={handleSettingsClick}>⚙️ Settings</button>
+        <button className="nav-btn" onClick={handleHomeClick}>
+          🏠 Home
+        </button>
+        <button className="nav-btn active">🧾 My Trips</button>
+        <button className="nav-btn" onClick={handleSettingsClick}>
+          ⚙️ Settings
+        </button>
       </footer>
-    </div>
+    </>
   );
 }
 

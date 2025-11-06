@@ -53,13 +53,12 @@ class CarparkSourceSerializer(serializers.ModelSerializer):
         carparkSource = CarparkSource.objects.create(**validated_data)
         return carparkSource
 
-# Favourites for add carpark
 class AddFavouriteCarparkSerializer(serializers.ModelSerializer):
     carpark = serializers.PrimaryKeyRelatedField(queryset=Carpark.objects.all())
 
     class Meta:
         model = FavouriteCarpark
-        fields = ['carpark']
+        fields = ['id', 'user','carpark']
         read_only_fields = ['id']
 
     def create(self, validated_data):
@@ -72,4 +71,4 @@ class GetFavouriteCarparkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FavouriteCarpark
-        fields = ['id', 'carpark']
+        fields = ['id', 'carpark']  # no user field needed
