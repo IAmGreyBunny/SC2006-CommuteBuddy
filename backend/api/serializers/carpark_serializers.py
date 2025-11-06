@@ -59,7 +59,7 @@ class AddFavouriteCarparkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FavouriteCarpark
-        fields = ['id', 'user','carpark']
+        fields = ['carpark']
         read_only_fields = ['id']
 
     def create(self, validated_data):
@@ -72,4 +72,4 @@ class GetFavouriteCarparkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FavouriteCarpark
-        fields = ['id', 'carpark']  # no user field needed
+        fields = ['id', 'carpark']
