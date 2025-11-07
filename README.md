@@ -99,7 +99,7 @@ CREATE DATABASE commutebuddy;
 python manage.py makemigrations # Make the migration
 python manage.py migrate        # Do the migration
 ```
-Migrations command to be done everytime there are changes in database models
+Migrations command to be done everytime there are changes in database models or whenever a new database is created
 
 ### Populating Initial Data (Bus - MRT)
 It is necessary to populate the initial data for bus and mrt after a fresh database is created
