@@ -187,8 +187,8 @@ export default function NearbyCarparks() {
               center={currentPosition}
               radius={confirmedRadius * 1000}
               options={{
-                fillColor: "#0095FF33",
-                strokeColor: "#0095FF",
+                fillColor: "transparent",
+                strokeColor: "transparent",
                 strokeOpacity: 0.8,
                 fillOpacity: 0.15,
               }}
