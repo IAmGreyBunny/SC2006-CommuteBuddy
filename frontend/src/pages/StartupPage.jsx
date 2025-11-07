@@ -7,7 +7,7 @@ function StartupPage() {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    navigate('/login'); // ✅ This navigates to your login page
+    navigate('/login'); // This navigates to login page
   };
 
   return (
