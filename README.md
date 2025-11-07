@@ -65,16 +65,49 @@ Environment variables are not tracked for security reasons, the template file fo
 The following lines in the file should be changed to your preference:
 ```
 REDIS_URL="redis://localhost:6379/0" # This points to the redis server(whatever you set in the previous steps)
-HDB_CARPARK_AVAILABILITY_API_KEY="v2:d02822dfdefd6bb28a284e21831b6a31633cb602c58b3daa8f92edd1cef8bad3:wgpuCpP5HYmJlLy_Vys2HiEREkGbROQ4" # Change this to the api key you registered
 ```
 Make a copy of the file, rename the copy to ```".env"``` and move it to ```"backend/.env"```
 
-### Run migrations & dev server
+### PostgreSQL
+The project work with both SQLite and PostgreSQL in development but PostgreSQL is preferred for production<br>
+In ```backend/backend/settings.py``` (SQLite code is commented out):
+```
+DATABASES = {
+    # SQLITE
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
+    # PostGres
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'commutebuddy',       # Database Name
+        'USER': 'postgres',           # Change this to whatever is set during PostgreSQL installation
+        'PASSWORD': 'Password1234',   # Change this to whatever is set during PostgreSQL installation
+        'HOST': 'localhost',          # Assume that the database is running on the same machine as the django server
+        'PORT': '5432',               # Default port
+    }
+}
+```
+if PostgreSQL is used, run the following sql command in psql shell to create the initial database (this should only be ran once unless the database is deleted):
+```
+CREATE DATABASE commutebuddy;
+```
+
+### Run migrations
 ```
 python manage.py makemigrations # Make the migration
 python manage.py migrate        # Do the migration
 ```
 Migrations command to be done everytime there are changes in database models
+
+### Populating Initial Data (Bus - MRT)
+It is necessary to populate the initial data for bus and mrt after a fresh database is created
+```
+python manage.py populate_all_bus_stops
+python manage.py populate_all_mrt_lines
+python manage.py populate_all_mrt_stations
+```
 
 ### Admin Operations
 #### Creating Admin User
