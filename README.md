@@ -170,3 +170,21 @@ npm install    # or yarn / npm
 npm run dev
 ```
 
+## Testing on Mobile
+Mobile browser only ask for location permission if both the frontend and backend is served through https, and to do so we need to provide an ssl certificate<br>
+
+### Generating SSL Certificate
+This can be done through [openssl](https://stackoverflow.com/questions/10175812/how-can-i-generate-a-self-signed-ssl-certificate-using-openssl) on windows. Place the ssl cert and key file in a folder called ```cert```, place this folder in both the root ```backend``` and  the root ```frontend``` folder
+
+### Frontend
+Comment out the section in ```vite.config.cjs``` to read in the ssl certificate and then run vite server as per normal:
+```
+npm run dev
+```
+
+### Backend 
+Use this to run instead of the normal ```runserver``` command:
+```
+python manage.py runserver_plus 0.0.0.0:8000 --cert-file cert/cert.pem --key-file cert/key.pem
+```
+
