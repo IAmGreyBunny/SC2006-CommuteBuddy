@@ -33,7 +33,7 @@ export default function NearbyCarparks() {
   const [selectedCarpark, setSelectedCarpark] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-
+  const circleRef = useRef(null);
   const autocompleteRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -42,6 +42,32 @@ export default function NearbyCarparks() {
     libraries: ["places"],
     version: "weekly",
   });
+
+  useEffect(() => {
+  if (!mapRef.current || !currentPosition) return;
+
+  // Remove old circle if exists
+  if (circleRef.current) {
+    circleRef.current.setMap(null);
+  }
+
+  // Create a new circle
+  const newCircle = new window.google.maps.Circle({
+    map: mapRef.current,
+    center: currentPosition,
+    radius: confirmedRadius * 1000,
+    strokeColor: "#0095FF33",
+    fillColor: "#0095FF",
+    fillOpacity: 0.15,
+  });
+
+  circleRef.current = newCircle;
+
+  // Optional cleanup when unmounting
+  return () => {
+    newCircle.setMap(null);
+  };
+}, [currentPosition, confirmedRadius]);
 
   const fetchCarparksNearby = async (center) => {
     const { lat, lng } = center;
@@ -180,21 +206,7 @@ export default function NearbyCarparks() {
           );
         })}
 
-        {currentPosition && (
-          <>
-            <Marker position={currentPosition} />
-            <Circle
-              center={currentPosition}
-              radius={confirmedRadius * 1000}
-              options={{
-                fillColor: "transparent",
-                strokeColor: "transparent",
-                strokeOpacity: 0.8,
-                fillOpacity: 0.15,
-              }}
-            />
-          </>
-        )}
+        {currentPosition && <Marker position={currentPosition} />}
       </GoogleMap>
 
       {showModal && selectedCarpark && (
