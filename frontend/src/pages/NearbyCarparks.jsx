@@ -12,9 +12,11 @@ import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import { FaCar, FaBus, FaTrainSubway } from "react-icons/fa6";
 import api from "../api";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 const containerStyle = { width: "100%", height: "100vh" };
 const BASE_URL =
-  "http://localhost:8000/api/carpark/get_carpark_within_radius/";
+  `${API_BASE_URL}/api/carpark/get_carpark_within_radius/`;
 
 export default function NearbyCarparks() {
   const navigate = useNavigate();
@@ -44,69 +46,54 @@ export default function NearbyCarparks() {
   });
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          const initialLoc = { lat: latitude, lng: longitude };
-          setCurrentPosition(initialLoc);
-          mapRef.current?.panTo(initialLoc);
-          mapRef.current?.setZoom(15);
-          fetchCarparksNearby(initialLoc);
-        },
-        (err) => {
-          console.error("Error getting current location:", err);
-          // fallback to Singapore center if permission denied
-          const fallback = { lat: 1.3521, lng: 103.8198 };
-          setCurrentPosition(fallback);
-        }
-      );
-    } else {
-      console.error("Geolocation not supported by this browser.");
-      const fallback = { lat: 1.3521, lng: 103.8198 };
-      setCurrentPosition(fallback);
-    }
-  }, [isLoaded]);
-
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const initialLoc = { lat: latitude, lng: longitude };
+        setCurrentPosition(initialLoc);
+        mapRef.current?.panTo(initialLoc);
+        mapRef.current?.setZoom(15);
+        fetchCarparksNearby(initialLoc);
+      },
+      (err) => {
+        console.error("Error getting current location:", err);
+        // fallback to Singapore center if permission denied
+        const fallback = { lat: 1.3521, lng: 103.8198 };
+        setCurrentPosition(fallback);
+      }
+    );
+  } else {
+    console.error("Geolocation not supported by this browser.");
+    const fallback = { lat: 1.3521, lng: 103.8198 };
+    setCurrentPosition(fallback);
+  }
+}, [isLoaded]);
   useEffect(() => {
-    if (!mapRef.current || !currentPosition) return;
+  if (!mapRef.current || !currentPosition) return;
 
-    // Remove old circle if exists
-    if (circleRef.current) {
-      circleRef.current.setMap(null);
-    }
+  // Remove old circle if exists
+  if (circleRef.current) {
+    circleRef.current.setMap(null);
+  }
 
-    // Create a new circle
-    const newCircle = new window.google.maps.Circle({
-      map: mapRef.current,
-      center: currentPosition,
-      radius: confirmedRadius * 1000,
-      strokeColor: "#0095FF33",
-      fillColor: "#0095FF",
-      fillOpacity: 0.15,
-    });
+  // Create a new circle
+  const newCircle = new window.google.maps.Circle({
+    map: mapRef.current,
+    center: currentPosition,
+    radius: confirmedRadius * 1000,
+    strokeColor: "#0095FF33",
+    fillColor: "#0095FF",
+    fillOpacity: 0.15,
+  });
 
-    circleRef.current = newCircle;
+  circleRef.current = newCircle;
 
-    return () => {
-      newCircle.setMap(null);
-    };
-  }, [currentPosition, confirmedRadius]);
-
-  // Auto fetch Carpark
-  useEffect(() => {
-    if (!currentPosition) return;
-
-    // Initial Fetch
-    fetchCarparksNearby(currentPosition);
-
-    // Fetch Interval
-    const interval = setInterval(() => {
-      fetchCarparksNearby(currentPosition);
-    }, 5000); 
-
-    return () => clearInterval(interval);
-  }, [currentPosition, confirmedRadius]);
+  // Optional cleanup when unmounting
+  return () => {
+    newCircle.setMap(null);
+  };
+}, [currentPosition, confirmedRadius]);
 
   const fetchCarparksNearby = async (center) => {
     const { lat, lng } = center;
@@ -167,8 +154,8 @@ export default function NearbyCarparks() {
     const a =
       Math.sin(dLat / 2) ** 2 +
       Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
@@ -267,7 +254,7 @@ export default function NearbyCarparks() {
 
                   try {
                     console.log("Posting favourite:", selectedCarpark.id); //debug
-                    await api.post("http://localhost:8000/api/carpark/add_favourite/", { carpark: selectedCarpark.id });
+                    await api.post(`${API_BASE_URL}/api/carpark/add_favourite/`, { carpark: selectedCarpark.id });
 
                     setShowModal(false);
                     alert(`${selectedCarpark.name} added to favourites!`);
@@ -276,7 +263,7 @@ export default function NearbyCarparks() {
 
                     if (err.response?.status === 401) {
                       alert("You must log in to add favourites!");
-                      navigate("/login");
+                      navigate("/login"); 
                     } else if (err.response?.status === 400) {
                       alert("Bad request. Make sure this carpark is valid or not already in favourites.");
                     } else {
@@ -367,13 +354,13 @@ function BottomSheet({
       <div className="sheet-handle" />
 
       <div className="transport-tabs">
-        <NavLink to={"/NearbyCarparks"}
-          className="transport-tab transport-tab-active">
+        <NavLink to={"/NearbyCarparks"} 
+        className="transport-tab transport-tab-active">
           <span className="tab-icon"><FaCar /></span>
           <span className="tab-label">Car</span>
         </NavLink>
-        <NavLink to={"/LiveTracker"}
-          className="transport-tab">
+        <NavLink to={"/LiveTracker"} 
+        className="transport-tab">
           <span className="tab-icon"><FaBus /></span>
           <span className="tab-label">Bus</span>
         </NavLink>

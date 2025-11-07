@@ -6,6 +6,8 @@ import { FaTrainSubway } from "react-icons/fa6";
 import { FaHome } from "react-icons/fa";
 import "./myTrips.css";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 function MyTrips() {
   const [activeTab, setActiveTab] = useState("carparks"); 
   const [favourites, setFavourites] = useState({ carparks: [], bus: [], train: [] });
@@ -25,7 +27,7 @@ function MyTrips() {
 
     try {
        // 1. Fetch Carpark favourites
-      const carparksRes = await api.get("http://localhost:8000/api/carpark/get_favourite/");
+      const carparksRes = await api.get(`${API_BASE_URL}/api/carpark/get_favourite/`);
 
       // 2. Fetch Bus/MRT favourites
       const routesRes = await api.get("/api/user/favourites/");
@@ -47,7 +49,7 @@ function MyTrips() {
   // carpark logic for fetchAllCarparks and handleAddFavourite
   const fetchAllCarparks = async () => {
     try {
-      const res = await api.get("http://localhost:8000/api/carpark/get_favourite/");
+      const res = await api.get(`${API_BASE_URL}/api/carpark/get_favourite/`);
       setAllCarparks(res.data || []);
     } catch (err) {
       console.error("Error fetching carparks:", err);

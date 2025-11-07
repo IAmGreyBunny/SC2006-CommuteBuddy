@@ -3,6 +3,8 @@ import axios from "axios";
 import "./CarparkSourceForm.css";
 import { useNavigate, useLocation } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 export default function CarparkSourceForm() {
   const [name, setName] = useState("");
   const [availabilityApiUrl, setAvailabilityApiUrl] = useState("");
@@ -55,7 +57,7 @@ export default function CarparkSourceForm() {
     try {
       setLoading(true);
       await axios.post(
-        "http://localhost:8000/api/carpark/create_carpark_source/",
+        `${API_BASE_URL}/api/carpark/create_carpark_source/`,
         newSource,
         { headers: { "Content-Type": "application/json" } }
       );
