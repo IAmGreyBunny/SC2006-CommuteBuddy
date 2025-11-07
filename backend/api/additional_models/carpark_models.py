@@ -21,8 +21,8 @@ def default_availability_mapping():
 
 class CarparkSource(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    availability_api_url = models.URLField()
     info_api_url = models.URLField()
+    availability_api_url = models.URLField()
     headers = models.JSONField(blank=True, null=True, help_text="allows user to add additional info like api keys")
 
     # optional — store how external fields map to internal ones
