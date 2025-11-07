@@ -44,6 +44,30 @@ export default function NearbyCarparks() {
   });
 
   useEffect(() => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const initialLoc = { lat: latitude, lng: longitude };
+        setCurrentPosition(initialLoc);
+        mapRef.current?.panTo(initialLoc);
+        mapRef.current?.setZoom(15);
+        fetchCarparksNearby(initialLoc);
+      },
+      (err) => {
+        console.error("Error getting current location:", err);
+        // fallback to Singapore center if permission denied
+        const fallback = { lat: 1.3521, lng: 103.8198 };
+        setCurrentPosition(fallback);
+      }
+    );
+  } else {
+    console.error("Geolocation not supported by this browser.");
+    const fallback = { lat: 1.3521, lng: 103.8198 };
+    setCurrentPosition(fallback);
+  }
+}, [isLoaded]);
+  useEffect(() => {
   if (!mapRef.current || !currentPosition) return;
 
   // Remove old circle if exists
