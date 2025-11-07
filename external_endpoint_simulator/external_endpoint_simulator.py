@@ -80,7 +80,7 @@ def get_carpark_availability():
                         "carpark_info": [
                             {
                                 "total_lots": 80,
-                                "lots_available": 10
+                                "lots_available": 50
                             }
                         ]
                     }

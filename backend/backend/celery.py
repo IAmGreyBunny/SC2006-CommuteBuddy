@@ -25,11 +25,11 @@ app.conf.beat_schedule = {
     },
     "update_carpark_availability": {
         "task": "api.tasks.update_carpark_availability",
-        "schedule": 25.0,  # every 25 seconds
+        "schedule": 20,  # every 25 seconds
     },
     "update_carpark_info": {
         "task": "api.tasks.update_carpark_info",
-        "schedule": 300.0,  # every 300 seconds
+        "schedule": 30,  # every 300 seconds
     }
 }
 

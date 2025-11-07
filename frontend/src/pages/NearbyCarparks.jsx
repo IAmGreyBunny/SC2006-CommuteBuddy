@@ -67,6 +67,7 @@ export default function NearbyCarparks() {
       setCurrentPosition(fallback);
     }
   }, [isLoaded]);
+
   useEffect(() => {
     if (!mapRef.current || !currentPosition) return;
 
@@ -87,10 +88,24 @@ export default function NearbyCarparks() {
 
     circleRef.current = newCircle;
 
-    // Optional cleanup when unmounting
     return () => {
       newCircle.setMap(null);
     };
+  }, [currentPosition, confirmedRadius]);
+
+  // Auto fetch Carpark
+  useEffect(() => {
+    if (!currentPosition) return;
+
+    // Initial Fetch
+    fetchCarparksNearby(currentPosition);
+
+    // Fetch Interval
+    const interval = setInterval(() => {
+      fetchCarparksNearby(currentPosition);
+    }, 5000); 
+
+    return () => clearInterval(interval);
   }, [currentPosition, confirmedRadius]);
 
   const fetchCarparksNearby = async (center) => {
