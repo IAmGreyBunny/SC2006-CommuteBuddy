@@ -64,7 +64,8 @@ Environment variables are not tracked for security reasons, the template file fo
 
 The following lines in the file should be changed to your preference:
 ```
-REDIS_URL="redis://localhost:6379/0" # This points to the redis server(whatever you set in the previous steps)
+REDIS_URL="redis://localhost:6379/0"     # This points to the redis server(whatever you set in the previous steps)
+LTA_API_KEY="QmENf9GDT22jcv+l0VipIw=="   # API key will be removed soon
 ```
 Make a copy of the file, rename the copy to ```".env"``` and move it to ```"backend/.env"```
 
@@ -154,7 +155,8 @@ Environment variables are not tracked for security reasons, the template file fo
 
 The following line in the file should be changed to your preference:
 ```
-VITE_API_URL = "http://localhost:1234" # This points to the backend server(DJango)
+VITE_API_URL="http://127.0.0.1:8000"                                  # This points to the backend server(DJango)
+VITE_GOOGLE_MAPS_API_KEY="AIzaSyDSZhU_zLhlQrU7ozPKjeuI4Kt5bvozxWs"    # API key will be removed soon
 ```
 Make a copy of the file, rename the copy to ```".env"``` and move it to ```"frontend/.env"```
 
