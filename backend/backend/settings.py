@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     'django_celery_beat',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
