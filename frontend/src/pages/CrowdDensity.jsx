@@ -588,7 +588,9 @@ const CrowdDensity = () => {
                             </header>
 
                             <button 
-                                onClick={() => setSelectedStation(null)}
+                                onClick={() => {
+                                    setSelectedStation(null);
+                                    setSearchTerm('');} }
                                 style={{
                                     padding: '8px 16px',
                                     marginBottom: '16px',
