@@ -656,9 +656,30 @@ const CrowdDensity = () => {
                                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                             padding: '15px', margin: '10px 0', border: '1px solid #e5e7eb',
                                             borderRadius: '8px', backgroundColor: 'white', cursor: 'pointer',
-                                            borderLeft: `4px solid ${lineColors[station.lines[0]?.line_code]?.color || '#64748b'}`
                                         }}
                                     >
+                                        {/* NEW: Line-specific crowd indicators */}
+                                        <div style={{ 
+                                            display: 'flex', 
+                                            flexDirection: 'column', 
+                                            marginRight: '15px' 
+                                        }}>
+                                            {station.crowdDetails?.map((detail, lineIndex) => (
+                                                <div 
+                                                    key={lineIndex}
+                                                    style={{
+                                                        width: '2px', 
+                                                        height: `${(100 / station.crowdDetails.length).toFixed(0)}%`, 
+                                                        minHeight: '20px', 
+                                                        borderRadius: '5px',
+                                                        margin: '1px 0',
+                                                        border: `3px solid ${lineColors[detail.line]?.color || '#64748b'}`, // MRT line color
+                                                }} 
+                                                    title={`${lineColors[detail.line]?.name}: ${getDensityLabel(detail.crowdLevel)}`}
+                                            />
+                                         ))}
+                                        </div>
+
                                         <div style={{flexGrow: 1}}>
                                             <h4 style={{ margin: '0', fontSize: '16px', fontWeight: '600' }}>
                                                 {station.name} ({station.code})
