@@ -325,7 +325,7 @@ const CrowdDensity = () => {
 
             marker.addListener("click", () => {
                 console.log("Map marker clicked:", station.code, station.name);
-                setSearchTerm(station.code);
+                setSearchTerm(station.name);
                 setSelectedStation(null);
                 setDrawerHeight(60);
                 
