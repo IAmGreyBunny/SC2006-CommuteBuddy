@@ -1,7 +1,7 @@
 # 2006-SCS7-46
 
 # Demo Video
-[![Demo Video](https://img.youtube.com/vi/lZpMEbgT3vM/0.jpg)]([www.youtube.com](https://www.youtube.com/watch?v=lZpMEbgT3vM))
+[![Demo Video](https://img.youtube.com/vi/lZpMEbgT3vM/0.jpg)](https://www.youtube.com/watch?v=lZpMEbgT3vM)
 
 # Links to various Documents
 ## Google Docs
